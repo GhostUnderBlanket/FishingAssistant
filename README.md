@@ -40,6 +40,8 @@ The fishing minigame can optionally be skipped for all fish or only species prev
 caught by the current local player.
 Bait can be attached and refilled from the current local player's inventory while the
 rod is idle, with optional spawned bait clearly treated as a cheat setting.
+Tackle can be attached under the same ownership safeguards, including independent
+preferences for both slots on the Advanced Iridium Rod.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

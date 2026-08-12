@@ -60,6 +60,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   caught species, while vanilla resolves rewards, Challenge Bait, and festival scores.
 - Local-player automatic bait attachment and refill using inventory preference rules,
   with an explicit opt-in fallback for spawning bait when none is available.
+- Local-player automatic tackle attachment with independent preferences for both
+  Advanced Iridium Rod slots and an explicit opt-in spawn fallback.
 
 ### Changed
 

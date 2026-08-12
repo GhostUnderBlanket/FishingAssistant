@@ -178,6 +178,7 @@
   "hud.treasure_full.drop": "The remaining treasure was dropped because the inventory is full. Automation stopped.",
   "hud.treasure_full.discard": "The remaining treasure was discarded because the inventory is full. Automation stopped.",
   "hud.bait.spawned": "Spawned and attached {1} {0}. This is a cheat option.",
+  "hud.tackle.spawned": "Spawned and attached {0} to tackle slot {1}. This is a cheat option.",
   "debug.test_rod.already_owned": "This player already has a fishing rod.",
   "debug.test_rod.inventory_full": "The inventory is full. Free a slot and try again.",
   "debug.test_rod.failed": "The test fishing rod could not be added. Check the SMAPI log.",
