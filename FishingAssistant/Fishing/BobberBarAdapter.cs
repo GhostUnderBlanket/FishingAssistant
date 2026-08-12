@@ -16,16 +16,35 @@ internal sealed class BobberBarAdapter(BobberBar bar)
     public MinigameControlConditions ReadConditions(
         bool automationEnabled,
         bool autoPlayEnabled,
-        AutomationState state)
+        AutomationState state,
+        float targetPosition)
     {
         return new MinigameControlConditions(
             automationEnabled,
             autoPlayEnabled,
             state,
             !bar.fadeIn && !bar.fadeOut && !bar.handledFishResult,
-            bar.bobberPosition,
+            targetPosition,
             bar.bobberBarPos,
             bar.bobberBarHeight
+        );
+    }
+
+    public TreasureTargetConditions ReadTreasureConditions(
+        bool assistanceActive,
+        bool treasureTargetingEnabled,
+        bool wasTargetingTreasure)
+    {
+        return new TreasureTargetConditions(
+            assistanceActive,
+            treasureTargetingEnabled,
+            bar.treasure,
+            bar.treasureCaught,
+            bar.treasureScale,
+            bar.distanceFromCatching,
+            wasTargetingTreasure,
+            bar.bobberPosition,
+            bar.treasurePosition
         );
     }
 

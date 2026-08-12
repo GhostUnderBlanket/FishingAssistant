@@ -40,6 +40,17 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         this.Log(transition);
     }
 
+    public void ToggleTreasureTargetingCurrent()
+    {
+        ScreenContext screen = this.screens.Value;
+        bool enabled = screen.Session.ToggleTreasureTargeting();
+        if (!enabled)
+            screen.IsPursuingTreasure = false;
+        monitor.Log(
+            $"Treasure targeting {(enabled ? "enabled" : "disabled")} for local screen {Context.ScreenId}.",
+            LogLevel.Info);
+    }
+
     public void ResetCurrent(AutomationTransitionReason reason)
     {
         ScreenContext screen = this.screens.Value;
@@ -48,6 +59,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         screen.ReadyTicks = 0;
         screen.AutomaticCastInProgress = false;
         screen.HookAttemptedForNibble = false;
+        screen.IsPursuingTreasure = false;
         this.Log(screen.Session.Reset(reason));
     }
 
@@ -155,13 +167,26 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
     {
         BobberBarAdapter? bar = BobberBarAdapter.ForCurrentScreen();
         if (bar is null)
+        {
+            screen.IsPursuingTreasure = false;
             return;
+        }
 
         ModConfig config = getConfig();
+        bool assistanceActive = screen.Session.IsEnabled
+            && config.AutoPlayMiniGame
+            && screen.Session.State == AutomationState.Minigame;
+        TreasureTargetDecision target = TreasureTargetPolicy.Decide(bar.ReadTreasureConditions(
+            assistanceActive,
+            screen.Session.IsTreasureTargetingEnabled,
+            screen.IsPursuingTreasure
+        ));
+        screen.IsPursuingTreasure = target.IsTargetingTreasure;
         MinigameControlDecision decision = MinigameControlPolicy.Decide(bar.ReadConditions(
             screen.Session.IsEnabled,
             config.AutoPlayMiniGame,
-            screen.Session.State
+            screen.Session.State,
+            target.Position
         ));
         if (decision.ShouldControl)
             bar.SetBarSpeed(decision.BarSpeed);
@@ -180,5 +205,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         public bool AutomaticCastInProgress { get; set; }
 
         public bool HookAttemptedForNibble { get; set; }
+
+        public bool IsPursuingTreasure { get; set; }
     }
 }

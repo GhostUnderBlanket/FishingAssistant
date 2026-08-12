@@ -28,6 +28,7 @@ Per-screen runtime sessions can be toggled independently, observe the current fi
 phase, display it in a small HUD, automatically cast toward validated fishing water
 after a configurable delay, hook a fish when a real nibble occurs, and steer the vanilla
 fishing bar toward the fish. Other gameplay automation stages are not connected yet.
+Treasure targeting is a per-screen runtime toggle and defaults to off.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

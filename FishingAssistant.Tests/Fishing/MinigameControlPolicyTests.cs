@@ -11,7 +11,7 @@ public sealed class MinigameControlPolicyTests
     [Fact]
     public void Decide_MovesBarUpWhenFishIsAboveCenter()
     {
-        MinigameControlConditions conditions = ActiveConditions with { FishPosition = 50f };
+        MinigameControlConditions conditions = ActiveConditions with { TargetPosition = 50f };
 
         MinigameControlDecision decision = MinigameControlPolicy.Decide(conditions);
 
@@ -22,7 +22,7 @@ public sealed class MinigameControlPolicyTests
     [Fact]
     public void Decide_MovesBarDownWhenFishIsBelowCenter()
     {
-        MinigameControlConditions conditions = ActiveConditions with { FishPosition = 400f };
+        MinigameControlConditions conditions = ActiveConditions with { TargetPosition = 400f };
 
         MinigameControlDecision decision = MinigameControlPolicy.Decide(conditions);
 
@@ -35,7 +35,7 @@ public sealed class MinigameControlPolicyTests
     {
         MinigameControlConditions conditions = ActiveConditions with
         {
-            FishPosition = 200f,
+            TargetPosition = 200f,
             BarPosition = 180f,
             BarHeight = 100
         };
@@ -73,7 +73,7 @@ public sealed class MinigameControlPolicyTests
     {
         MinigameControlConditions conditions = ActiveConditions with
         {
-            FishPosition = 548f,
+            TargetPosition = 548f,
             BarPosition = 0f,
             BarHeight = 20
         };

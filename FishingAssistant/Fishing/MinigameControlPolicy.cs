@@ -7,7 +7,7 @@ internal sealed record MinigameControlConditions(
     bool AutoPlayEnabled,
     AutomationState State,
     bool IsActive,
-    float FishPosition,
+    float TargetPosition,
     float BarPosition,
     int BarHeight);
 
@@ -36,7 +36,7 @@ internal static class MinigameControlPolicy
             return MinigameControlDecision.Inactive;
         }
 
-        float targetCenter = conditions.FishPosition + FishCenterOffset;
+        float targetCenter = conditions.TargetPosition + FishCenterOffset;
         float currentCenter = conditions.BarPosition + conditions.BarHeight / 2f;
         float error = targetCenter - currentCenter;
         float speed = Math.Abs(error) <= DeadZone

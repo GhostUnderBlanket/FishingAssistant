@@ -16,7 +16,9 @@ internal sealed class AutomationHudRenderer(Func<string, string> translate)
 
         string enabled = translate(session.IsEnabled ? "hud.enabled" : "hud.disabled");
         string state = translate($"hud.state.{session.State.ToString().ToLowerInvariant()}");
-        string text = $"{translate("hud.title")}: {enabled} — {state}";
+        string treasure = translate(session.IsTreasureTargetingEnabled ? "hud.on" : "hud.off");
+        string text = $"{translate("hud.title")}: {enabled} | {state} | " +
+                      $"{translate("hud.treasure")}: {treasure}";
         Vector2 textSize = Game1.smallFont.MeasureString(text);
         int width = (int)textSize.X + 28;
         int height = Game1.smallFont.LineSpacing + 20;

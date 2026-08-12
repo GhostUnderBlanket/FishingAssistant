@@ -72,6 +72,10 @@ narrow adapter and writes only its vertical bar speed. A pure proportional contr
 targets the fish while vanilla code retains ownership of fish movement, catch progress,
 treasure, perfect status, and the final catch result.
 
+Treasure targeting is an unsaved per-screen runtime preference. Its pure policy starts
+targeting only after fish progress is high, uses hysteresis while pursuing the chest,
+and returns to the fish before catch progress reaches the failure boundary.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:

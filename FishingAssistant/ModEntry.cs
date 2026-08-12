@@ -93,6 +93,13 @@ internal sealed class ModEntry : Mod
             return;
         }
 
+        if (Context.IsWorldReady && this.configManager!.Active.CatchTreasureButton.JustPressed())
+        {
+            this.Helper.Input.SuppressActiveKeybinds(this.configManager.Active.CatchTreasureButton);
+            this.automationRuntime!.ToggleTreasureTargetingCurrent();
+            return;
+        }
+
         if (!this.configManager!.Active.OpenConfigMenuButton.JustPressed())
             return;
 
