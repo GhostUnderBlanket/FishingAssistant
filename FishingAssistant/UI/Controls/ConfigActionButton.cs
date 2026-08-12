@@ -42,12 +42,13 @@ internal sealed class ConfigActionButton : IConfigControl
         if (highlighted)
             batch.Draw(Game1.staminaRect, bounds, Color.Wheat * 0.28f);
 
-        int buttonWidth = Math.Clamp(bounds.Width * 2 / 5, 112, 260);
+        int buttonWidth = MenuVisualMetrics.GetControlWidth(bounds.Width);
+        int buttonHeight = MenuVisualMetrics.GetControlHeight(bounds.Height);
         Rectangle buttonBounds = new(
             bounds.Right - buttonWidth,
-            bounds.Center.Y - Math.Min(44, Math.Max(1, bounds.Height - 8)) / 2,
+            bounds.Center.Y - buttonHeight / 2,
             buttonWidth,
-            Math.Min(44, Math.Max(1, bounds.Height - 8))
+            buttonHeight
         );
         string label = MenuText.Fit(this.Component.name, Game1.smallFont,
             buttonBounds.Left - bounds.Left - 20);

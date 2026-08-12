@@ -474,10 +474,10 @@ internal sealed class JunkListMenu : IClickableMenu
             tint);
         if (button.myID is ScrollUpId or ScrollDownId)
         {
-            Rectangle source = new(421, 459, 11, 12);
+            Rectangle source = MenuVisualMetrics.ArrowSource;
             float rotation = button.myID == ScrollUpId ? 0f : MathF.PI;
             batch.Draw(Game1.mouseCursors, button.bounds.Center.ToVector2(), source, Color.White,
-                rotation, new Vector2(source.Width / 2f, source.Height / 2f), 2f,
+                rotation, new Vector2(source.Width / 2f, source.Height / 2f), MenuVisualMetrics.ArrowScale,
                 SpriteEffects.None, 0.9f);
             return;
         }

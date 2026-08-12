@@ -47,3 +47,5 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the left arrow rendering as a heart in Stardew Valley's dialogue font.
 - The configuration-menu title now has a game-style backing panel for contrast against
   dark menu backgrounds.
+- Action controls now match selector height, and category, scrollbar, and picker arrows
+  share one consistent visual scale.

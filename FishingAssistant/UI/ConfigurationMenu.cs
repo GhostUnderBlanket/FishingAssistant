@@ -833,12 +833,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
         if (rotation is null)
             return false;
 
-        Rectangle source = new(421, 459, 11, 12);
+        Rectangle source = MenuVisualMetrics.ArrowSource;
         float scale = Math.Min(
-            (button.bounds.Width - 12f) / source.Width,
-            (button.bounds.Height - 12f) / source.Height
-        );
-        scale = Math.Max(1f, Math.Min(Game1.pixelZoom, scale));
+            MenuVisualMetrics.ArrowScale,
+            Math.Min((button.bounds.Width - 8f) / source.Width,
+                (button.bounds.Height - 8f) / source.Height));
+        scale = Math.Max(1f, scale);
 
         batch.Draw(
             Game1.mouseCursors,

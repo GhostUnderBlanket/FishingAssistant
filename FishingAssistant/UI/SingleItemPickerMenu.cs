@@ -424,10 +424,10 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
             highlighted ? Color.Wheat : Color.White);
         if (button.myID is ScrollUpId or ScrollDownId)
         {
-            Rectangle source = new(421, 459, 11, 12);
+            Rectangle source = MenuVisualMetrics.ArrowSource;
             batch.Draw(Game1.mouseCursors, button.bounds.Center.ToVector2(), source, Color.White,
                 button.myID == ScrollUpId ? 0f : MathF.PI,
-                new Vector2(source.Width / 2f, source.Height / 2f), 2f,
+                new Vector2(source.Width / 2f, source.Height / 2f), MenuVisualMetrics.ArrowScale,
                 SpriteEffects.None, 0.9f);
             return;
         }

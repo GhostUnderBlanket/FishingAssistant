@@ -47,8 +47,8 @@ internal sealed class ConfigItemPicker : IConfigControl
         if (highlighted)
             batch.Draw(Game1.staminaRect, bounds, Color.Wheat * 0.28f);
 
-        int pickerWidth = Math.Clamp(bounds.Width * 43 / 100, 152, 320);
-        int pickerHeight = Math.Min(48, Math.Max(1, bounds.Height - 4));
+        int pickerWidth = MenuVisualMetrics.GetControlWidth(bounds.Width);
+        int pickerHeight = MenuVisualMetrics.GetControlHeight(bounds.Height);
         Rectangle pickerBounds = new(bounds.Right - pickerWidth, bounds.Center.Y - pickerHeight / 2,
             pickerWidth, pickerHeight);
         string label = MenuText.Fit(this.Component.name, Game1.smallFont,

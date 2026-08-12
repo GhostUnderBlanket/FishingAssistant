@@ -7,7 +7,6 @@ namespace FishingAssistant.UI.Controls;
 
 internal sealed class ConfigValueSelector<T> : IConfigControl
 {
-    private static readonly Rectangle ArrowSource = new(421, 459, 11, 12);
     private readonly Func<T> getValue;
     private readonly Action<T> setValue;
     private readonly Func<T, int, T> adjustValue;
@@ -81,15 +80,16 @@ internal sealed class ConfigValueSelector<T> : IConfigControl
     private Rectangle GetValueBounds()
     {
         Rectangle bounds = this.Component.bounds;
-        int width = Math.Clamp(bounds.Width * 43 / 100, 152, 320);
-        int height = Math.Min(48, Math.Max(1, bounds.Height - 4));
+        int width = MenuVisualMetrics.GetControlWidth(bounds.Width);
+        int height = MenuVisualMetrics.GetControlHeight(bounds.Height);
         return new Rectangle(bounds.Right - width, bounds.Center.Y - height / 2, width, height);
     }
 
     private void DrawArrow(SpriteBatch batch, Vector2 position, float rotation)
     {
-        batch.Draw(Game1.mouseCursors, position, ArrowSource, Color.White, rotation,
-            new Vector2(ArrowSource.Width / 2f, ArrowSource.Height / 2f), 1.75f,
+        Rectangle source = MenuVisualMetrics.ArrowSource;
+        batch.Draw(Game1.mouseCursors, position, source, Color.White, rotation,
+            new Vector2(source.Width / 2f, source.Height / 2f), MenuVisualMetrics.ArrowScale,
             SpriteEffects.None, 0.9f);
     }
 }

@@ -82,13 +82,15 @@ internal sealed class ConfigKeybind : IConfigControl
             batch.Draw(Game1.staminaRect, bounds, Color.Wheat * 0.28f);
 
         string value = this.IsListening ? this.listeningText : this.getValue().ToString();
-        int valueWidth = Math.Clamp(bounds.Width * 2 / 5, 112, 260);
+        int valueWidth = MenuVisualMetrics.GetControlWidth(bounds.Width);
+        int valueHeight = MenuVisualMetrics.GetControlHeight(bounds.Height);
         string label = MenuText.Fit(this.Component.name, Game1.smallFont, bounds.Width - valueWidth - 20);
         string fittedValue = MenuText.Fit(value, Game1.smallFont, valueWidth - 20);
         Vector2 labelPosition = new(bounds.X + 8, bounds.Center.Y - Game1.smallFont.LineSpacing / 2f);
         Utility.drawTextWithShadow(batch, label, Game1.smallFont, labelPosition, Game1.textColor);
 
-        Rectangle valueBounds = new(bounds.Right - valueWidth, bounds.Center.Y - 22, valueWidth, 44);
+        Rectangle valueBounds = new(bounds.Right - valueWidth, bounds.Center.Y - valueHeight / 2,
+            valueWidth, valueHeight);
         IClickableMenu.drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
             valueBounds.X, valueBounds.Y, valueBounds.Width, valueBounds.Height,
             this.IsListening ? Color.Wheat : Color.White);
