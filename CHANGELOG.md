@@ -38,6 +38,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Replaced price-threshold junk classification with explicit visual item selection.
 - Replaced bait, tackle, and starter-rod cycling controls with searchable visual item
   pickers, and increased spacing in the remaining value selectors.
+- New configurations and Reset Defaults now classify the five standard fishing-trash
+  items as junk: Trash, Driftwood, Broken Glasses, Broken CD, and Soggy Newspaper.
 
 ### Fixed
 

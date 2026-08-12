@@ -7,6 +7,15 @@ internal sealed class ModConfig
 {
     internal const int CurrentVersion = 4;
 
+    internal static readonly IReadOnlyList<string> DefaultJunkList =
+    [
+        "(O)168",
+        "(O)169",
+        "(O)170",
+        "(O)171",
+        "(O)172"
+    ];
+
     public int ConfigVersion { get; set; } = CurrentVersion;
 
     public KeybindList EnableAutomationButton { get; set; } = new(SButton.F5);
@@ -33,7 +42,7 @@ internal sealed class ModConfig
 
     public bool AllowTrashFish { get; set; }
 
-    public List<string> JunkList { get; set; } = [];
+    public List<string> JunkList { get; set; } = [.. DefaultJunkList];
 
     public List<string> JunkIgnoreList { get; set; } = [];
 

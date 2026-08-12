@@ -19,7 +19,7 @@ public sealed class ConfigDefaultsTests
         Assert.True(config.AutoClosePopup);
         Assert.True(config.AutoLootTreasure);
         Assert.False(config.AutoTrashJunk);
-        Assert.Empty(config.JunkList);
+        Assert.Equal(["(O)168", "(O)169", "(O)170", "(O)171", "(O)172"], config.JunkList);
         Assert.Empty(config.JunkIgnoreList);
         Assert.False(config.AutoEatFood);
         Assert.False(config.SpawnBaitIfDontHave);
