@@ -63,6 +63,23 @@ internal sealed class BobberBarAdapter(BobberBar bar)
         );
     }
 
+    public SkipMinigameConditions ReadSkipMinigameConditions(SkipMinigameBehavior behavior)
+    {
+        string? qualifiedFishId = ItemRegistry.GetMetadata(bar.whichFish)?.QualifiedItemId;
+        bool wasCaught = qualifiedFishId is not null
+            && Game1.player.fishCaught.TryGetValue(qualifiedFishId, out int[]? catchData)
+            && catchData is { Length: > 0 }
+            && catchData[0] > 0;
+
+        return new SkipMinigameConditions(
+            behavior,
+            !bar.fadeIn && !bar.fadeOut && !bar.handledFishResult && bar.distanceFromCatching < 1f,
+            wasCaught,
+            Game1.isFestival(),
+            Game1.currentMinigame is FishingGame
+        );
+    }
+
     public void ApplyTreasureChance(TreasureChanceDecision decision)
     {
         bar.treasure = decision.HasTreasure;
@@ -72,5 +89,13 @@ internal sealed class BobberBarAdapter(BobberBar bar)
     public void SetBarSpeed(float speed)
     {
         bar.bobberBarSpeed = speed;
+    }
+
+    public void CompleteMinigame(bool collectTreasure)
+    {
+        if (bar.treasure && collectTreasure)
+            bar.treasureCaught = true;
+
+        bar.distanceFromCatching = 1f;
     }
 }

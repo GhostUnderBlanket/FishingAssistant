@@ -16,6 +16,7 @@ Status recorded on 2026-08-12:
 - Automatic catch-popup closing has not been tested in-game yet.
 - Instant fish bites have not been tested in-game yet.
 - Automatic fishing-treasure collection has not been tested in-game yet.
+- Fishing-minigame skipping has not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -44,6 +45,9 @@ release-matrix scenarios are completed.
   special no-slot items, and multiple rewards. For a full inventory, separately verify
   Stop leaves rewards in the menu, Drop places them on the ground, and Discard removes
   them only when explicitly selected; all three should disable automation.
+- Verify `SkipAll` and `SkipOnlyCaught` with uncaught and previously caught fish,
+  Challenge Bait, legendary fish, fish ponds, treasure targeting on/off, and supported
+  festival minigames. Confirm `Off` preserves the normal minigame.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

@@ -56,6 +56,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   normal nibble, hook, fish selection, and festival-minigame flow.
 - Per-screen automatic fishing-treasure collection with partial-stack support and
   explicit stop, ground-drop, or discard handling when the inventory is full.
+- Optional per-screen fishing-minigame skipping for every catch or only previously
+  caught species, while vanilla resolves rewards, Challenge Bait, and festival scores.
 
 ### Changed
 

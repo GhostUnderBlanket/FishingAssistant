@@ -36,6 +36,8 @@ The optional instant-bite rule is functional in normal fishing and supported fis
 festival minigames.
 Fishing treasure is collected into the correct local player's inventory when enabled;
 full-inventory handling follows the configured stop, drop, or discard policy.
+The fishing minigame can optionally be skipped for all fish or only species previously
+caught by the current local player.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

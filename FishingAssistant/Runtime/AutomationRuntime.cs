@@ -247,6 +247,9 @@ internal sealed class AutomationRuntime(
                 LogLevel.Trace);
         }
 
+        if (this.TrySkipMinigame(screen, bar, config))
+            return;
+
         bool assistanceActive = screen.Session.IsEnabled
             && config.AutoPlayMiniGame
             && screen.Session.State == AutomationState.Minigame;
@@ -264,6 +267,22 @@ internal sealed class AutomationRuntime(
         ));
         if (decision.ShouldControl)
             bar.SetBarSpeed(decision.BarSpeed);
+    }
+
+    private bool TrySkipMinigame(ScreenContext screen, BobberBarAdapter bar, ModConfig config)
+    {
+        SkipMinigameDecision decision = SkipMinigamePolicy.Decide(
+            bar.ReadSkipMinigameConditions(config.SkipFishingMiniGame));
+        if (decision != SkipMinigameDecision.Skip)
+            return false;
+
+        bar.CompleteMinigame(screen.Session.IsTreasureTargetingEnabled);
+        screen.IsPursuingTreasure = false;
+        monitor.Log(
+            $"Skipped the fishing minigame for local screen {Context.ScreenId}; treasure targeting was " +
+            $"{(screen.Session.IsTreasureTargetingEnabled ? "enabled" : "disabled")}.",
+            LogLevel.Trace);
+        return true;
     }
 
     private void UpdateAutomaticTreasureLoot(ScreenContext screen)
