@@ -147,5 +147,19 @@
   "config.junk_picker.state_ignore": "Ignored",
   "config.junk_picker.empty": "No matching items found.",
   "config.status.defaults_loaded": "Defaults loaded. Select Apply to save them.",
-  "config.status.save_failed": "The configuration could not be saved. Check the SMAPI log."
+  "config.status.save_failed": "The configuration could not be saved. Check the SMAPI log.",
+  "hud.title": "Fishing Assistant",
+  "hud.enabled": "Enabled",
+  "hud.disabled": "Disabled",
+  "hud.state.idle": "Idle",
+  "hud.state.ready": "Ready",
+  "hud.state.casting": "Casting",
+  "hud.state.waitingforbite": "Waiting for bite",
+  "hud.state.hooking": "Hooking",
+  "hud.state.minigame": "Minigame",
+  "hud.state.catchresult": "Catch result",
+  "hud.state.treasuremenu": "Treasure",
+  "hud.state.cooldown": "Cooldown",
+  "hud.state.paused": "Paused",
+  "hud.state.faulted": "Faulted"
 }

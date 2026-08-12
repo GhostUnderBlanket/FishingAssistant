@@ -1,20 +1,20 @@
 # Configuration
 
 Fishing Assistant 3 stores its settings in SMAPI's standard `config.json`. The current
-schema version is `3`. Saved configuration, the active validated configuration, and an
+schema version is `4`. Saved configuration, the active validated configuration, and an
 editable menu draft are treated as separate objects.
 
 ## Compatibility and migration
 
-The version 3 schema keeps the Fishing Assistant 2 property names where their meaning
+The current schema keeps the Fishing Assistant 2 property names where their meaning
 is still supported. Legacy enum names remain JSON strings, while single-button legacy
 keybinds load into SMAPI `KeybindList` values. A version 2 file without `ConfigVersion`
-is identified as legacy, normalized, assigned version 3, and written back through
+is identified as legacy, normalized, assigned the current version, and written back through
 SMAPI.
 
 Unknown top-level properties are reported in the SMAPI log before a migrated file is
 written. They are not silently treated as supported options. A file whose
-`ConfigVersion` is newer than 3 is loaded read-only: its schema version is not
+`ConfigVersion` is newer than 4 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
@@ -30,10 +30,10 @@ so one obsolete value doesn't prevent the remaining user choices from loading. I
 JSON document itself can't be read, the mod uses safe defaults for that session and
 leaves the original file untouched for manual recovery.
 
-After SMAPI raises `GameLaunched`, item preferences and the junk ignore list are
+After SMAPI raises `GameLaunched`, item preferences and both junk lists are
 resolved through Stardew Valley's item registry. Existing IDs are converted to their
 qualified form. Missing IDs or items in an incompatible category fall back to `Any` or
-`None`, while missing junk-ignore IDs are removed. Delaying this pass until
+`None`, while missing junk-list IDs are removed. Delaying this pass until
 `GameLaunched` lets content packs from other mods register their item data first.
 
 Dependent settings are preserved but reported when inactive. For example, spawning
@@ -65,11 +65,13 @@ second local split-screen player applies a newer draft first, the stale menu is 
 close and reopen instead of silently overwriting the other player's changes.
 
 The menu opens through `OpenConfigMenuButton` or the `fa_config` SMAPI console command.
-The console command remains available while the default menu keybind is unbound. More
-Item selectors are populated from the game registry after `GameLaunched`, so loaded
+The console command remains available while the default menu keybind is unbound. Item
+pickers are populated from the game registry after `GameLaunched`, so loaded
 content-pack bait and tackle can appear by localized name. The controls category can
 capture keyboard, mouse, controller, and multi-button keybinds through SMAPI. Escape or
 controller B cancels capture; Backspace or Delete clears a binding.
 
-The junk-ignore list editor is still pending, so the menu is not yet a complete
-replacement for editing every setting in `config.json`.
+The combined junk/junk-ignore editor and the bait, tackle, and starter-rod pickers show
+localized item names and sprites, support search and scrolling, and preserve the same
+Apply/Cancel draft behavior. Every current setting can be edited without manually
+changing `config.json`.

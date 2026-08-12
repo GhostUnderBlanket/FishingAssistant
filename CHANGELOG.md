@@ -32,6 +32,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   through SMAPI while preserving draft/apply/cancel behavior.
 - A combined visual junk-list and junk-ignore editor with item icons, localized names,
   search, scrolling, and mouse, keyboard, and controller selection.
+- Per-screen automation sessions, a tested fishing-state observer, lifecycle recovery,
+  runtime toggle keybind, and a compact state HUD. This slice observes state only and
+  does not automate gameplay input yet.
 
 ### Changed
 

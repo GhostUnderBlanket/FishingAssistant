@@ -56,6 +56,10 @@ Mutable local-screen state will use SMAPI's split-screen utilities. Static mutab
 is prohibited. A feature may touch shared-world state only after its authority and
 multiplayer behavior are documented.
 
+The first runtime slice stores an `AutomationSession` in `PerScreen<T>`. It observes
+only the current local player's tool and menu state, and renders only into that local
+screen's HUD. It does not send multiplayer messages or mutate shared-world state.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:
@@ -70,6 +74,10 @@ Idle -> Ready -> Casting -> WaitingForBite -> Hooking -> Minigame
 `Paused` and `Faulted` are recoverable side states. Tool changes, warps, menu conflicts,
 save unload, return to title, disconnect, and local-player removal must return the
 session to a safe state and release any temporary changes.
+
+Observed game state may occasionally skip an expected phase between update ticks. The
+state machine records those jumps as recoveries and adopts the observed safe state;
+future automation actions must still require a legal state before mutating the game.
 
 ## Configuration
 

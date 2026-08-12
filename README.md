@@ -21,9 +21,10 @@ criteria.
 ## Current status
 
 The mod currently contains the SMAPI project scaffold, a typed and validated
-configuration layer, and the first vertical slice of its custom configuration menu.
-The menu can edit boolean, enum, numeric, item-preference, and keybind settings through
-a safe draft. The junk-ignore list editor and gameplay automation are not implemented
+configuration layer, a complete first pass of its custom configuration menu, and the
+first runtime-state vertical slice. The menu can edit every setting through a safe
+draft. Per-screen runtime sessions can be toggled independently, observe the current
+fishing phase, and display it in a small HUD; gameplay input automation is not connected
 yet. Development happens incrementally on the `development` branch.
 
 ## Requirements
