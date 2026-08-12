@@ -30,6 +30,8 @@
   "config.option.auto_trash.description": "Remove newly acquired items that match the configured junk rules.",
   "config.option.junk_price": "Maximum junk value",
   "config.option.junk_price.description": "Items worth this amount or less can be treated as junk when automatic trashing is enabled.",
+  "config.option.junk_ignore_list": "Items never treated as junk",
+  "config.option.junk_ignore_list.description": "Choose items visually which automatic junk handling must always keep.",
   "config.option.trash_fish": "Allow fish to be treated as junk",
   "config.option.trash_fish.description": "Let the junk rules include fish at or below the configured value threshold.",
   "config.option.auto_eat": "Automatically eat food",
@@ -137,6 +139,11 @@
   "config.action.apply": "Apply",
   "config.action.reset": "Defaults",
   "config.action.cancel": "Cancel",
+  "config.action.done": "Done",
+  "config.junk_picker.title": "Items never treated as junk",
+  "config.junk_picker.search": "Search items...",
+  "config.junk_picker.selected": "{0} selected",
+  "config.junk_picker.empty": "No matching items found.",
   "config.status.defaults_loaded": "Defaults loaded. Select Apply to save them.",
   "config.status.save_failed": "The configuration could not be saved. Check the SMAPI log."
 }

@@ -51,4 +51,17 @@ internal sealed class GameItemCatalog : IItemCatalog, IConfigItemSource
             .ThenBy(item => item.QualifiedItemId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
+
+    public IReadOnlyList<ConfigItem> GetAllObjects()
+    {
+        return Game1.objectData.Keys
+            .Select(key => ItemRegistry.ManuallyQualifyItemId(key, "(O)"))
+            .Select(this.Find)
+            .Where(item => item is not null)
+            .Select(item => item!)
+            .DistinctBy(item => item.QualifiedItemId, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(item => item.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(item => item.QualifiedItemId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
 }

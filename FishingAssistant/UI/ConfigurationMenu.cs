@@ -493,6 +493,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddNumberDefinition("junk_price", () => this.session.Draft.JunkHighestPrice,
                     value => this.session.Draft.JunkHighestPrice = Convert.ToInt32(value), 0, 1_000_000, 10,
                     value => $"{value:0}g");
+                this.AddActionDefinition("junk_ignore_list",
+                    () => string.Format(this.translate("config.junk_picker.selected"),
+                        this.session.Draft.JunkIgnoreList.Count),
+                    () => this.SetChildMenu(new JunkIgnoreMenu(
+                        this.session.Draft.JunkIgnoreList,
+                        this.itemSource,
+                        this.translate)));
                 this.AddDefinition("trash_fish", () => this.session.Draft.AllowTrashFish,
                     value => this.session.Draft.AllowTrashFish = value);
                 this.AddDefinition("auto_eat", () => this.session.Draft.AutoEatFood,
@@ -692,6 +699,18 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.translate("config.keybind.listening"),
             getValue,
             setValue
+        )));
+    }
+
+    private void AddActionDefinition(string key, Func<string> getButtonLabel, Action activate)
+    {
+        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigActionButton(
+            id,
+            bounds,
+            this.translate($"config.option.{key}"),
+            this.translate($"config.option.{key}.description"),
+            getButtonLabel,
+            activate
         )));
     }
 

@@ -30,6 +30,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   data, including items registered by other mods.
 - A keybind editor which captures keyboard, mouse, controller, and multi-button input
   through SMAPI while preserving draft/apply/cancel behavior.
+- A visual junk-ignore editor with item icons, localized names, search, scrolling, and
+  mouse, keyboard, and controller selection.
 
 ### Fixed
 

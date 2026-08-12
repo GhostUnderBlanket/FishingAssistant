@@ -18,4 +18,6 @@ internal interface IItemCatalog
 internal interface IConfigItemSource
 {
     IReadOnlyList<ConfigItem> GetAll(ConfigItemKind kind);
+
+    IReadOnlyList<ConfigItem> GetAllObjects();
 }
