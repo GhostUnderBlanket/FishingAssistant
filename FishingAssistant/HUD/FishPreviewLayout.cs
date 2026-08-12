@@ -5,7 +5,9 @@ namespace FishingAssistant.HUD;
 internal static class FishPreviewLayout
 {
     public const int EdgeMargin = 12;
-    public const int AnchorGap = 20;
+    // BobberBar.width covers its logical menu area, while the vanilla frame artwork
+    // extends roughly another tile beyond it. Keep the preview clear of that artwork.
+    public const int AnchorGap = 64;
     public const int MinimumWidth = 112;
 
     public static Rectangle Place(Rectangle viewport, Rectangle anchor, Point desiredSize)

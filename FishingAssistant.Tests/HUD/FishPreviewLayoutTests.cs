@@ -13,7 +13,7 @@ public sealed class FishPreviewLayoutTests
             new Rectangle(500, 100, 96, 636),
             new Point(180, 120));
 
-        Assert.Equal(616, result.X);
+        Assert.Equal(660, result.X);
         Assert.Equal(100, result.Y);
     }
 
@@ -25,7 +25,7 @@ public sealed class FishPreviewLayoutTests
             new Rectangle(680, 80, 96, 500),
             new Point(180, 120));
 
-        Assert.Equal(480, result.X);
+        Assert.Equal(436, result.X);
     }
 
     [Fact]
