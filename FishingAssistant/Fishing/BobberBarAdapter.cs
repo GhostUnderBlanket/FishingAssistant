@@ -1,5 +1,6 @@
 using FishingAssistant.Configuration;
 using FishingAssistant.Runtime;
+using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Minigames;
@@ -105,6 +106,21 @@ internal sealed class BobberBarAdapter(BobberBar bar)
     {
         bar.treasure = decision.HasTreasure;
         bar.goldenTreasure = decision.IsGoldenTreasure;
+    }
+
+    public void ApplyLiveCatchModifiers(ModConfig config)
+    {
+        if (Game1.isFestival() || Game1.currentMinigame is FishingGame)
+            return;
+
+        if (config.AlwaysPerfect)
+        {
+            bar.perfect = true;
+            bar.fishShake = Vector2.Zero;
+        }
+
+        if (config.AlwaysMaxFishSize && bar.maxFishSize > 0)
+            bar.fishSize = bar.maxFishSize;
     }
 
     public void SetBarSpeed(float speed)

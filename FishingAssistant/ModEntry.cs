@@ -1,9 +1,11 @@
 using FishingAssistant.Configuration;
 using FishingAssistant.Debugging;
 using FishingAssistant.Equipment;
+using FishingAssistant.Fishing;
 using FishingAssistant.HUD;
 using FishingAssistant.Runtime;
 using FishingAssistant.UI;
+using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -38,6 +40,10 @@ internal sealed class ModEntry : Mod
         this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
         this.rodEnchantments = new RodEnchantmentService(this.Monitor, key => helper.Translation.Get(key));
         ConfigValidationReport report = this.configManager.Load();
+        CatchResultPatch.Apply(
+            new Harmony(this.ModManifest.UniqueID),
+            () => this.configManager.Active,
+            this.Monitor);
 
         this.Monitor.Log(
             $"Fishing Assistant 3 loaded with {report.Corrections.Count} configuration migration(s) or correction(s) " +

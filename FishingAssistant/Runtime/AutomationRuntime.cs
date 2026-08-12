@@ -279,6 +279,7 @@ internal sealed class AutomationRuntime(
         }
 
         ModConfig config = getConfig();
+        bar.ApplyLiveCatchModifiers(config);
         if (!ReferenceEquals(screen.ConfiguredBobberBar, bar.Identity))
         {
             FishDifficultyDecision difficulty = bar.ApplyDifficulty(config);

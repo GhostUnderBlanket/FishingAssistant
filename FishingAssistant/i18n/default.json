@@ -66,7 +66,7 @@
   "config.option.fish_amount": "Preferred fish count",
   "config.option.fish_amount.description": "The preferred number of fish produced for catches which support multiple fish.",
   "config.option.fish_quality": "Preferred fish quality",
-  "config.option.fish_quality.description": "Override caught fish quality when this assistance option is enabled.",
+  "config.option.fish_quality.description": "Choose the base caught-fish quality. Vanilla perfect-catch quality upgrades still apply.",
   "config.option.always_perfect": "Always count catches as perfect",
   "config.option.always_perfect.description": "Treat completed fishing minigames as perfect catches when supported.",
   "config.option.max_fish_size": "Always use maximum fish size",

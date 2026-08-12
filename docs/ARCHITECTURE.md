@@ -68,9 +68,20 @@ Festival automation is denied by default. The current exception is the game's ac
 buffer so automation cannot act during the minigame countdown.
 
 The initial minigame controller reads the current local screen's `BobberBar` through a
-narrow adapter and writes only its vertical bar speed. A pure proportional controller
-targets the fish while vanilla code retains ownership of fish movement, catch progress,
-treasure, perfect status, and the final catch result.
+narrow adapter. A pure proportional controller writes its vertical bar speed while
+vanilla code retains ownership of fish movement and catch progress. Live perfect and
+maximum-size preferences are reapplied to the local bar so vanilla can render the
+matching result feedback.
+
+Final catch preferences cross one deliberately narrow Harmony boundary at
+`FishingRod.pullFishFromWater`, immediately before vanilla serializes its result net
+event. A pure catch-result policy decides all replacements; the patch only replaces
+method arguments and falls back to the untouched vanilla result if compatibility code
+fails. This boundary is necessary for multi-catch because vanilla computes its count in
+a local variable which has no supported API or public mutable hook. Festival and fish
+pond results remain untouched, as do legendary, Wild Bait, and Challenge Bait count
+rules. Each call runs in the current local screen context and never edits shared fish
+data.
 
 Treasure targeting is an unsaved per-screen runtime preference. Its pure policy starts
 targeting only after fish progress is high, uses hysteresis while pursuing the chest,

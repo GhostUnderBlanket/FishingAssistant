@@ -61,6 +61,11 @@ remote players are connected to prevent synchronized temporary state entering a 
 Fish difficulty can be multiplied and then adjusted by a fixed amount for each local
 fishing minigame. The modifier preserves vanilla setup rules, supports manual and
 automatic fishing, and never edits shared fish data.
+Catch-result preferences now support perfect catches, maximum fish size, base fish
+quality, and ordinary multi-catches during manual or automatic fishing. Festival and
+fish-pond results stay fully vanilla; legendary fish, Wild Bait, and Challenge Bait
+retain their vanilla catch-count rules. A perfect catch can still promote the selected
+base quality using Stardew Valley's normal quality upgrade.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

@@ -25,6 +25,8 @@ Status recorded on 2026-08-12:
 - Low-energy cast protection has not been tested in-game yet.
 - Temporary rod enchantments have not been tested in-game yet.
 - Fish difficulty multiplier and additive adjustment have not been tested in-game yet.
+- Perfect catch, preferred base quality, maximum fish size, and preferred fish count
+  modifiers have not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -89,6 +91,13 @@ release-matrix scenarios are completed.
   manual and automatic fishing, the first-catch tutorial, Blessing of Waters, legendary
   fish, fish ponds, festival minigames, split-screen, host, and farmhand. Confirm each
   local minigame is adjusted once and another player's fish behavior is unaffected.
+- Verify catch-result settings separately and together with manual fishing, automatic
+  play, and skipped minigames. Cover every quality choice (including vanilla quality
+  promotion on a perfect catch), maximum and reduced fish sizes, escaped fish, trash,
+  ordinary counts 1-3, Wild Bait, Challenge Bait losing zero/one/two fish, legendary
+  fish, first catches, fish ponds, and festival fishing. Confirm festival/fish-pond
+  results remain vanilla and only the owning local player's result changes. Repeat as
+  split-screen players, multiplayer host, and farmhand.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.
