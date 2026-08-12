@@ -26,6 +26,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         screen.LastTool = currentTool;
         screen.HasObservedTool = true;
         this.Log(screen.Session.Observe(FishingContextReader.Read(screen.Session.IsEnabled)));
+        this.UpdateInstantBite();
         this.UpdateAutomaticMinigame(screen);
         this.UpdateAutomaticCatchPopup(screen);
         this.UpdateAutomaticHook(screen);
@@ -165,6 +166,21 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
                 monitor.Log($"Hooked a fish automatically for local screen {Context.ScreenId}.", LogLevel.Trace);
                 break;
         }
+    }
+
+    private void UpdateInstantBite()
+    {
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod is null)
+            return;
+
+        InstantBiteDecision decision = InstantBitePolicy.Decide(
+            rod.ReadInstantBiteConditions(getConfig().InstantFishBite));
+        if (decision != InstantBiteDecision.Trigger)
+            return;
+
+        rod.TriggerInstantBite();
+        monitor.Log($"Triggered an instant fish bite for local screen {Context.ScreenId}.", LogLevel.Trace);
     }
 
     private void UpdateAutomaticCatchPopup(ScreenContext screen)

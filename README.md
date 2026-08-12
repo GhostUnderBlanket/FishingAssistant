@@ -32,6 +32,8 @@ The assistant also closes each normal catch popup after a short viewing delay wh
 that automation stage is enabled.
 Treasure targeting is a per-screen runtime toggle and defaults to off.
 Normal and golden treasure chance overrides are functional outside festival minigames.
+The optional instant-bite rule is functional in normal fishing and supported fishing
+festival minigames.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

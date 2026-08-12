@@ -98,6 +98,19 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
         );
     }
 
+    public InstantBiteConditions ReadInstantBiteConditions(bool instantBiteEnabled)
+    {
+        return new InstantBiteConditions(
+            instantBiteEnabled,
+            rod.isFishing,
+            rod.isNibbling,
+            rod.timeUntilFishingBite > 0f,
+            Game1.activeClickableMenu is not null,
+            Game1.isFestival(),
+            this.IsSupportedFishingMinigame
+        );
+    }
+
     public void BeginAutomaticCast(int castPower)
     {
         player.BeginUsingTool();
@@ -121,6 +134,12 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
     public void CloseFishPopup()
     {
         rod.doneHoldingFish(player);
+    }
+
+    public void TriggerInstantBite()
+    {
+        if (rod.timeUntilFishingBite > 0f)
+            rod.timeUntilFishingBite = 0f;
     }
 
     private bool IsCastTargetFishable(int castPower)

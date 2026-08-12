@@ -14,6 +14,7 @@ Status recorded on 2026-08-12:
   yet. `TreasureChance` is now connected to gameplay, so the deferred repeatable test
   can use `Always` to produce a treasure target.
 - Automatic catch-popup closing has not been tested in-game yet.
+- Instant fish bites have not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -35,6 +36,9 @@ release-matrix scenarios are completed.
 - Verify automatic catch-popup closing for normal fish, trash, first catches, records,
   fish ponds, treasure catches, secret notes, and a full inventory. Confirm disabling
   either automation or `AutoClosePopup` leaves the popup under manual control.
+- Verify `InstantFishBite` in normal fishing with F5 automation both enabled and
+  disabled. Confirm the game still chooses the catch normally and that supported
+  festival fishing minigames trigger bites without affecting unrelated festivals.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

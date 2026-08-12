@@ -52,6 +52,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Willy's Fish Shop, while refusing to interrupt active events or minigames.
 - Per-screen automatic catch-popup closing after a short viewing delay, without
   simulating shared keyboard or controller input.
+- Per-screen instant bites which remove the post-cast wait while preserving the game's
+  normal nibble, hook, fish selection, and festival-minigame flow.
 
 ### Changed
 
