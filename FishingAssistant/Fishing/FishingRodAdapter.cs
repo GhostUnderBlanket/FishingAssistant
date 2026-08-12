@@ -69,6 +69,35 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
         );
     }
 
+    public AutoClosePopupConditions ReadAutoClosePopupConditions(
+        bool automationEnabled,
+        bool autoClosePopupEnabled,
+        AutomationState state,
+        bool closeAlreadyAttempted)
+    {
+        bool isPopupVisible = player.IsLocalPlayer
+            && rod.fishCaught
+            && rod.inUse()
+            && rod is
+            {
+                isCasting: false,
+                isTimingCast: false,
+                isReeling: false,
+                pullingOutOfWater: false,
+                showingTreasure: false
+            };
+
+        return new AutoClosePopupConditions(
+            automationEnabled,
+            autoClosePopupEnabled,
+            state,
+            isPopupVisible,
+            Game1.activeClickableMenu is not null,
+            Game1.isFestival(),
+            closeAlreadyAttempted
+        );
+    }
+
     public void BeginAutomaticCast(int castPower)
     {
         player.BeginUsingTool();
@@ -87,6 +116,11 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
         rod.timeUntilFishingNibbleDone = FishingRod.maxTimeToNibble;
         rod.DoFunction(player.currentLocation, (int)rod.bobber.X, (int)rod.bobber.Y, 1, player);
         Rumble.rumble(0.95f, 200f);
+    }
+
+    public void CloseFishPopup()
+    {
+        rod.doneHoldingFish(player);
     }
 
     private bool IsCastTargetFishable(int castPower)

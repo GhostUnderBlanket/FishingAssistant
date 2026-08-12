@@ -50,6 +50,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `Default`, `Always`, and `Never` behavior while festival rules remain vanilla.
 - A per-screen Debug action which warps the local player to the ocean-fishing spot by
   Willy's Fish Shop, while refusing to interrupt active events or minigames.
+- Per-screen automatic catch-popup closing after a short viewing delay, without
+  simulating shared keyboard or controller input.
 
 ### Changed
 

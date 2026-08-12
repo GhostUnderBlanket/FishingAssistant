@@ -27,6 +27,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         screen.HasObservedTool = true;
         this.Log(screen.Session.Observe(FishingContextReader.Read(screen.Session.IsEnabled)));
         this.UpdateAutomaticMinigame(screen);
+        this.UpdateAutomaticCatchPopup(screen);
         this.UpdateAutomaticHook(screen);
         this.UpdateAutomaticCast(screen);
     }
@@ -61,6 +62,8 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         screen.HookAttemptedForNibble = false;
         screen.IsPursuingTreasure = false;
         screen.ConfiguredBobberBar = null;
+        screen.FishPopupVisibleTicks = 0;
+        screen.FishPopupCloseAttempted = false;
         this.Log(screen.Session.Reset(reason));
     }
 
@@ -164,6 +167,42 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         }
     }
 
+    private void UpdateAutomaticCatchPopup(ScreenContext screen)
+    {
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod is null)
+        {
+            screen.FishPopupVisibleTicks = 0;
+            screen.FishPopupCloseAttempted = false;
+            return;
+        }
+
+        ModConfig config = getConfig();
+        AutoClosePopupConditions conditions = rod.ReadAutoClosePopupConditions(
+            screen.Session.IsEnabled,
+            config.AutoClosePopup,
+            screen.Session.State,
+            screen.FishPopupCloseAttempted
+        );
+        switch (AutoClosePopupPolicy.Decide(conditions, screen.FishPopupVisibleTicks))
+        {
+            case AutoClosePopupDecision.Reset:
+                screen.FishPopupVisibleTicks = 0;
+                screen.FishPopupCloseAttempted = false;
+                break;
+            case AutoClosePopupDecision.Wait:
+                if (conditions.IsEligible)
+                    screen.FishPopupVisibleTicks++;
+                break;
+            case AutoClosePopupDecision.Close:
+                screen.FishPopupCloseAttempted = true;
+                rod.CloseFishPopup();
+                monitor.Log($"Closed the catch popup automatically for local screen {Context.ScreenId}.",
+                    LogLevel.Trace);
+                break;
+        }
+    }
+
     private void UpdateAutomaticMinigame(ScreenContext screen)
     {
         BobberBarAdapter? bar = BobberBarAdapter.ForCurrentScreen();
@@ -223,5 +262,9 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         public bool IsPursuingTreasure { get; set; }
 
         public object? ConfiguredBobberBar { get; set; }
+
+        public int FishPopupVisibleTicks { get; set; }
+
+        public bool FishPopupCloseAttempted { get; set; }
     }
 }

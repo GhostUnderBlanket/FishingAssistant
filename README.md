@@ -28,6 +28,8 @@ Per-screen runtime sessions can be toggled independently, observe the current fi
 phase, display it in a small HUD, automatically cast toward validated fishing water
 after a configurable delay, hook a fish when a real nibble occurs, and steer the vanilla
 fishing bar toward the fish. Other gameplay automation stages are not connected yet.
+The assistant also closes each normal catch popup after a short viewing delay when
+that automation stage is enabled.
 Treasure targeting is a per-screen runtime toggle and defaults to off.
 Normal and golden treasure chance overrides are functional outside festival minigames.
 Development happens incrementally on the `development` branch.

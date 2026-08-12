@@ -13,6 +13,7 @@ Status recorded on 2026-08-12:
 - Treasure targeting and the treasure chance overrides have not been tested in-game
   yet. `TreasureChance` is now connected to gameplay, so the deferred repeatable test
   can use `Always` to produce a treasure target.
+- Automatic catch-popup closing has not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -31,6 +32,9 @@ release-matrix scenarios are completed.
   status, start/abandon progress thresholds, completed treasure capture, and fallback
   to fish tracking when no treasure is available. Also verify `Default` and `Never`,
   plus all three golden-treasure modes.
+- Verify automatic catch-popup closing for normal fish, trash, first catches, records,
+  fish ponds, treasure catches, secret notes, and a full inventory. Confirm disabling
+  either automation or `AutoClosePopup` leaves the popup under manual control.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.
