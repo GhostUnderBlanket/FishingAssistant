@@ -571,6 +571,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddNumberDefinition("cast_power", () => this.session.Draft.DefaultCastPower,
                     value => this.session.Draft.DefaultCastPower = Convert.ToInt32(value), 0, 100, 5,
                     value => $"{value:0}%");
+                this.AddNumberDefinition("cast_delay", () => this.session.Draft.AutoCastDelaySeconds,
+                    value => this.session.Draft.AutoCastDelaySeconds = (float)value, 0, 10, 0.25,
+                    value => $"{value:0.##}s");
                 this.AddNumberDefinition("unlock_cast_time", () => this.session.Draft.UnlockCastPowerTime,
                     value => this.session.Draft.UnlockCastPowerTime = (float)value, 0, 3, 0.1,
                     value => $"{value:0.0}s");

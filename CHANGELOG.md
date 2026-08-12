@@ -35,6 +35,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Per-screen automation sessions, a tested fishing-state observer, lifecycle recovery,
   runtime toggle keybind, and a compact state HUD. This slice observes state only and
   does not automate gameplay input yet.
+- Per-screen automatic casting with configurable power and recast delay, stamina and
+  player-state safeguards, festival blocking, and validation of the predicted fishing
+  target before casting.
 
 ### Changed
 

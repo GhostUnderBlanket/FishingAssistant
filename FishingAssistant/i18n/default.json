@@ -83,6 +83,8 @@
   "config.option.golden_treasure_chance.description": "Keep the vanilla chance, always create golden treasure, or prevent it.",
   "config.option.cast_power": "Automatic cast power",
   "config.option.cast_power.description": "The casting power used when the assistant automatically casts the rod.",
+  "config.option.cast_delay": "Automatic recast delay",
+  "config.option.cast_delay.description": "How long the player must remain safely ready before the assistant casts again.",
   "config.option.unlock_cast_time": "Manual cast unlock hold time",
   "config.option.unlock_cast_time.description": "How long the cast button must be held before manual casting can choose its own power.",
   "config.option.starter_rod": "Fishing rod when none is owned",

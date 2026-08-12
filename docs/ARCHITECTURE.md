@@ -56,9 +56,11 @@ Mutable local-screen state will use SMAPI's split-screen utilities. Static mutab
 is prohibited. A feature may touch shared-world state only after its authority and
 multiplayer behavior are documented.
 
-The first runtime slice stores an `AutomationSession` in `PerScreen<T>`. It observes
-only the current local player's tool and menu state, and renders only into that local
-screen's HUD. It does not send multiplayer messages or mutate shared-world state.
+The runtime stores an `AutomationSession` and action timers in `PerScreen<T>`. It
+observes and controls only the current local player's equipped rod, and renders only
+into that local screen's HUD. Automatic casting is a local-player action guarded by a
+pure policy and a narrow rod adapter; it does not send multiplayer messages or mutate
+shared-world state directly.
 
 ## Automation lifecycle
 

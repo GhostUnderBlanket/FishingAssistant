@@ -30,6 +30,7 @@ public sealed class ConfigValidatorTests
             FishDifficultyMultiplier = float.NaN,
             FishDifficultyAdditive = 1_000,
             DefaultCastPower = 101,
+            AutoCastDelaySeconds = 20,
             UnlockCastPowerTime = -1,
             PreferredBait = "  ",
             PreferredTackle = "  (O)686  ",
@@ -50,6 +51,7 @@ public sealed class ConfigValidatorTests
         Assert.Equal(0f, config.FishDifficultyMultiplier);
         Assert.Equal(100, config.FishDifficultyAdditive);
         Assert.Equal(100, config.DefaultCastPower);
+        Assert.Equal(10f, config.AutoCastDelaySeconds);
         Assert.Equal(0f, config.UnlockCastPowerTime);
         Assert.Equal("Any", config.PreferredBait);
         Assert.Equal("(O)686", config.PreferredTackle);

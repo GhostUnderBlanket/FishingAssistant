@@ -53,6 +53,8 @@ internal static class ConfigValidator
             () => config.FishDifficultyAdditive, value => config.FishDifficultyAdditive = value, -100, 100);
         NormalizeRange(report, nameof(config.DefaultCastPower),
             () => config.DefaultCastPower, value => config.DefaultCastPower = value, 0, 100);
+        NormalizeFloatRange(report, nameof(config.AutoCastDelaySeconds),
+            () => config.AutoCastDelaySeconds, value => config.AutoCastDelaySeconds = value, 0f, 10f);
         NormalizeFloatRange(report, nameof(config.UnlockCastPowerTime),
             () => config.UnlockCastPowerTime, value => config.UnlockCastPowerTime = value, 0f, 3f);
 

@@ -1,3 +1,4 @@
+using FishingAssistant.Configuration;
 using FishingAssistant.Fishing;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
@@ -6,7 +7,7 @@ using StardewValley.Tools;
 
 namespace FishingAssistant.Runtime;
 
-internal sealed class AutomationRuntime(IMonitor monitor)
+internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getConfig)
 {
     private readonly PerScreen<ScreenContext> screens = new(() => new ScreenContext());
 
@@ -25,6 +26,7 @@ internal sealed class AutomationRuntime(IMonitor monitor)
         screen.LastTool = currentTool;
         screen.HasObservedTool = true;
         this.Log(screen.Session.Observe(FishingContextReader.Read(screen.Session.IsEnabled)));
+        this.UpdateAutomaticCast(screen);
     }
 
     public void ToggleCurrent()
@@ -41,6 +43,8 @@ internal sealed class AutomationRuntime(IMonitor monitor)
         ScreenContext screen = this.screens.Value;
         screen.HasObservedTool = false;
         screen.LastTool = null;
+        screen.ReadyTicks = 0;
+        screen.AutomaticCastInProgress = false;
         this.Log(screen.Session.Reset(reason));
     }
 
@@ -62,6 +66,55 @@ internal sealed class AutomationRuntime(IMonitor monitor)
             transition.WasRecovery ? LogLevel.Debug : LogLevel.Trace);
     }
 
+    private void UpdateAutomaticCast(ScreenContext screen)
+    {
+        ModConfig config = getConfig();
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod is null)
+        {
+            screen.ReadyTicks = 0;
+            screen.AutomaticCastInProgress = false;
+            return;
+        }
+
+        if (screen.AutomaticCastInProgress)
+        {
+            if (rod.IsTimingCast)
+                rod.SetCastPower(config.DefaultCastPower);
+
+            if (screen.Session.State is AutomationState.Ready or AutomationState.Casting)
+            {
+                screen.ReadyTicks = 0;
+                return;
+            }
+
+            screen.AutomaticCastInProgress = false;
+        }
+
+        AutoCastConditions conditions = rod.ReadAutoCastConditions(
+            screen.Session.IsEnabled,
+            config.AutoCastFishingRod,
+            screen.Session.State,
+            config.DefaultCastPower
+        );
+        int requiredTicks = (int)Math.Ceiling(config.AutoCastDelaySeconds * 60f);
+        switch (AutoCastPolicy.Decide(conditions, screen.ReadyTicks, requiredTicks))
+        {
+            case AutoCastDecision.Reset:
+                screen.ReadyTicks = 0;
+                break;
+            case AutoCastDecision.Wait:
+                screen.ReadyTicks++;
+                break;
+            case AutoCastDecision.Cast:
+                screen.ReadyTicks = 0;
+                screen.AutomaticCastInProgress = true;
+                rod.BeginAutomaticCast(config.DefaultCastPower);
+                monitor.Log($"Started an automatic cast for local screen {Context.ScreenId}.", LogLevel.Trace);
+                break;
+        }
+    }
+
     private sealed class ScreenContext
     {
         public AutomationSession Session { get; } = new();
@@ -69,5 +122,9 @@ internal sealed class AutomationRuntime(IMonitor monitor)
         public Tool? LastTool { get; set; }
 
         public bool HasObservedTool { get; set; }
+
+        public int ReadyTicks { get; set; }
+
+        public bool AutomaticCastInProgress { get; set; }
     }
 }
