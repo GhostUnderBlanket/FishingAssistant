@@ -52,11 +52,13 @@ draft without changing runtime or saved settings.
 ## Custom menu status
 
 The menu can edit boolean settings across Automation, Inventory & Food, Bait & Tackle,
-Catch Assistance, Fish Preview, and Rod Enchantments. It provides Apply, Cancel, and
-Reset Defaults actions, recalculates its bounds when the viewport changes, fits narrow
-split-screen viewports, supports mouse and controller/snappy navigation, and displays
-descriptions as tooltips. Category shoulder navigation and scrolling work without
-requiring a mouse. Reset changes only the draft until Apply is selected.
+Catch Assistance, Fish Preview, and Rod Enchantments. Boolean, enum, and numeric
+settings use reusable controls. Numeric steppers clamp at the same ranges enforced by
+configuration validation. The menu provides Apply, Cancel, and Reset Defaults actions,
+recalculates its bounds when the viewport changes, fits narrow split-screen viewports,
+supports mouse and controller/snappy navigation, and displays descriptions as tooltips.
+Category shoulder navigation and scrolling work without requiring a mouse. Reset
+changes only the draft until Apply is selected.
 
 Each open menu draft carries the configuration revision it was created from. If a
 second local split-screen player applies a newer draft first, the stale menu is asked to
@@ -64,5 +66,5 @@ close and reopen instead of silently overwriting the other player's changes.
 
 The menu opens through `OpenConfigMenuButton` or the `fa_config` SMAPI console command.
 The console command remains available while the default menu keybind is unbound. More
-enum, number, item, and keybind controls will be added incrementally; the menu is not
-yet a complete replacement for editing every setting in `config.json`.
+Item and keybind controls will be added next; the menu is not yet a complete replacement
+for editing every setting in `config.json`.

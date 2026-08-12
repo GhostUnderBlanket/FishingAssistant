@@ -24,6 +24,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Configuration-menu opening through a configurable keybind or the `fa_config` console
   command.
 - Responsive category navigation and scrolling for all boolean configuration settings.
+- Reusable enum selectors and numeric steppers with mouse, keyboard, and controller
+  input for all enum and numeric configuration settings.
 
 ### Fixed
 

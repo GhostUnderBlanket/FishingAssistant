@@ -6,7 +6,7 @@ using StardewValley.Menus;
 
 namespace FishingAssistant.UI.Controls;
 
-internal sealed class ConfigCheckbox
+internal sealed class ConfigCheckbox : IConfigControl
 {
     private readonly Func<bool> getValue;
     private readonly Action<bool> setValue;
@@ -32,11 +32,16 @@ internal sealed class ConfigCheckbox
 
     public string Description { get; }
 
-    public void Toggle()
+    public void ReceiveLeftClick(int x, int y)
     {
         bool value = !this.getValue();
         this.setValue(value);
         Game1.playSound(value ? "drumkit6" : "breathin");
+    }
+
+    public bool Adjust(int direction)
+    {
+        return false;
     }
 
     public void Draw(SpriteBatch batch, bool highlighted)
