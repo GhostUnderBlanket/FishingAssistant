@@ -15,3 +15,7 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A typed version 3 configuration schema with legacy-compatible keys and keybinds.
 - Configuration normalization, migration reporting, editable drafts, and unit tests.
 - Protection against overwriting configuration files created by a newer schema.
+- Game-registry validation for bait, tackle, starter rod, and junk-ignore item IDs.
+- Warnings for dependent settings that are inactive or overridden.
+- Safe field-level recovery for unknown enum names and non-destructive fallback for
+  unreadable configuration files.

@@ -34,4 +34,10 @@ internal sealed class ConfigValidationReport
     {
         this.warnings.Add(new ConfigWarning(property, value?.ToString() ?? "null", reason));
     }
+
+    internal void Append(ConfigValidationReport report)
+    {
+        this.corrections.AddRange(report.Corrections);
+        this.warnings.AddRange(report.Warnings);
+    }
 }

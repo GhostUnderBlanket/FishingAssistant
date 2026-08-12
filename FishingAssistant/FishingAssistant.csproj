@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" PrivateAssets="all" ExcludeAssets="runtime" />
     <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" />
   </ItemGroup>
 </Project>

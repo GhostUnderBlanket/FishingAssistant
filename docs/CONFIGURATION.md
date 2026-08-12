@@ -25,9 +25,22 @@ values, blank item preferences, whitespace, and duplicate ignore-list entries ar
 normalized to deterministic safe values. Every correction and unsupported property is
 reported through SMAPI logging.
 
-Item preference strings currently preserve the legacy values after whitespace
-normalization. Registry-aware item ID validation will be added before gameplay systems
-consume those values.
+Unknown enum names are converted into an invalid sentinel and corrected field by field,
+so one obsolete value doesn't prevent the remaining user choices from loading. If the
+JSON document itself can't be read, the mod uses safe defaults for that session and
+leaves the original file untouched for manual recovery.
+
+After SMAPI raises `GameLaunched`, item preferences and the junk ignore list are
+resolved through Stardew Valley's item registry. Existing IDs are converted to their
+qualified form. Missing IDs or items in an incompatible category fall back to `Any` or
+`None`, while missing junk-ignore IDs are removed. Delaying this pass until
+`GameLaunched` lets content packs from other mods register their item data first.
+
+Dependent settings are preserved but reported when inactive. For example, spawning
+bait has no effect while automatic bait attachment is disabled. Minigame skipping also
+reports that it takes priority over automatic minigame play when both are enabled. The
+custom menu can use these warnings to explain unavailable or overridden options without
+discarding the player's choices.
 
 ## Draft behavior
 

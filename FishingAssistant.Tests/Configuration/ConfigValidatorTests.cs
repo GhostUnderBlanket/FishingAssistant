@@ -74,4 +74,70 @@ public sealed class ConfigValidatorTests
         Assert.Single(report.Warnings);
         Assert.Equal(nameof(config.ConfigVersion), report.Warnings[0].Property);
     }
+
+    [Fact]
+    public void Normalize_ReportsInactiveAndOverriddenSettings()
+    {
+        ModConfig config = new()
+        {
+            AutoAttachBait = false,
+            SpawnBaitIfDontHave = true,
+            AutoAttachTackles = false,
+            SpawnTackleIfDontHave = true,
+            AutoPlayMiniGame = true,
+            SkipFishingMiniGame = SkipMinigameBehavior.SkipAll
+        };
+
+        ConfigValidationReport report = ConfigValidator.Normalize(config);
+
+        Assert.False(report.WasChanged);
+        Assert.Equal(3, report.Warnings.Count);
+        Assert.Contains(report.Warnings, warning => warning.Property == nameof(config.SpawnBaitIfDontHave));
+        Assert.Contains(report.Warnings, warning => warning.Property == nameof(config.SpawnTackleIfDontHave));
+        Assert.Contains(report.Warnings, warning => warning.Property == nameof(config.AutoPlayMiniGame));
+    }
+
+    [Fact]
+    public void Normalize_ValidatesAndQualifiesItemSettings()
+    {
+        ModConfig config = new()
+        {
+            PreferredBait = "685",
+            PreferredTackle = "(O)WrongCategory",
+            PreferredAdvIridiumTackle = "missing",
+            StartWithFishingRod = "TrainingRod",
+            JunkIgnoreList = ["168", "missing", "(O)168"]
+        };
+        FakeItemCatalog catalog = new(
+            new ConfigItem("(O)685", ConfigItemKind.Bait),
+            new ConfigItem("(O)WrongCategory", ConfigItemKind.Other),
+            new ConfigItem("(T)TrainingRod", ConfigItemKind.FishingRod),
+            new ConfigItem("(O)168", ConfigItemKind.Other)
+        );
+
+        ConfigValidationReport report = ConfigValidator.Normalize(config, catalog);
+
+        Assert.Equal("(O)685", config.PreferredBait);
+        Assert.Equal("Any", config.PreferredTackle);
+        Assert.Equal("Any", config.PreferredAdvIridiumTackle);
+        Assert.Equal("(T)TrainingRod", config.StartWithFishingRod);
+        Assert.Equal(["(O)168"], config.JunkIgnoreList);
+        Assert.Equal(5, report.Corrections.Count);
+    }
+
+    private sealed class FakeItemCatalog(params ConfigItem[] items) : IItemCatalog
+    {
+        private readonly Dictionary<string, ConfigItem> items = items
+            .SelectMany(item => new[]
+            {
+                KeyValuePair.Create(item.QualifiedItemId, item),
+                KeyValuePair.Create(item.QualifiedItemId[(item.QualifiedItemId.IndexOf(')') + 1)..], item)
+            })
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+
+        public ConfigItem? Find(string itemId)
+        {
+            return this.items.GetValueOrDefault(itemId);
+        }
+    }
 }

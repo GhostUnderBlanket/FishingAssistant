@@ -61,6 +61,27 @@ public sealed class LegacyConfigSerializationTests
         Assert.Contains("\"PreferFishQuality\":\"Gold\"", json);
     }
 
+    [Fact]
+    public void UnknownEnumName_DoesNotPreventOtherSettingsFromLoading()
+    {
+        const string json = """
+            {
+              "ModStatusPosition": "Diagonal",
+              "AutoCastFishingRod": false,
+              "PreferredBait": "(O)685"
+            }
+            """;
+
+        ModConfig config = JsonConvert.DeserializeObject<ModConfig>(json, SmapiCompatibleSettings)!;
+        ConfigValidationReport report = ConfigValidator.Normalize(config);
+
+        Assert.Equal(HudPosition.Left, config.ModStatusPosition);
+        Assert.False(config.AutoCastFishingRod);
+        Assert.Equal("(O)685", config.PreferredBait);
+        Assert.Contains(report.Corrections,
+            correction => correction.Property == nameof(config.ModStatusPosition));
+    }
+
     private static JsonSerializerSettings CreateSmapiCompatibleSettings()
     {
         Type converterType = typeof(SButton).Assembly.GetType(

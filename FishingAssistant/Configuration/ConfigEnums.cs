@@ -1,11 +1,15 @@
+using Newtonsoft.Json;
+
 namespace FishingAssistant.Configuration;
 
+[JsonConverter(typeof(SafeStringEnumConverter<HudPosition>))]
 internal enum HudPosition
 {
     Left,
     Right
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<InventoryFullAction>))]
 internal enum InventoryFullAction
 {
     Stop,
@@ -13,6 +17,7 @@ internal enum InventoryFullAction
     Discard
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<PauseFishingBehavior>))]
 internal enum PauseFishingBehavior
 {
     Off,
@@ -20,6 +25,7 @@ internal enum PauseFishingBehavior
     WarnAndPause
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<SkipMinigameBehavior>))]
 internal enum SkipMinigameBehavior
 {
     Off,
@@ -27,6 +33,7 @@ internal enum SkipMinigameBehavior
     SkipOnlyCaught
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<FishQualityPreference>))]
 internal enum FishQualityPreference
 {
     Any = -1,
@@ -36,6 +43,7 @@ internal enum FishQualityPreference
     Iridium = 4
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<TreasureChanceBehavior>))]
 internal enum TreasureChanceBehavior
 {
     Default,

@@ -5,6 +5,7 @@ namespace FishingAssistant.Configuration;
 internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
 {
     private const string ConfigFileName = "config.json";
+    private IItemCatalog? itemCatalog;
     private bool loadedFutureSchema;
 
     public ModConfig Active { get; private set; } = new();
@@ -12,7 +13,25 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
     public ConfigValidationReport Load()
     {
         ConfigFileMetadata metadata = this.InspectExistingFile();
-        ModConfig loaded = helper.ReadConfig<ModConfig>();
+        ModConfig loaded;
+        try
+        {
+            loaded = helper.ReadConfig<ModConfig>();
+        }
+        catch (Exception exception)
+        {
+            loaded = new ModConfig();
+            this.Active = loaded;
+
+            ConfigValidationReport failedReport = new();
+            failedReport.Warn(ConfigFileName, exception.GetType().Name,
+                "The configuration couldn't be read. Safe defaults are active for this session, " +
+                "and the original file wasn't overwritten.");
+            monitor.Log($"Couldn't read {ConfigFileName}; using safe defaults without overwriting it.\n{exception}",
+                LogLevel.Error);
+            return failedReport;
+        }
+
         ConfigValidationReport report = ConfigValidator.Normalize(loaded);
 
         if (metadata.IsLegacy)
@@ -31,11 +50,9 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
 
         this.Active = loaded;
         if (report.WasChanged && !this.loadedFutureSchema)
-        {
             helper.WriteConfig(this.Active);
-            this.LogCorrections(report);
-        }
 
+        this.LogCorrections(report);
         this.LogWarnings(report);
 
         return report;
@@ -52,10 +69,25 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         }
 
         ModConfig validated = draft.CreateDraft();
-        ConfigValidationReport report = ConfigValidator.Normalize(validated);
+        ConfigValidationReport report = ConfigValidator.Normalize(validated, this.itemCatalog);
         helper.WriteConfig(validated);
         this.Active = validated;
         this.LogCorrections(report);
+        this.LogWarnings(report);
+        return report;
+    }
+
+    public ConfigValidationReport ValidateItems(IItemCatalog itemCatalog)
+    {
+        ArgumentNullException.ThrowIfNull(itemCatalog);
+
+        this.itemCatalog = itemCatalog;
+        ConfigValidationReport report = ConfigValidator.NormalizeItems(this.Active, itemCatalog);
+        if (report.WasChanged && !this.loadedFutureSchema)
+            helper.WriteConfig(this.Active);
+
+        this.LogCorrections(report);
+        this.LogWarnings(report);
         return report;
     }
 

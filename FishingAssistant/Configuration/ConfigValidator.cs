@@ -8,7 +8,7 @@ internal static class ConfigValidator
     private const string InvalidEnumReason = "The value isn't supported by Fishing Assistant 3.";
     private const string OutOfRangeReason = "The value was outside the supported range.";
 
-    public static ConfigValidationReport Normalize(ModConfig config)
+    public static ConfigValidationReport Normalize(ModConfig config, IItemCatalog? itemCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(config);
 
@@ -67,6 +67,10 @@ internal static class ConfigValidator
         NormalizeString(report, nameof(config.StartWithFishingRod),
             () => config.StartWithFishingRod, value => config.StartWithFishingRod = value, "None");
         NormalizeIgnoreList(config, report);
+        NormalizeDependencies(config, report);
+
+        if (itemCatalog is not null)
+            report.Append(NormalizeItems(config, itemCatalog));
 
         return report;
     }
@@ -188,5 +192,94 @@ internal static class ConfigValidator
             original is null ? null : string.Join(", ", original),
             string.Join(", ", corrected),
             "Empty and duplicate item IDs were removed.");
+    }
+
+    private static void NormalizeDependencies(ModConfig config, ConfigValidationReport report)
+    {
+        if (config.SpawnBaitIfDontHave && !config.AutoAttachBait)
+        {
+            report.Warn(nameof(config.SpawnBaitIfDontHave), config.SpawnBaitIfDontHave,
+                $"This setting has no effect while {nameof(config.AutoAttachBait)} is disabled.");
+        }
+
+        if (config.SpawnTackleIfDontHave && !config.AutoAttachTackles)
+        {
+            report.Warn(nameof(config.SpawnTackleIfDontHave), config.SpawnTackleIfDontHave,
+                $"This setting has no effect while {nameof(config.AutoAttachTackles)} is disabled.");
+        }
+
+        if (config.SkipFishingMiniGame != SkipMinigameBehavior.Off && config.AutoPlayMiniGame)
+        {
+            report.Warn(nameof(config.AutoPlayMiniGame), config.AutoPlayMiniGame,
+                $"{nameof(config.SkipFishingMiniGame)} takes priority when a catch can be skipped.");
+        }
+    }
+
+    public static ConfigValidationReport NormalizeItems(ModConfig config, IItemCatalog catalog)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(catalog);
+
+        ConfigValidationReport report = new();
+        NormalizeItemPreference(report, nameof(config.PreferredBait),
+            () => config.PreferredBait, value => config.PreferredBait = value,
+            "Any", ConfigItemKind.Bait, catalog);
+        NormalizeItemPreference(report, nameof(config.PreferredTackle),
+            () => config.PreferredTackle, value => config.PreferredTackle = value,
+            "Any", ConfigItemKind.Tackle, catalog);
+        NormalizeItemPreference(report, nameof(config.PreferredAdvIridiumTackle),
+            () => config.PreferredAdvIridiumTackle, value => config.PreferredAdvIridiumTackle = value,
+            "Any", ConfigItemKind.Tackle, catalog);
+        NormalizeItemPreference(report, nameof(config.StartWithFishingRod),
+            () => config.StartWithFishingRod, value => config.StartWithFishingRod = value,
+            "None", ConfigItemKind.FishingRod, catalog);
+
+        List<string> original = config.JunkIgnoreList;
+        List<string> corrected = original
+            .Select(catalog.Find)
+            .Where(item => item is not null)
+            .Select(item => item!.QualifiedItemId)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (!original.SequenceEqual(corrected, StringComparer.Ordinal))
+        {
+            config.JunkIgnoreList = corrected;
+            report.Add(nameof(config.JunkIgnoreList), string.Join(", ", original), string.Join(", ", corrected),
+                "Unknown item IDs were removed and known IDs were qualified.");
+        }
+
+        return report;
+    }
+
+    private static void NormalizeItemPreference(
+        ConfigValidationReport report,
+        string property,
+        Func<string> getValue,
+        Action<string> setValue,
+        string sentinel,
+        ConfigItemKind expectedKind,
+        IItemCatalog catalog)
+    {
+        string value = getValue();
+        if (string.Equals(value, sentinel, StringComparison.OrdinalIgnoreCase))
+        {
+            if (value != sentinel)
+            {
+                setValue(sentinel);
+                report.Add(property, value, sentinel, "The built-in option name was normalized.");
+            }
+
+            return;
+        }
+
+        ConfigItem? item = catalog.Find(value);
+        string corrected = item?.Kind == expectedKind ? item.QualifiedItemId : sentinel;
+        if (value == corrected)
+            return;
+
+        setValue(corrected);
+        report.Add(property, value, corrected,
+            item is null ? "The item ID doesn't exist." : $"The item isn't a supported {expectedKind}.");
     }
 }
