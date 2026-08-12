@@ -1,19 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
     <AssemblyName>FishingAssistant</AssemblyName>
     <RootNamespace>FishingAssistant</RootNamespace>
-    <Version>3.0.0-alpha.1</Version>
+    <Description>A configurable fishing assistant for Stardew Valley.</Description>
+    <VersionPrefix>3.0.0</VersionPrefix>
+    <VersionSuffix>alpha.1</VersionSuffix>
 
     <EnableModDeploy>false</EnableModDeploy>
     <EnableModZip>false</EnableModZip>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.4.0" />
+    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" />
   </ItemGroup>
 </Project>

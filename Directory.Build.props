@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <Authors>ChibiKyu</Authors>
+    <Copyright>Copyright © 2024-2026 ChibiKyu</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/GhostUnderBlanket/FishingAssistant</RepositoryUrl>
+
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+</Project>
