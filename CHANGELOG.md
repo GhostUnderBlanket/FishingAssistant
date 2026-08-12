@@ -87,6 +87,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Replaced the text automation-status HUD with the compact Fishing Assistant 2-style
+  icon panel: fishing automation above treasure targeting, with dimmed off states and
+  warning colors for paused or faulted automation.
 - Replaced price-threshold junk classification with explicit visual item selection.
 - Replaced bait, tackle, and starter-rod cycling controls with searchable visual item
   pickers, and increased spacing in the remaining value selectors.

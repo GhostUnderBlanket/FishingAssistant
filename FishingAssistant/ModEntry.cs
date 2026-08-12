@@ -35,7 +35,7 @@ internal sealed class ModEntry : Mod
             this.Monitor,
             () => this.configManager.Active,
             key => helper.Translation.Get(key));
-        this.automationHud = new AutomationHudRenderer(key => helper.Translation.Get(key));
+        this.automationHud = new AutomationHudRenderer();
         this.fishPreview = new FishPreviewRenderer();
         this.starterFishingRod = new StarterFishingRodService(this.Monitor, key => helper.Translation.Get(key));
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
