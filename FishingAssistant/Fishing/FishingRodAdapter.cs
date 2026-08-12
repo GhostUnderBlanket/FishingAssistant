@@ -54,7 +54,7 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
         AutomationState state,
         int castPower)
     {
-        float staminaCost = Math.Max(0f, 8f - player.FishingLevel * 0.1f);
+        float staminaCost = this.GetCastStaminaCost();
         return new AutoCastConditions(
             automationEnabled,
             autoCastEnabled,
@@ -62,10 +62,31 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             Context.IsPlayerFree,
             player.CanMove,
             player.isMoving(),
-            player.Stamina > staminaCost,
+            !this.DoesCastConsumeStamina() || player.Stamina > staminaCost,
             Game1.isFestival(),
             this.IsSupportedFishingMinigame,
             this.IsCastTargetFishable(castPower)
+        );
+    }
+
+    public LowEnergyStopConditions ReadLowEnergyStopConditions(
+        bool automationEnabled,
+        bool autoCastEnabled,
+        AutomationState state,
+        bool autoEatEnabled,
+        int eatingThresholdPercent)
+    {
+        return new LowEnergyStopConditions(
+            automationEnabled,
+            autoCastEnabled,
+            state,
+            this.DoesCastConsumeStamina(),
+            player.isEating,
+            player.Stamina,
+            player.MaxStamina,
+            this.GetCastStaminaCost(),
+            autoEatEnabled,
+            eatingThresholdPercent
         );
     }
 
@@ -115,6 +136,18 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
     {
         player.BeginUsingTool();
         this.SetCastPower(castPower);
+    }
+
+    private float GetCastStaminaCost()
+    {
+        return Math.Max(0f, 8f - player.FishingLevel * 0.1f);
+    }
+
+    private bool DoesCastConsumeStamina()
+    {
+        return !Game1.eventUp
+            && player.IsLocalPlayer
+            && !rod.hasEnchantmentOfType<EfficientToolEnchantment>();
     }
 
     public void SetCastPower(int castPower)

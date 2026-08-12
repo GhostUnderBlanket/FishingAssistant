@@ -182,6 +182,8 @@
   "hud.food.ate": "Ate {0} automatically and recovered up to {1} energy.",
   "hud.late_night.warning": "Late-night fishing time {0} reached. Warning {1} of {2}.",
   "hud.late_night.paused": "Fishing automation paused safely for the night.",
+  "hud.energy.no_food": "Fishing automation paused: energy reached the eating threshold, but no suitable food was consumed.",
+  "hud.energy.exhaustion": "Fishing automation paused to prevent the next cast from exhausting this player.",
   "debug.test_rod.already_owned": "This player already has a fishing rod.",
   "debug.test_rod.inventory_full": "The inventory is full. Free a slot and try again.",
   "debug.test_rod.failed": "The test fishing rod could not be added. Check the SMAPI log.",

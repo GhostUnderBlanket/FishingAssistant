@@ -34,6 +34,7 @@ internal sealed class AutomationRuntime(
         this.Log(screen.Session.Observe(FishingContextReader.Read(screen.Session.IsEnabled)));
         this.Log(this.lateNight.UpdateCurrent(getConfig(), screen.Session));
         this.autoEat.UpdateCurrent(getConfig(), screen.Session);
+        this.UpdateLowEnergyStop(screen);
         this.UpdateInstantBite();
         this.UpdateAutomaticMinigame(screen);
         this.UpdateAutomaticCatchPopup(screen);
@@ -45,6 +46,7 @@ internal sealed class AutomationRuntime(
     public void ToggleCurrent()
     {
         AutomationTransition transition = this.screens.Value.Session.Toggle();
+        this.autoEat.ResetCurrent();
         monitor.Log(
             $"Automation {(this.Current.IsEnabled ? "enabled" : "disabled")} for local screen {Context.ScreenId}.",
             LogLevel.Info);
@@ -155,6 +157,33 @@ internal sealed class AutomationRuntime(
                 monitor.Log($"Started an automatic cast for local screen {Context.ScreenId}.", LogLevel.Trace);
                 break;
         }
+    }
+
+    private void UpdateLowEnergyStop(ScreenContext screen)
+    {
+        ModConfig config = getConfig();
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod is null)
+            return;
+
+        LowEnergyStopDecision decision = LowEnergyStopPolicy.Decide(
+            rod.ReadLowEnergyStopConditions(
+                screen.Session.IsEnabled,
+                config.AutoCastFishingRod,
+                screen.Session.State,
+                config.AutoEatFood,
+                config.EnergyPercentToEat));
+        if (decision == LowEnergyStopDecision.None)
+            return;
+
+        string messageKey = decision == LowEnergyStopDecision.StopAtEatingThreshold
+            ? "hud.energy.no_food"
+            : "hud.energy.exhaustion";
+        Game1.addHUDMessage(new HUDMessage(translate(messageKey), HUDMessage.error_type));
+        monitor.Log(
+            $"Paused fishing automation for low energy on local screen {Context.ScreenId} ({decision}).",
+            LogLevel.Info);
+        this.Log(screen.Session.Disable(AutomationTransitionReason.LowEnergy));
     }
 
     private void UpdateAutomaticHook(ScreenContext screen)

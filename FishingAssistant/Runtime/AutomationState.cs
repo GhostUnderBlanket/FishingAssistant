@@ -26,6 +26,7 @@ internal enum AutomationTransitionReason
     SaveLoaded,
     ReturnedToTitle,
     LateNight,
+    LowEnergy,
     Recovered
 }
 

@@ -69,6 +69,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   quest items, and progression items.
 - Per-screen late-night warnings which honor the configured warning count and defer
   disabling automation until the active fishing cycle and reward menus have ended.
+- Low-energy cast protection which lets automatic eating run first, then disables only
+  the current screen's automation before a cast can cause exhaustion.
 
 ### Changed
 
@@ -86,3 +88,5 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   dark menu backgrounds.
 - Action controls now match selector height, and category, scrollbar, and picker arrows
   share one consistent visual scale.
+- Automatic casting now recognizes that the Efficient enchantment and event-controlled
+  fishing casts do not consume player stamina.

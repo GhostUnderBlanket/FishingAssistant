@@ -43,7 +43,7 @@ internal sealed class AutoEatService(IMonitor monitor, Func<string, string> tran
         AutoEatDecision decision = AutoEatPolicy.Decide(conditions);
         if (decision.Action != AutoEatAction.Eat || player is null)
         {
-            if (config.AutoEatFood && session.IsEnabled && conditions.IsSafeToEat)
+            if (shouldInspectInventory)
                 screen.RetryTicks = RetryDelayTicks;
             return;
         }

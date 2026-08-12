@@ -88,6 +88,10 @@ Late-night warnings and their pending stop request are per-screen runtime state.
 assistant disables automation only after the current rod, minigame, and reward menu are
 idle; it never pauses shared world time, which keeps host and farmhand behavior aligned.
 
+Low-energy protection runs after automatic eating and before any automatic cast. It
+uses the owning player's fishing level and rod enchantments, and disables only that
+screen's automation if the next vanilla stamina charge would cause exhaustion.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:

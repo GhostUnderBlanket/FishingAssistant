@@ -51,6 +51,9 @@ stack after Stardew Valley accepts the eating action.
 Late-night behavior can warn a configured number of times and then disable only the
 current screen's fishing automation once the active catch is safely complete. It does
 not pause shared world time or force-open a game menu.
+Before an energy-consuming cast, the assistant gives automatic eating the first chance
+to recover energy and otherwise disables only that player's automation before the cast
+can cause exhaustion. Efficient and event-controlled casts remain available.
 Development happens incrementally on the `development` branch.
 
 ## Requirements
