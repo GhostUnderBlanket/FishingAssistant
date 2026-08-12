@@ -84,6 +84,10 @@ Automatic eating is a local-screen action over the owning player's inventory. A 
 policy selects food deterministically, while the game adapter starts the vanilla eat
 animation and decrements the selected stack only after the game accepts consumption.
 
+Late-night warnings and their pending stop request are per-screen runtime state. The
+assistant disables automation only after the current rod, minigame, and reward menu are
+idle; it never pauses shared world time, which keeps host and farmhand behavior aligned.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:

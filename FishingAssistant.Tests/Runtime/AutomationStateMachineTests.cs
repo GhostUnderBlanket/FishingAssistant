@@ -84,4 +84,18 @@ public sealed class AutomationStateMachineTests
         Assert.False(session.ToggleTreasureTargeting());
         Assert.False(session.IsTreasureTargetingEnabled);
     }
+
+    [Fact]
+    public void Disable_StopsEnabledSessionWithExplicitReason()
+    {
+        AutomationSession session = new();
+        session.Observe(new(true, true, true));
+
+        AutomationTransition transition = session.Disable(AutomationTransitionReason.LateNight)!;
+
+        Assert.False(session.IsEnabled);
+        Assert.Equal(AutomationState.Idle, session.State);
+        Assert.Equal(AutomationTransitionReason.LateNight, transition.Reason);
+        Assert.Null(session.Disable(AutomationTransitionReason.LateNight));
+    }
 }

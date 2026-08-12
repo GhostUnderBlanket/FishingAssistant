@@ -47,6 +47,7 @@ internal sealed class ModEntry : Mod
         helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
         helper.Events.GameLoop.Saving += this.OnSaving;
+        helper.Events.GameLoop.TimeChanged += this.OnTimeChanged;
         helper.Events.GameLoop.DayStarted += this.OnDayStarted;
         helper.Events.GameLoop.ReturnedToTitle += this.OnReturnedToTitle;
         helper.Events.Player.Warped += this.OnWarped;
@@ -161,6 +162,11 @@ internal sealed class ModEntry : Mod
     private void OnSaving(object? sender, SavingEventArgs e)
     {
         this.infiniteAttachment!.RestoreAll();
+    }
+
+    private void OnTimeChanged(object? sender, TimeChangedEventArgs e)
+    {
+        this.automationRuntime!.OnTimeChanged(e.NewTime);
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)

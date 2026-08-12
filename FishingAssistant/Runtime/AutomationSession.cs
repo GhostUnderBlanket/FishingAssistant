@@ -31,6 +31,18 @@ internal sealed class AutomationSession
             wasRecovery: false);
     }
 
+    public AutomationTransition? Disable(AutomationTransitionReason reason)
+    {
+        if (!this.IsEnabled)
+        {
+            this.LastReason = reason;
+            return null;
+        }
+
+        this.IsEnabled = false;
+        return this.Transition(AutomationState.Idle, reason, wasRecovery: false);
+    }
+
     public bool ToggleTreasureTargeting()
     {
         this.IsTreasureTargetingEnabled = !this.IsTreasureTargetingEnabled;

@@ -67,6 +67,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Per-screen automatic food consumption at the configured energy threshold, with
   deterministic local-inventory selection and safeguards for fish, buffs, fullness,
   quest items, and progression items.
+- Per-screen late-night warnings which honor the configured warning count and defer
+  disabling automation until the active fishing cycle and reward menus have ended.
 
 ### Changed
 

@@ -48,6 +48,9 @@ saving or leaving the session.
 Automatic eating can restore low energy from the current local player's inventory. It
 prefers efficient plain food, avoids quest and progression items, and only consumes a
 stack after Stardew Valley accepts the eating action.
+Late-night behavior can warn a configured number of times and then disable only the
+current screen's fishing automation once the active catch is safely complete. It does
+not pause shared world time or force-open a game menu.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

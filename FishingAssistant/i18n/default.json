@@ -180,6 +180,8 @@
   "hud.bait.spawned": "Spawned and attached {1} {0}. This is a cheat option.",
   "hud.tackle.spawned": "Spawned and attached {0} to tackle slot {1}. This is a cheat option.",
   "hud.food.ate": "Ate {0} automatically and recovered up to {1} energy.",
+  "hud.late_night.warning": "Late-night fishing time {0} reached. Warning {1} of {2}.",
+  "hud.late_night.paused": "Fishing automation paused safely for the night.",
   "debug.test_rod.already_owned": "This player already has a fishing rod.",
   "debug.test_rod.inventory_full": "The inventory is full. Free a slot and try again.",
   "debug.test_rod.failed": "The test fishing rod could not be added. Check the SMAPI log.",

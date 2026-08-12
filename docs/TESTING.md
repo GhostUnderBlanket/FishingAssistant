@@ -21,6 +21,7 @@ Status recorded on 2026-08-12:
 - Automatic tackle attachment has not been tested in-game yet.
 - Infinite bait and tackle preservation has not been tested in-game yet.
 - Automatic food selection and eating has not been tested in-game yet.
+- Late-night warnings and safe automation pausing have not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -68,6 +69,10 @@ release-matrix scenarios are completed.
   plain food, buff food, fish allowed/disallowed, a one-item stack, food/drink fullness
   buffs, and no eligible food. Repeat for multiplayer farmhand and split-screen
   inventories and confirm only the owning player's stack is consumed.
+- Verify `Off`, `WarnOnly`, and `WarnAndPause` at 24:00 with warning counts 1 and 3.
+  Let the threshold pass during a cast, minigame, catch popup, and treasure menu; the
+  current catch must finish before only that screen's automation disables. Repeat as
+  host, farmhand, and split-screen, confirming shared world time never pauses.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.
