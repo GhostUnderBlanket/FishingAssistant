@@ -27,6 +27,8 @@ Status recorded on 2026-08-12:
 - Fish difficulty multiplier and additive adjustment have not been tested in-game yet.
 - Perfect catch, preferred base quality, maximum fish size, and preferred fish count
   modifiers have not been tested in-game yet.
+- Fish preview visibility, responsive placement, and reveal options have not been
+  tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -98,6 +100,12 @@ release-matrix scenarios are completed.
   fish, first catches, fish ponds, and festival fishing. Confirm festival/fish-pond
   results remain vanilla and only the owning local player's result changes. Repeat as
   split-screen players, multiplayer host, and farmhand.
+- Verify the fish preview with caught and uncaught fish, trash, legendary fish, normal
+  and golden treasure, every preview sub-option, UI scales, zoom levels, window sizes,
+  both sides of the screen, and long localized item names. Confirm it disappears during
+  fade-out, never grants Sonar Bobber behavior, stays within each split-screen viewport,
+  and shows only the owning player's catch history and treasure state. Repeat in a
+  fishing festival as host and farmhand.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

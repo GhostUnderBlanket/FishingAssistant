@@ -18,6 +18,7 @@ internal sealed class ModEntry : Mod
     private GameItemCatalog? itemCatalog;
     private AutomationRuntime? automationRuntime;
     private AutomationHudRenderer? automationHud;
+    private FishPreviewRenderer? fishPreview;
     private StarterFishingRodService? starterFishingRod;
     private DebugWarpService? debugWarp;
     private BaitAttachmentService? baitAttachment;
@@ -33,6 +34,7 @@ internal sealed class ModEntry : Mod
             () => this.configManager.Active,
             key => helper.Translation.Get(key));
         this.automationHud = new AutomationHudRenderer(key => helper.Translation.Get(key));
+        this.fishPreview = new FishPreviewRenderer();
         this.starterFishingRod = new StarterFishingRodService(this.Monitor, key => helper.Translation.Get(key));
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
         this.baitAttachment = new BaitAttachmentService(this.Monitor, key => helper.Translation.Get(key));
@@ -62,6 +64,7 @@ internal sealed class ModEntry : Mod
         helper.Events.Player.Warped += this.OnWarped;
         helper.Events.Multiplayer.PeerConnected += this.OnPeerConnected;
         helper.Events.Display.RenderedHud += this.OnRenderedHud;
+        helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         helper.ConsoleCommands.Add("fa_config", "Open the Fishing Assistant configuration menu.",
             this.OnConfigCommand);
@@ -200,6 +203,14 @@ internal sealed class ModEntry : Mod
             return;
 
         this.automationHud!.Draw(e.SpriteBatch, this.automationRuntime!.Current, this.configManager!.Active);
+    }
+
+    private void OnRenderedActiveMenu(object? sender, RenderedActiveMenuEventArgs e)
+    {
+        if (!Context.IsWorldReady)
+            return;
+
+        this.fishPreview!.Draw(e.SpriteBatch, this.configManager!.Active);
     }
 
     private void OnConfigCommand(string command, string[] arguments)

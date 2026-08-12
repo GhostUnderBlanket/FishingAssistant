@@ -91,6 +91,12 @@ Treasure chance overrides are decided once when a new `BobberBar` is observed. T
 adapter changes only the bar's treasure flags, `Default` preserves the vanilla roll,
 and festival fishing always keeps its vanilla result.
 
+Fish preview rendering is local-screen UI only. The `BobberBar` adapter produces an
+immutable snapshot containing the current item, reveal inputs, treasure state, and bar
+bounds. A pure policy controls concealment and optional details, while a separate
+layout policy places the panel inside the current `uiViewport`. The renderer caches
+only display items per screen and never adds a Sonar Bobber or changes tackle state.
+
 Automatic eating is a local-screen action over the owning player's inventory. A pure
 policy selects food deterministically, while the game adapter starts the vanilla eat
 animation and decrements the selected stack only after the game accepts consumption.

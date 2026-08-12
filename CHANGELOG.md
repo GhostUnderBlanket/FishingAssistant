@@ -76,6 +76,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   enchantments, support local split-screen, and disable when remote players connect.
 - Per-screen fish difficulty multiplier and additive adjustment applied once to each
   fishing minigame after vanilla tutorial and blessing modifiers.
+- A per-screen fish preview beside the fishing bar with responsive viewport placement,
+  caught/uncaught concealment, optional names, legendary reveal rules, and normal or
+  golden treasure indicators without simulating an equipped Sonar Bobber.
 
 ### Changed
 

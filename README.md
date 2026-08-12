@@ -66,6 +66,9 @@ quality, and ordinary multi-catches during manual or automatic fishing. Festival
 fish-pond results stay fully vanilla; legendary fish, Wild Bait, and Challenge Bait
 retain their vanilla catch-count rules. A perfect catch can still promote the selected
 base quality using Stardew Valley's normal quality upgrade.
+The fish preview now renders beside each local player's fishing bar. It can conceal
+uncaught targets, reveal legendary targets independently, show localized fish names,
+and indicate normal or golden treasure without changing the player's equipped tackle.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

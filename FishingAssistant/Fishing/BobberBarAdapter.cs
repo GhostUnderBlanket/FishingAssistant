@@ -7,6 +7,16 @@ using StardewValley.Minigames;
 
 namespace FishingAssistant.Fishing;
 
+internal sealed record FishPreviewSnapshot(
+    string ItemId,
+    string DisplayName,
+    bool IsReady,
+    bool WasCaught,
+    bool IsLegendary,
+    bool HasTreasure,
+    bool IsGoldenTreasure,
+    Rectangle BobberBounds);
+
 internal sealed class BobberBarAdapter(BobberBar bar)
 {
     public object Identity => bar;
@@ -62,6 +72,24 @@ internal sealed class BobberBarAdapter(BobberBar bar)
             bar.goldenTreasure,
             Game1.isFestival() || Game1.currentMinigame is FishingGame
         );
+    }
+
+    public FishPreviewSnapshot ReadPreviewSnapshot()
+    {
+        string itemId = ItemRegistry.GetMetadata(bar.whichFish)?.QualifiedItemId ?? bar.whichFish;
+        bool wasCaught = Game1.player.fishCaught.TryGetValue(itemId, out int[]? catchData)
+            && catchData is { Length: > 0 }
+            && catchData[0] > 0;
+
+        return new FishPreviewSnapshot(
+            itemId,
+            ItemRegistry.GetDataOrErrorItem(itemId).DisplayName,
+            bar.scale >= 1f && !bar.fadeOut,
+            wasCaught,
+            bar.bossFish,
+            bar.treasure && !bar.treasureCaught,
+            bar.goldenTreasure,
+            new Rectangle(bar.xPositionOnScreen, bar.yPositionOnScreen, bar.width, bar.height));
     }
 
     public FishDifficultyDecision ApplyDifficulty(ModConfig config)
