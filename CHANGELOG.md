@@ -23,3 +23,4 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Apply, Cancel, Reset Defaults, mouse input, and controller navigation.
 - Configuration-menu opening through a configurable keybind or the `fa_config` console
   command.
+- Responsive category navigation and scrolling for all boolean configuration settings.

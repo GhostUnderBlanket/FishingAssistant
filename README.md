@@ -22,9 +22,9 @@ criteria.
 
 The mod currently contains the SMAPI project scaffold, a typed and validated
 configuration layer, and the first vertical slice of its custom configuration menu.
-The menu can edit the five core automation toggles through a safe draft, but the full
-option set and gameplay automation are not implemented yet. Development happens
-incrementally on the `development` branch.
+The menu can edit boolean settings across six categories through a safe draft, but
+enum, number, item, and keybind controls and gameplay automation are not implemented
+yet. Development happens incrementally on the `development` branch.
 
 ## Requirements
 

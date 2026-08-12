@@ -11,7 +11,7 @@ public sealed class MenuLayoutTests
     [InlineData(320, 180)]
     public void Calculate_StaysInsideViewport(int viewportWidth, int viewportHeight)
     {
-        MenuLayout layout = MenuLayout.Calculate(viewportWidth, viewportHeight, visibleOptionCount: 5);
+        MenuLayout layout = MenuLayout.Calculate(viewportWidth, viewportHeight);
 
         Assert.True(layout.X >= 0);
         Assert.True(layout.Y >= 0);
@@ -19,13 +19,23 @@ public sealed class MenuLayoutTests
         Assert.True(layout.Y + layout.Height <= viewportHeight);
         Assert.True(layout.ContentTop < layout.ContentBottom);
         Assert.True(layout.OptionHeight > 0);
+        Assert.True(layout.VisibleOptionCount > 0);
     }
 
     [Fact]
     public void Calculate_RejectsInvalidDimensions()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => MenuLayout.Calculate(0, 720, 5));
-        Assert.Throws<ArgumentOutOfRangeException>(() => MenuLayout.Calculate(1280, 0, 5));
-        Assert.Throws<ArgumentOutOfRangeException>(() => MenuLayout.Calculate(1280, 720, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => MenuLayout.Calculate(0, 720));
+        Assert.Throws<ArgumentOutOfRangeException>(() => MenuLayout.Calculate(1280, 0));
+    }
+
+    [Fact]
+    public void Calculate_ShowsFewerRowsInSplitScreenViewport()
+    {
+        MenuLayout fullScreen = MenuLayout.Calculate(1920, 1080);
+        MenuLayout splitScreen = MenuLayout.Calculate(640, 360);
+
+        Assert.True(fullScreen.VisibleOptionCount > splitScreen.VisibleOptionCount);
+        Assert.Equal(3, splitScreen.VisibleOptionCount);
     }
 }

@@ -7,29 +7,32 @@ internal sealed record MenuLayout(
     int Height,
     int Padding,
     int HeaderHeight,
+    int CategoryHeight,
     int FooterHeight,
-    int OptionHeight)
+    int OptionHeight,
+    int VisibleOptionCount)
 {
-    public int ContentTop => this.Y + this.HeaderHeight;
+    public int CategoryTop => this.Y + this.HeaderHeight;
+
+    public int ContentTop => this.CategoryTop + this.CategoryHeight;
 
     public int ContentBottom => this.Y + this.Height - this.FooterHeight;
 
-    public static MenuLayout Calculate(int viewportWidth, int viewportHeight, int visibleOptionCount)
+    public static MenuLayout Calculate(int viewportWidth, int viewportHeight)
     {
         if (viewportWidth <= 0)
             throw new ArgumentOutOfRangeException(nameof(viewportWidth));
         if (viewportHeight <= 0)
             throw new ArgumentOutOfRangeException(nameof(viewportHeight));
-        if (visibleOptionCount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(visibleOptionCount));
-
         int margin = viewportWidth >= 960 && viewportHeight >= 640 ? 48 : 12;
         int width = Math.Min(920, Math.Max(1, viewportWidth - margin * 2));
         int height = Math.Min(680, Math.Max(1, viewportHeight - margin * 2));
         int padding = width >= 640 ? 48 : 24;
         int headerHeight = Math.Min(88, Math.Max(48, height / 6));
+        int categoryHeight = height >= 300 ? 44 : 32;
         int footerHeight = Math.Min(88, Math.Max(56, height / 5));
-        int contentHeight = Math.Max(1, height - headerHeight - footerHeight);
+        int contentHeight = Math.Max(1, height - headerHeight - categoryHeight - footerHeight);
+        int visibleOptionCount = Math.Max(1, contentHeight / 52);
         int optionHeight = Math.Max(1, contentHeight / visibleOptionCount);
 
         return new MenuLayout(
@@ -39,8 +42,10 @@ internal sealed record MenuLayout(
             Height: height,
             Padding: padding,
             HeaderHeight: headerHeight,
+            CategoryHeight: categoryHeight,
             FooterHeight: footerHeight,
-            OptionHeight: optionHeight
+            OptionHeight: optionHeight,
+            VisibleOptionCount: visibleOptionCount
         );
     }
 }
