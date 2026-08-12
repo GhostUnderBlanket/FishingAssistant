@@ -15,8 +15,9 @@ or migration from Fishing Assistant 2 yet.
 - Preserve existing configuration where practical while fixing unsafe legacy behavior.
 - Add new assistance options without taking control away from the player.
 
-See the [development roadmap](docs/ROADMAP.md) for the planned milestones and release
-criteria, and [testing status](docs/TESTING.md) for scenarios which have actually been
+See the [development roadmap](docs/ROADMAP.md) for the planned milestones, the
+[Pre-Milestone 7 remediation checklist](docs/PRE-MILESTONE-7.md) for the current audit
+gate, and [testing status](docs/TESTING.md) for scenarios which have actually been
 verified in-game.
 
 ## Current status

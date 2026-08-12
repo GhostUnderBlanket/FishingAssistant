@@ -194,6 +194,11 @@ Exit criteria:
 
 ## Milestone 7: Multiplayer and split-screen hardening
 
+Before beginning this milestone, complete the
+[Pre-Milestone 7 remediation checklist](PRE-MILESTONE-7.md). It captures implementation,
+recovery, UI, documentation, and baseline in-game verification gaps found during the
+Milestones 1 through 6 audit.
+
 Goal: validate every retained feature in all supported play modes rather than treating
 multiplayer as a late compatibility patch.
 
