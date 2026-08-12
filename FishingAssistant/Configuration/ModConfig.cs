@@ -1,0 +1,129 @@
+using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
+
+namespace FishingAssistant.Configuration;
+
+internal sealed class ModConfig
+{
+    internal const int CurrentVersion = 3;
+
+    public int ConfigVersion { get; set; } = CurrentVersion;
+
+    public KeybindList EnableAutomationButton { get; set; } = new(SButton.F5);
+
+    public KeybindList CatchTreasureButton { get; set; } = new(SButton.F6);
+
+    public KeybindList OpenConfigMenuButton { get; set; } = new(SButton.None);
+
+    public HudPosition ModStatusPosition { get; set; } = HudPosition.Left;
+
+    public bool AutoCastFishingRod { get; set; } = true;
+
+    public bool AutoHookFish { get; set; } = true;
+
+    public bool AutoPlayMiniGame { get; set; } = true;
+
+    public bool AutoClosePopup { get; set; } = true;
+
+    public bool AutoLootTreasure { get; set; } = true;
+
+    public InventoryFullAction ActionIfInventoryFull { get; set; } = InventoryFullAction.Stop;
+
+    public bool AutoTrashJunk { get; set; }
+
+    public int JunkHighestPrice { get; set; }
+
+    public bool AllowTrashFish { get; set; }
+
+    public List<string> JunkIgnoreList { get; set; } = [];
+
+    public PauseFishingBehavior AutoPauseFishing { get; set; } = PauseFishingBehavior.WarnAndPause;
+
+    public int TimeToPause { get; set; } = 24;
+
+    public int WarnCount { get; set; } = 1;
+
+    public bool AutoEatFood { get; set; }
+
+    public int EnergyPercentToEat { get; set; } = 5;
+
+    public bool AllowEatingFish { get; set; }
+
+    public bool AutoAttachBait { get; set; }
+
+    public string PreferredBait { get; set; } = "Any";
+
+    public bool SpawnBaitIfDontHave { get; set; }
+
+    public int BaitAmountToSpawn { get; set; } = 10;
+
+    public bool AutoAttachTackles { get; set; }
+
+    public string PreferredTackle { get; set; } = "Any";
+
+    public string PreferredAdvIridiumTackle { get; set; } = "Any";
+
+    public bool SpawnTackleIfDontHave { get; set; }
+
+    public SkipMinigameBehavior SkipFishingMiniGame { get; set; } = SkipMinigameBehavior.Off;
+
+    public bool InstantFishBite { get; set; }
+
+    public int PreferFishAmount { get; set; } = 1;
+
+    public FishQualityPreference PreferFishQuality { get; set; } = FishQualityPreference.Any;
+
+    public bool AlwaysPerfect { get; set; }
+
+    public bool AlwaysMaxFishSize { get; set; }
+
+    public float FishDifficultyMultiplier { get; set; } = 1f;
+
+    public int FishDifficultyAdditive { get; set; }
+
+    public bool InstantCatchTreasure { get; set; }
+
+    public TreasureChanceBehavior TreasureChance { get; set; } = TreasureChanceBehavior.Default;
+
+    public TreasureChanceBehavior GoldenTreasureChance { get; set; } = TreasureChanceBehavior.Default;
+
+    public bool DisplayFishPreview { get; set; } = true;
+
+    public bool ShowFishName { get; set; } = true;
+
+    public bool ShowTreasure { get; set; } = true;
+
+    public bool ShowUncaughtFish { get; set; }
+
+    public bool ShowLegendaryFish { get; set; }
+
+    public string StartWithFishingRod { get; set; } = "None";
+
+    public int DefaultCastPower { get; set; } = 100;
+
+    public float UnlockCastPowerTime { get; set; } = 1f;
+
+    public bool InfiniteBait { get; set; }
+
+    public bool InfiniteTackle { get; set; }
+
+    public bool AddAutoHookEnchantment { get; set; }
+
+    public bool AddEfficientEnchantment { get; set; }
+
+    public bool AddMasterEnchantment { get; set; }
+
+    public bool AddPreservingEnchantment { get; set; }
+
+    public bool RemoveWhenUnequipped { get; set; } = true;
+
+    internal ModConfig CreateDraft()
+    {
+        ModConfig draft = (ModConfig)this.MemberwiseClone();
+        draft.EnableAutomationButton = KeybindList.Parse(this.EnableAutomationButton.ToString());
+        draft.CatchTreasureButton = KeybindList.Parse(this.CatchTreasureButton.ToString());
+        draft.OpenConfigMenuButton = KeybindList.Parse(this.OpenConfigMenuButton.ToString());
+        draft.JunkIgnoreList = [.. this.JunkIgnoreList];
+        return draft;
+    }
+}

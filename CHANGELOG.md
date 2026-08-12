@@ -12,3 +12,6 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Initial SMAPI project scaffold for Fishing Assistant 3.
 - Startup log confirming that the mod loaded.
 - Development roadmap and project documentation.
+- A typed version 3 configuration schema with legacy-compatible keys and keybinds.
+- Configuration normalization, migration reporting, editable drafts, and unit tests.
+- Protection against overwriting configuration files created by a newer schema.

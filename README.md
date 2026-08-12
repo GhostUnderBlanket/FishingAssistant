@@ -20,8 +20,10 @@ criteria.
 
 ## Current status
 
-The mod currently contains only the SMAPI project scaffold and startup logging. Feature
-development will happen incrementally on the `development` branch.
+The mod currently contains the SMAPI project scaffold and the first version of its
+typed, validated configuration layer. Gameplay automation and the custom configuration
+menu are not implemented yet. Development happens incrementally on the `development`
+branch.
 
 ## Requirements
 
