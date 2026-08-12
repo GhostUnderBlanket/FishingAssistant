@@ -44,7 +44,24 @@ discarding the player's choices.
 
 ## Draft behavior
 
-`ConfigManager.CreateDraft` creates an independent deep copy of mutable configuration
-members. The custom menu will edit only this draft. Applying validates and persists a
-copy before replacing the active configuration; canceling can discard the draft
-without changing runtime or saved settings.
+`ConfigManager.CreateEditSession` creates an independent deep copy of mutable
+configuration members. The custom menu edits only this draft. Applying validates and
+persists a copy before replacing the active configuration; canceling can discard the
+draft without changing runtime or saved settings.
+
+## Custom menu status
+
+The first menu slice can edit the five core automation toggles and provides Apply,
+Cancel, and Reset Defaults actions. It recalculates its bounds when the viewport
+changes, fits narrow split-screen viewports, supports mouse and basic controller/snappy
+navigation, and displays descriptions as tooltips. Reset changes only the draft until
+Apply is selected.
+
+Each open menu draft carries the configuration revision it was created from. If a
+second local split-screen player applies a newer draft first, the stale menu is asked to
+close and reopen instead of silently overwriting the other player's changes.
+
+The menu opens through `OpenConfigMenuButton` or the `fa_config` SMAPI console command.
+The console command remains available while the default menu keybind is unbound. More
+categories and control types will be added incrementally; this initial slice is not yet
+a complete replacement for editing every setting in `config.json`.

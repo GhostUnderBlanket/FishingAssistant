@@ -1,6 +1,8 @@
 using FishingAssistant.Configuration;
+using FishingAssistant.UI;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewValley;
 
 namespace FishingAssistant;
 
@@ -20,6 +22,9 @@ internal sealed class ModEntry : Mod
         );
 
         helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+        helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        helper.ConsoleCommands.Add("fa_config", "Open the Fishing Assistant configuration menu.",
+            this.OnConfigCommand);
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -32,6 +37,61 @@ internal sealed class ModEntry : Mod
                 $"and {report.Warnings.Count} warning(s).",
                 LogLevel.Info
             );
+        }
+    }
+
+    private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
+    {
+        if (!this.configManager!.Active.OpenConfigMenuButton.JustPressed())
+            return;
+
+        this.Helper.Input.SuppressActiveKeybinds(this.configManager.Active.OpenConfigMenuButton);
+        this.TryOpenConfigMenu();
+    }
+
+    private void OnConfigCommand(string command, string[] arguments)
+    {
+        this.TryOpenConfigMenu();
+    }
+
+    private void TryOpenConfigMenu()
+    {
+        if (Game1.activeClickableMenu is ConfigurationMenu menu)
+        {
+            menu.exitThisMenu();
+            return;
+        }
+
+        if (!Context.IsWorldReady || !Context.IsPlayerFree || Game1.currentMinigame is not null)
+        {
+            this.Monitor.Log("The configuration menu can't open until a player is free in the world.",
+                LogLevel.Info);
+            return;
+        }
+
+        Game1.activeClickableMenu = new ConfigurationMenu(
+            this.configManager!.CreateEditSession(),
+            this.ApplyConfig,
+            ConfigManager.CreateDefaultDraft,
+            this.Helper.Translation
+        );
+    }
+
+    private ConfigValidationReport ApplyConfig(ConfigEditSession session)
+    {
+        try
+        {
+            return this.configManager!.Apply(session);
+        }
+        catch (InvalidOperationException exception)
+        {
+            this.Monitor.Log($"The configuration draft couldn't be applied: {exception.Message}", LogLevel.Warn);
+            throw;
+        }
+        catch (Exception exception)
+        {
+            this.Monitor.Log($"The configuration draft couldn't be saved.\n{exception}", LogLevel.Error);
+            throw;
         }
     }
 }

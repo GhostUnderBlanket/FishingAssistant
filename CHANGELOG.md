@@ -19,3 +19,7 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Warnings for dependent settings that are inactive or overridden.
 - Safe field-level recovery for unknown enum names and non-destructive fallback for
   unreadable configuration files.
+- Initial responsive custom configuration menu with draft-based automation checkboxes,
+  Apply, Cancel, Reset Defaults, mouse input, and controller navigation.
+- Configuration-menu opening through a configurable keybind or the `fa_config` console
+  command.

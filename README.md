@@ -20,10 +20,11 @@ criteria.
 
 ## Current status
 
-The mod currently contains the SMAPI project scaffold and the first version of its
-typed, validated configuration layer. Gameplay automation and the custom configuration
-menu are not implemented yet. Development happens incrementally on the `development`
-branch.
+The mod currently contains the SMAPI project scaffold, a typed and validated
+configuration layer, and the first vertical slice of its custom configuration menu.
+The menu can edit the five core automation toggles through a safe draft, but the full
+option set and gameplay automation are not implemented yet. Development happens
+incrementally on the `development` branch.
 
 ## Requirements
 

@@ -7,6 +7,7 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
     private const string ConfigFileName = "config.json";
     private IItemCatalog? itemCatalog;
     private bool loadedFutureSchema;
+    private int revision;
 
     public ModConfig Active { get; private set; } = new();
 
@@ -22,6 +23,7 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         {
             loaded = new ModConfig();
             this.Active = loaded;
+            this.revision++;
 
             ConfigValidationReport failedReport = new();
             failedReport.Warn(ConfigFileName, exception.GetType().Name,
@@ -49,6 +51,7 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         this.loadedFutureSchema = loaded.ConfigVersion > ModConfig.CurrentVersion;
 
         this.Active = loaded;
+        this.revision++;
         if (report.WasChanged && !this.loadedFutureSchema)
             helper.WriteConfig(this.Active);
 
@@ -58,9 +61,10 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         return report;
     }
 
-    public ConfigValidationReport Apply(ModConfig draft)
+    public ConfigValidationReport Apply(ConfigEditSession session)
     {
-        ArgumentNullException.ThrowIfNull(draft);
+        ArgumentNullException.ThrowIfNull(session);
+        session.EnsureCurrent(this.revision);
         if (this.loadedFutureSchema)
         {
             throw new InvalidOperationException(
@@ -68,10 +72,11 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
             );
         }
 
-        ModConfig validated = draft.CreateDraft();
+        ModConfig validated = session.Draft.CreateDraft();
         ConfigValidationReport report = ConfigValidator.Normalize(validated, this.itemCatalog);
         helper.WriteConfig(validated);
         this.Active = validated;
+        this.revision++;
         this.LogCorrections(report);
         this.LogWarnings(report);
         return report;
@@ -84,16 +89,19 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         this.itemCatalog = itemCatalog;
         ConfigValidationReport report = ConfigValidator.NormalizeItems(this.Active, itemCatalog);
         if (report.WasChanged && !this.loadedFutureSchema)
+        {
             helper.WriteConfig(this.Active);
+            this.revision++;
+        }
 
         this.LogCorrections(report);
         this.LogWarnings(report);
         return report;
     }
 
-    public ModConfig CreateDraft()
+    public ConfigEditSession CreateEditSession()
     {
-        return this.Active.CreateDraft();
+        return new ConfigEditSession(this.Active.CreateDraft(), this.revision);
     }
 
     public static ModConfig CreateDefaultDraft()
