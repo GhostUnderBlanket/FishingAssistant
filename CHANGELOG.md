@@ -44,8 +44,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   while unrelated festival contexts remain blocked.
 - Per-screen automatic fishing-minigame control which steers the vanilla fishing bar
   toward the fish without directly changing catch progress or results.
-- Per-screen treasure targeting toggled with the configured treasure key, including
-  catch-progress hysteresis and HUD status.
+- Config-driven treasure targeting for automatic minigame play, including safe
+  catch-progress hysteresis.
 - Functional normal and golden treasure chance overrides applied once per catch, with
   `Default`, `Always`, and `Never` behavior while festival rules remain vanilla.
 - A per-screen Debug action which warps the local player to the ocean-fishing spot by
@@ -87,9 +87,11 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Replaced the text automation-status HUD with the compact Fishing Assistant 2-style
-  icon panel: fishing automation above treasure targeting, with dimmed off states and
-  warning colors for paused or faulted automation.
+- Replaced the text automation-status HUD with a compact Fishing Assistant 2-style
+  fishing icon, with a dimmed off state and warning colors for paused or faulted
+  automation.
+- Replaced the temporary treasure-targeting hotkey and HUD icon with one persistent
+  checkbox in the custom configuration menu.
 - Replaced price-threshold junk classification with explicit visual item selection.
 - Replaced bait, tackle, and starter-rod cycling controls with searchable visual item
   pickers, and increased spacing in the remaining value selectors.

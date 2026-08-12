@@ -17,8 +17,7 @@ internal static class AutomationHudLayout
 {
     public const int BoxSize = 96;
     public const int IconSize = 20;
-    public const int TopIconY = 24;
-    public const int BottomIconY = 52;
+    public const int IconY = 38;
     public const int ScreenMargin = 8;
     public const int ToolbarGap = 2;
     public const float IconScale = 2f;

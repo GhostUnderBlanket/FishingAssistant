@@ -17,8 +17,6 @@ internal static class ConfigValidator
         NormalizeVersion(config, report);
         NormalizeKeybind(report, nameof(config.EnableAutomationButton),
             () => config.EnableAutomationButton, value => config.EnableAutomationButton = value, SButton.F5);
-        NormalizeKeybind(report, nameof(config.CatchTreasureButton),
-            () => config.CatchTreasureButton, value => config.CatchTreasureButton = value, SButton.F6);
         NormalizeKeybind(report, nameof(config.OpenConfigMenuButton),
             () => config.OpenConfigMenuButton, value => config.OpenConfigMenuButton = value, SButton.None);
 

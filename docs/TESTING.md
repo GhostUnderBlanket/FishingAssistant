@@ -48,15 +48,15 @@ release-matrix scenarios are completed.
 - Verify automatic casting and hooking in each Stardew Valley fishing festival
   minigame, including countdown, active play, timeout, results, and exit behavior.
 - Confirm unrelated festival events never start fishing automation.
-- With `TreasureChance` set to `Always`, verify the F6 treasure-targeting toggle, HUD
-  status, start/abandon progress thresholds, completed treasure capture, and fallback
-  to fish tracking when no treasure is available. Also verify `Default` and `Never`,
-  plus all three golden-treasure modes.
+- With `TreasureChance` set to `Always`, verify the saved treasure-targeting checkbox,
+  start/abandon progress thresholds, completed treasure capture, and fallback to fish
+  tracking when no treasure is available. Confirm there is no targeting hotkey or HUD
+  icon. Also verify `Default` and `Never`, plus all three golden-treasure modes.
 - With treasure chance set to `Always`, verify instant treasure captures normal and
   golden chests only after they fully appear, works with manual/automatic minigames and
   both skip modes, still requires successfully catching the fish to receive rewards,
-  and does not alter festival results. Repeat with F6 targeting both on and off, then as
-  each split-screen player, multiplayer host, and farmhand.
+  and does not alter festival results. Repeat with config targeting both on and off,
+  then as each split-screen player, multiplayer host, and farmhand.
 - Verify automatic catch-popup closing for normal fish, trash, first catches, records,
   fish ponds, treasure catches, secret notes, and a full inventory. Confirm disabling
   either automation or `AutoClosePopup` leaves the popup under manual control.
@@ -124,8 +124,8 @@ release-matrix scenarios are completed.
   and trash-can reclamation money matches vanilla. Repeat for both split-screen players
   and as multiplayer host/farmhand, confirming only the event's owning inventory is
   changed.
-- Verify the visual status HUD with F5 and F6 independently on/off, every automation
-  state, paused/fault warning colors, toolbar pinned and automatic top/bottom movement,
+- Verify the visual status HUD with F5 on/off, every automation state, paused/fault
+  warning colors, toolbar pinned and automatic top/bottom movement,
   configured left/right placement, UI scale and zoom settings, menus, festivals, and
   small window sizes. Repeat for both split-screen players and confirm each panel uses
   only that screen's session and remains inside its viewport.

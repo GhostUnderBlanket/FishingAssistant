@@ -53,17 +53,6 @@ internal sealed class AutomationRuntime(
         this.Log(transition);
     }
 
-    public void ToggleTreasureTargetingCurrent()
-    {
-        ScreenContext screen = this.screens.Value;
-        bool enabled = screen.Session.ToggleTreasureTargeting();
-        if (!enabled)
-            screen.IsPursuingTreasure = false;
-        monitor.Log(
-            $"Treasure targeting {(enabled ? "enabled" : "disabled")} for local screen {Context.ScreenId}.",
-            LogLevel.Info);
-    }
-
     public void OnTimeChanged(int newTime)
     {
         this.lateNight.OnTimeChanged(getConfig(), this.screens.Value.Session, newTime);
@@ -311,7 +300,7 @@ internal sealed class AutomationRuntime(
             && screen.Session.State == AutomationState.Minigame;
         TreasureTargetDecision target = TreasureTargetPolicy.Decide(bar.ReadTreasureConditions(
             assistanceActive,
-            screen.Session.IsTreasureTargetingEnabled,
+            config.TreasureTargeting,
             screen.IsPursuingTreasure
         ));
         screen.IsPursuingTreasure = target.IsTargetingTreasure;
@@ -333,11 +322,11 @@ internal sealed class AutomationRuntime(
             return false;
 
         bar.CompleteMinigame(
-            screen.Session.IsTreasureTargetingEnabled || config.InstantCatchTreasure);
+            config.TreasureTargeting || config.InstantCatchTreasure);
         screen.IsPursuingTreasure = false;
         monitor.Log(
             $"Skipped the fishing minigame for local screen {Context.ScreenId}; treasure targeting was " +
-            $"{(screen.Session.IsTreasureTargetingEnabled ? "enabled" : "disabled")}.",
+            $"{(config.TreasureTargeting ? "enabled" : "disabled")} in config.",
             LogLevel.Trace);
         return true;
     }

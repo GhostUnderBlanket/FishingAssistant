@@ -9,6 +9,7 @@ internal static class ConfigSchemaInspector
         .GetProperties(BindingFlags.Instance | BindingFlags.Public)
         .Select(property => property.Name)
         .Append("JunkHighestPrice")
+        .Append("CatchTreasureButton")
         .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     public static bool IsLegacyJson(string json)

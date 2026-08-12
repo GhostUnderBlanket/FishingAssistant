@@ -73,19 +73,6 @@ public sealed class AutomationStateMachineTests
     }
 
     [Fact]
-    public void ToggleTreasureTargeting_ChangesOnlyRuntimePreference()
-    {
-        AutomationSession session = new();
-        session.Observe(new(true, true, true));
-
-        Assert.True(session.ToggleTreasureTargeting());
-        Assert.True(session.IsTreasureTargetingEnabled);
-        Assert.Equal(AutomationState.Ready, session.State);
-        Assert.False(session.ToggleTreasureTargeting());
-        Assert.False(session.IsTreasureTargetingEnabled);
-    }
-
-    [Fact]
     public void Disable_StopsEnabledSessionWithExplicitReason()
     {
         AutomationSession session = new();

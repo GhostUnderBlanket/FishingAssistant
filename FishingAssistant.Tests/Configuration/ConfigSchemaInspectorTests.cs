@@ -38,6 +38,7 @@ public sealed class ConfigSchemaInspectorTests
               "ConfigVersion": 2,
               "AutoCastFishingRod": true,
               "JunkHighestPrice": 50,
+              "CatchTreasureButton": "F6",
               "RemovedLegacyOption": 42,
               "FutureOption": "value"
             }

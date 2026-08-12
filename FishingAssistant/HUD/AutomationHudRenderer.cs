@@ -11,14 +11,11 @@ namespace FishingAssistant.HUD;
 internal sealed class AutomationHudRenderer
 {
     private static readonly Rectangle FishingIconSource = new(20, 428, 10, 10);
-    private static readonly Rectangle TreasureIconSource = new(137, 412, 10, 11);
-
     public void Draw(SpriteBatch batch, AutomationSession session, ModConfig config)
     {
         if (!Game1.displayHUD
             || (Game1.eventUp && !Game1.isFestival())
-            || (Game1.currentMinigame is not null && Game1.currentMinigame is not FishingGame)
-            || (!session.IsEnabled && !session.IsTreasureTargetingEnabled))
+            || (Game1.currentMinigame is not null && Game1.currentMinigame is not FishingGame))
         {
             return;
         }
@@ -50,14 +47,8 @@ internal sealed class AutomationHudRenderer
             batch,
             FishingIconSource,
             new Vector2(bounds.Center.X - AutomationHudLayout.IconSize / 2,
-                bounds.Y + AutomationHudLayout.TopIconY),
+                bounds.Y + AutomationHudLayout.IconY),
             AutomationHudVisualPolicy.GetAutomationTint(session.IsEnabled, session.State) * opacity);
-        DrawIcon(
-            batch,
-            TreasureIconSource,
-            new Vector2(bounds.Center.X - AutomationHudLayout.IconSize / 2,
-                bounds.Y + AutomationHudLayout.BottomIconY),
-            Color.White * (session.IsTreasureTargetingEnabled ? opacity : opacity * 0.2f));
 
         return;
 

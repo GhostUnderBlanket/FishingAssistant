@@ -4,8 +4,6 @@ internal sealed class AutomationSession
 {
     public bool IsEnabled { get; private set; } = true;
 
-    public bool IsTreasureTargetingEnabled { get; private set; }
-
     public AutomationState State { get; private set; } = AutomationState.Idle;
 
     public AutomationTransitionReason LastReason { get; private set; } = AutomationTransitionReason.SaveLoaded;
@@ -41,12 +39,6 @@ internal sealed class AutomationSession
 
         this.IsEnabled = false;
         return this.Transition(AutomationState.Idle, reason, wasRecovery: false);
-    }
-
-    public bool ToggleTreasureTargeting()
-    {
-        this.IsTreasureTargetingEnabled = !this.IsTreasureTargetingEnabled;
-        return this.IsTreasureTargetingEnabled;
     }
 
     public AutomationTransition? Reset(AutomationTransitionReason reason)

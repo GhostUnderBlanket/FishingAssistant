@@ -11,7 +11,6 @@ public sealed class ConfigDefaultsTests
 
         Assert.Equal(ModConfig.CurrentVersion, config.ConfigVersion);
         Assert.Equal("F5", config.EnableAutomationButton.ToString());
-        Assert.Equal("F6", config.CatchTreasureButton.ToString());
         Assert.Equal("None", config.OpenConfigMenuButton.ToString());
         Assert.True(config.AutoCastFishingRod);
         Assert.True(config.AutoHookFish);
@@ -27,6 +26,7 @@ public sealed class ConfigDefaultsTests
         Assert.Equal(SkipMinigameBehavior.Off, config.SkipFishingMiniGame);
         Assert.Equal(TreasureChanceBehavior.Default, config.TreasureChance);
         Assert.Equal(TreasureChanceBehavior.Default, config.GoldenTreasureChance);
+        Assert.False(config.TreasureTargeting);
         Assert.Equal("(T)AdvancedIridiumRod", config.StartWithFishingRod);
         Assert.Equal(1f, config.AutoCastDelaySeconds);
     }

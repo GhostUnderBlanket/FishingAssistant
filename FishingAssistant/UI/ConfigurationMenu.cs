@@ -567,6 +567,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => $"{value:+0;-0;0}");
                 this.AddDefinition("instant_treasure", () => this.session.Draft.InstantCatchTreasure,
                     value => this.session.Draft.InstantCatchTreasure = value);
+                this.AddDefinition("treasure_targeting", () => this.session.Draft.TreasureTargeting,
+                    value => this.session.Draft.TreasureTargeting = value);
                 this.AddEnumDefinition("treasure_chance", () => this.session.Draft.TreasureChance,
                     value => this.session.Draft.TreasureChance = value);
                 this.AddEnumDefinition("golden_treasure_chance", () => this.session.Draft.GoldenTreasureChance,
@@ -614,8 +616,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
             case ConfigCategory.Controls:
                 this.AddKeybindDefinition("toggle_automation", () => this.session.Draft.EnableAutomationButton,
                     value => this.session.Draft.EnableAutomationButton = value);
-                this.AddKeybindDefinition("toggle_treasure", () => this.session.Draft.CatchTreasureButton,
-                    value => this.session.Draft.CatchTreasureButton = value);
                 this.AddKeybindDefinition("open_config", () => this.session.Draft.OpenConfigMenuButton,
                     value => this.session.Draft.OpenConfigMenuButton = value);
                 break;

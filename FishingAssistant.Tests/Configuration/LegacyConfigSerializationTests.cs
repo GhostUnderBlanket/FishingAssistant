@@ -32,7 +32,6 @@ public sealed class LegacyConfigSerializationTests
 
         Assert.NotNull(config);
         Assert.Equal("F5", config.EnableAutomationButton.ToString());
-        Assert.Equal("F6", config.CatchTreasureButton.ToString());
         Assert.Equal("F7", config.OpenConfigMenuButton.ToString());
         Assert.Equal(HudPosition.Right, config.ModStatusPosition);
         Assert.Equal(InventoryFullAction.Drop, config.ActionIfInventoryFull);
@@ -42,6 +41,7 @@ public sealed class LegacyConfigSerializationTests
         Assert.Equal(FishQualityPreference.Iridium, config.PreferFishQuality);
         Assert.Equal(TreasureChanceBehavior.Always, config.TreasureChance);
         Assert.Equal(TreasureChanceBehavior.Never, config.GoldenTreasureChance);
+        Assert.False(config.TreasureTargeting);
     }
 
     [Fact]
@@ -51,7 +51,8 @@ public sealed class LegacyConfigSerializationTests
         {
             ModStatusPosition = HudPosition.Right,
             SkipFishingMiniGame = SkipMinigameBehavior.SkipOnlyCaught,
-            PreferFishQuality = FishQualityPreference.Gold
+            PreferFishQuality = FishQualityPreference.Gold,
+            TreasureTargeting = true
         };
 
         string json = JsonConvert.SerializeObject(config, SmapiCompatibleSettings);
@@ -59,6 +60,7 @@ public sealed class LegacyConfigSerializationTests
         Assert.Contains("\"ModStatusPosition\":\"Right\"", json);
         Assert.Contains("\"SkipFishingMiniGame\":\"SkipOnlyCaught\"", json);
         Assert.Contains("\"PreferFishQuality\":\"Gold\"", json);
+        Assert.Contains("\"TreasureTargeting\":true", json);
     }
 
     [Fact]

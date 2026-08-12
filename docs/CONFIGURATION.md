@@ -1,7 +1,7 @@
 # Configuration
 
 Fishing Assistant 3 stores its settings in SMAPI's standard `config.json`. The current
-schema version is `4`. Saved configuration, the active validated configuration, and an
+schema version is `6`. Saved configuration, the active validated configuration, and an
 editable menu draft are treated as separate objects.
 
 ## Compatibility and migration
@@ -14,9 +14,14 @@ SMAPI.
 
 Unknown top-level properties are reported in the SMAPI log before a migrated file is
 written. They are not silently treated as supported options. A file whose
-`ConfigVersion` is newer than 4 is loaded read-only: its schema version is not
+`ConfigVersion` is newer than 6 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
+
+Schema version 6 retires `CatchTreasureButton`. Existing copies are accepted silently
+during migration and omitted when the normalized file is rewritten. The replacement
+`TreasureTargeting` boolean is edited only through the custom configuration menu and
+defaults to off.
 
 ## Validation
 

@@ -25,13 +25,13 @@ The mod currently contains the SMAPI project scaffold, a typed and validated
 configuration layer, a complete first pass of its custom configuration menu, and the
 first runtime automation slices. The menu can edit every setting through a safe draft.
 Per-screen runtime sessions can be toggled independently, observe the current fishing
-phase, display automation and treasure targeting through a compact visual HUD,
+phase, display automation through a compact visual HUD,
 automatically cast toward validated fishing water
 after a configurable delay, hook a fish when a real nibble occurs, and steer the vanilla
 fishing bar toward the fish. Other gameplay automation stages are not connected yet.
 The assistant also closes each normal catch popup after a short viewing delay when
 that automation stage is enabled.
-Treasure targeting is a per-screen runtime toggle and defaults to off.
+Treasure targeting is a saved configuration option and defaults to off.
 Normal and golden treasure chance overrides are functional outside festival minigames.
 The optional instant-treasure rule captures a fishing chest as soon as it has fully
 appeared, or preserves it when skipping the minigame, while festivals stay vanilla.

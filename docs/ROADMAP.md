@@ -178,7 +178,8 @@ Goal: restore advanced customization and make the assistant's decisions visible.
 - Bite timing, treasure chance, golden treasure, perfect catch, fish quality, fish size,
   and multi-catch rules.
 - Fish preview with caught/uncaught and legendary visibility rules.
-- HUD status for automation, treasure targeting, pause reason, and current state.
+- Visual HUD status for automation, pause reason, and exceptional runtime state;
+  treasure targeting remains a config-only option.
 - Responsive HUD placement that respects toolbar position, UI scale, menus, festivals,
   and each split-screen viewport.
 - Starter rod and auto-trash features, redesigned with explicit safeguards and item ID

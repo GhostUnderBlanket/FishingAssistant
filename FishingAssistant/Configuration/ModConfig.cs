@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 5;
+    internal const int CurrentVersion = 6;
     internal const string DefaultStarterRod = "(T)AdvancedIridiumRod";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -20,8 +20,6 @@ internal sealed class ModConfig
     public int ConfigVersion { get; set; } = CurrentVersion;
 
     public KeybindList EnableAutomationButton { get; set; } = new(SButton.F5);
-
-    public KeybindList CatchTreasureButton { get; set; } = new(SButton.F6);
 
     public KeybindList OpenConfigMenuButton { get; set; } = new(SButton.None);
 
@@ -93,6 +91,8 @@ internal sealed class ModConfig
 
     public bool InstantCatchTreasure { get; set; }
 
+    public bool TreasureTargeting { get; set; }
+
     public TreasureChanceBehavior TreasureChance { get; set; } = TreasureChanceBehavior.Default;
 
     public TreasureChanceBehavior GoldenTreasureChance { get; set; } = TreasureChanceBehavior.Default;
@@ -133,7 +133,6 @@ internal sealed class ModConfig
     {
         ModConfig draft = (ModConfig)this.MemberwiseClone();
         draft.EnableAutomationButton = KeybindList.Parse(this.EnableAutomationButton.ToString());
-        draft.CatchTreasureButton = KeybindList.Parse(this.CatchTreasureButton.ToString());
         draft.OpenConfigMenuButton = KeybindList.Parse(this.OpenConfigMenuButton.ToString());
         draft.JunkList = [.. this.JunkList];
         draft.JunkIgnoreList = [.. this.JunkIgnoreList];
