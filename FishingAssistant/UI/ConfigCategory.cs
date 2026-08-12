@@ -7,5 +7,6 @@ internal enum ConfigCategory
     Equipment,
     Fishing,
     Display,
-    Enchantments
+    Enchantments,
+    Controls
 }

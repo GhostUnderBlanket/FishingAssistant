@@ -9,6 +9,7 @@ namespace FishingAssistant;
 internal sealed class ModEntry : Mod
 {
     private ConfigManager? configManager;
+    private GameItemCatalog? itemCatalog;
 
     public override void Entry(IModHelper helper)
     {
@@ -29,7 +30,8 @@ internal sealed class ModEntry : Mod
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
-        ConfigValidationReport report = this.configManager!.ValidateItems(new GameItemCatalog());
+        this.itemCatalog = new GameItemCatalog();
+        ConfigValidationReport report = this.configManager!.ValidateItems(this.itemCatalog);
         if (report.Corrections.Count > 0 || report.Warnings.Count > 0)
         {
             this.Monitor.Log(
@@ -42,6 +44,23 @@ internal sealed class ModEntry : Mod
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
+        if (Game1.activeClickableMenu is ConfigurationMenu { IsListeningForKeybind: true } menu)
+        {
+            if (!e.Pressed.Any())
+                return;
+
+            SButton[] buttons = e.Held
+                .Concat(e.Pressed)
+                .Where(button => button != SButton.None)
+                .Distinct()
+                .ToArray();
+            foreach (SButton button in e.Pressed)
+                this.Helper.Input.Suppress(button);
+
+            menu.ReceiveKeybindInput(buttons);
+            return;
+        }
+
         if (!this.configManager!.Active.OpenConfigMenuButton.JustPressed())
             return;
 
@@ -73,6 +92,7 @@ internal sealed class ModEntry : Mod
             this.configManager!.CreateEditSession(),
             this.ApplyConfig,
             ConfigManager.CreateDefaultDraft,
+            this.itemCatalog!,
             this.Helper.Translation
         );
     }

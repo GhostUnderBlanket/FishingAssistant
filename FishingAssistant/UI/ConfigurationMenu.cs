@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
 
@@ -23,6 +24,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly Func<ConfigEditSession, ConfigValidationReport> apply;
     private readonly Func<ModConfig> createDefaults;
     private readonly Func<string, string> translate;
+    private readonly IConfigItemSource itemSource;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
     private readonly List<ClickableComponent> categoryButtons = [];
@@ -39,11 +41,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
         ConfigEditSession session,
         Func<ConfigEditSession, ConfigValidationReport> apply,
         Func<ModConfig> createDefaults,
+        IConfigItemSource itemSource,
         ITranslationHelper translations)
     {
         this.session = session;
         this.apply = apply;
         this.createDefaults = createDefaults;
+        this.itemSource = itemSource;
         this.translate = key => translations.Get(key);
 
         this.RebuildComponents();
@@ -52,13 +56,29 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     private int MaximumScrollOffset => Math.Max(0, this.definitions.Count - this.layout.VisibleOptionCount);
 
+    public bool IsListeningForKeybind => this.options.OfType<ConfigKeybind>().Any(control => control.IsListening);
+
+    public void ReceiveKeybindInput(IReadOnlyList<SButton> buttons)
+    {
+        this.options.OfType<ConfigKeybind>().FirstOrDefault(control => control.IsListening)?.Capture(buttons);
+    }
+
     public override bool areGamePadControlsImplemented() => true;
 
     public override bool showWithoutTransparencyIfOptionIsSet() => true;
 
     public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
     {
+        this.CancelKeybindListening();
         this.RebuildComponents();
+    }
+
+    public override bool readyToClose() => !this.IsListeningForKeybind;
+
+    public override void emergencyShutDown()
+    {
+        this.CancelKeybindListening();
+        base.emergencyShutDown();
     }
 
     public override void setUpForGamePadMode()
@@ -129,6 +149,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveKeyPress(Keys key)
     {
+        if (this.IsListeningForKeybind)
+            return;
+
         if (Game1.options.doesInputListContain(Game1.options.menuButton, key))
         {
             base.receiveKeyPress(key);
@@ -153,6 +176,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveGamePadButton(Buttons button)
     {
+        if (this.IsListeningForKeybind)
+            return;
+
         switch (button)
         {
             case Buttons.A:
@@ -226,6 +252,20 @@ internal sealed class ConfigurationMenu : IClickableMenu
             drawHoverText(batch, tooltip, Game1.smallFont);
 
         this.drawMouse(batch);
+    }
+
+    protected override void cleanupBeforeExit()
+    {
+        this.CancelKeybindListening();
+        base.cleanupBeforeExit();
+    }
+
+    private void CancelKeybindListening()
+    {
+        foreach (ConfigKeybind control in this.options.OfType<ConfigKeybind>())
+            control.CancelListening();
+
+        GameMenu.forcePreventClose = false;
     }
 
     private void DrawHeader(SpriteBatch batch)
@@ -470,8 +510,15 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.SpawnBaitIfDontHave = value);
                 this.AddNumberDefinition("bait_amount", () => this.session.Draft.BaitAmountToSpawn,
                     value => this.session.Draft.BaitAmountToSpawn = Convert.ToInt32(value), 1, 999, 1);
+                this.AddItemDefinition("preferred_bait", ConfigItemKind.Bait, "Any",
+                    () => this.session.Draft.PreferredBait, value => this.session.Draft.PreferredBait = value);
                 this.AddDefinition("attach_tackle", () => this.session.Draft.AutoAttachTackles,
                     value => this.session.Draft.AutoAttachTackles = value);
+                this.AddItemDefinition("preferred_tackle", ConfigItemKind.Tackle, "Any",
+                    () => this.session.Draft.PreferredTackle, value => this.session.Draft.PreferredTackle = value);
+                this.AddItemDefinition("second_tackle", ConfigItemKind.Tackle, "Any",
+                    () => this.session.Draft.PreferredAdvIridiumTackle,
+                    value => this.session.Draft.PreferredAdvIridiumTackle = value);
                 this.AddDefinition("spawn_tackle", () => this.session.Draft.SpawnTackleIfDontHave,
                     value => this.session.Draft.SpawnTackleIfDontHave = value);
                 this.AddDefinition("infinite_bait", () => this.session.Draft.InfiniteBait,
@@ -510,6 +557,10 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddNumberDefinition("unlock_cast_time", () => this.session.Draft.UnlockCastPowerTime,
                     value => this.session.Draft.UnlockCastPowerTime = (float)value, 0, 3, 0.1,
                     value => $"{value:0.0}s");
+                this.AddItemDefinition("starter_rod", ConfigItemKind.FishingRod, "None",
+                    () => this.session.Draft.StartWithFishingRod,
+                    value => this.session.Draft.StartWithFishingRod = value,
+                    "config.value.no_starter_rod");
                 break;
             case ConfigCategory.Display:
                 this.AddEnumDefinition("hud_position", () => this.session.Draft.ModStatusPosition,
@@ -536,6 +587,14 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.AddPreservingEnchantment = value);
                 this.AddDefinition("remove_enchantments", () => this.session.Draft.RemoveWhenUnequipped,
                     value => this.session.Draft.RemoveWhenUnequipped = value);
+                break;
+            case ConfigCategory.Controls:
+                this.AddKeybindDefinition("toggle_automation", () => this.session.Draft.EnableAutomationButton,
+                    value => this.session.Draft.EnableAutomationButton = value);
+                this.AddKeybindDefinition("toggle_treasure", () => this.session.Draft.CatchTreasureButton,
+                    value => this.session.Draft.CatchTreasureButton = value);
+                this.AddKeybindDefinition("open_config", () => this.session.Draft.OpenConfigMenuButton,
+                    value => this.session.Draft.OpenConfigMenuButton = value);
                 break;
         }
     }
@@ -586,6 +645,53 @@ internal sealed class ConfigurationMenu : IClickableMenu
             setValue,
             (current, direction) => OptionAdjustment.Step(current, direction, increment, minimum, maximum),
             format ?? (value => value.ToString("0.##"))
+        )));
+    }
+
+    private void AddItemDefinition(
+        string key,
+        ConfigItemKind kind,
+        string sentinel,
+        Func<string> getValue,
+        Action<string> setValue,
+        string? sentinelLabelKey = null)
+    {
+        ConfigItem[] items = this.itemSource.GetAll(kind).ToArray();
+        string[] values = [sentinel, .. items.Select(item => item.QualifiedItemId)];
+        Dictionary<string, string> labels = items.ToDictionary(
+            item => item.QualifiedItemId,
+            item => item.DisplayName,
+            StringComparer.OrdinalIgnoreCase
+        );
+        labels[sentinel] = this.translate(
+            sentinelLabelKey ?? $"config.value.{sentinel.ToLowerInvariant()}"
+        );
+
+        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigValueSelector<string>(
+            id,
+            bounds,
+            this.translate($"config.option.{key}"),
+            this.translate($"config.option.{key}.description"),
+            getValue,
+            setValue,
+            (current, direction) => OptionAdjustment.Cycle(values, current, direction),
+            value => labels.GetValueOrDefault(value, value)
+        )));
+    }
+
+    private void AddKeybindDefinition(
+        string key,
+        Func<KeybindList> getValue,
+        Action<KeybindList> setValue)
+    {
+        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigKeybind(
+            id,
+            bounds,
+            this.translate($"config.option.{key}"),
+            this.translate($"config.option.{key}.description"),
+            this.translate("config.keybind.listening"),
+            getValue,
+            setValue
         )));
     }
 

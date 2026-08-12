@@ -66,5 +66,10 @@ close and reopen instead of silently overwriting the other player's changes.
 
 The menu opens through `OpenConfigMenuButton` or the `fa_config` SMAPI console command.
 The console command remains available while the default menu keybind is unbound. More
-Item and keybind controls will be added next; the menu is not yet a complete replacement
-for editing every setting in `config.json`.
+Item selectors are populated from the game registry after `GameLaunched`, so loaded
+content-pack bait and tackle can appear by localized name. The controls category can
+capture keyboard, mouse, controller, and multi-button keybinds through SMAPI. Escape or
+controller B cancels capture; Backspace or Delete clears a binding.
+
+The junk-ignore list editor is still pending, so the menu is not yet a complete
+replacement for editing every setting in `config.json`.

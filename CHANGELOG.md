@@ -26,6 +26,10 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Responsive category navigation and scrolling for all boolean configuration settings.
 - Reusable enum selectors and numeric steppers with mouse, keyboard, and controller
   input for all enum and numeric configuration settings.
+- Item selectors populated from Stardew Valley's loaded bait, tackle, and fishing-rod
+  data, including items registered by other mods.
+- A keybind editor which captures keyboard, mouse, controller, and multi-button input
+  through SMAPI while preserving draft/apply/cancel behavior.
 
 ### Fixed
 

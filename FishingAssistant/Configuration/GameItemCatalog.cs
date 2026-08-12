@@ -3,7 +3,7 @@ using StardewValley.ItemTypeDefinitions;
 
 namespace FishingAssistant.Configuration;
 
-internal sealed class GameItemCatalog : IItemCatalog
+internal sealed class GameItemCatalog : IItemCatalog, IConfigItemSource
 {
     private static readonly HashSet<string> SupportedStarterRods =
     [
@@ -25,6 +25,30 @@ internal sealed class GameItemCatalog : IItemCatalog
             _ => ConfigItemKind.Other
         };
 
-        return new ConfigItem(data.QualifiedItemId, kind);
+        return new ConfigItem(data.QualifiedItemId, kind, data.DisplayName);
+    }
+
+    public IReadOnlyList<ConfigItem> GetAll(ConfigItemKind kind)
+    {
+        IEnumerable<string> itemIds = kind switch
+        {
+            ConfigItemKind.Bait => Game1.objectData
+                .Where(pair => pair.Value.Category == StardewValley.Object.baitCategory)
+                .Select(pair => ItemRegistry.ManuallyQualifyItemId(pair.Key, "(O)")),
+            ConfigItemKind.Tackle => Game1.objectData
+                .Where(pair => pair.Value.Category == StardewValley.Object.tackleCategory)
+                .Select(pair => ItemRegistry.ManuallyQualifyItemId(pair.Key, "(O)")),
+            ConfigItemKind.FishingRod => SupportedStarterRods,
+            _ => []
+        };
+
+        return itemIds
+            .Select(this.Find)
+            .Where(item => item?.Kind == kind)
+            .Select(item => item!)
+            .DistinctBy(item => item.QualifiedItemId, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(item => item.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(item => item.QualifiedItemId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 }
