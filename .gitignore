@@ -1,0 +1,12 @@
+# Repository-local development tools
+.tools/
+
+# Decompiled proprietary game assemblies (reference use only)
+.reference/
+
+# Local agent working instructions
+AGENT.md
+
+# .NET build output
+bin/
+obj/
