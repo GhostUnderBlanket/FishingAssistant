@@ -24,3 +24,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Configuration-menu opening through a configurable keybind or the `fa_config` console
   command.
 - Responsive category navigation and scrolling for all boolean configuration settings.
+
+### Fixed
+
+- Category and scrolling arrows now use game sprites instead of font glyphs, avoiding
+  the left arrow rendering as a heart in Stardew Valley's dialogue font.

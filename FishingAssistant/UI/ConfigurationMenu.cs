@@ -589,6 +589,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
             button.bounds.X, button.bounds.Y, button.bounds.Width, button.bounds.Height,
             highlighted ? Color.Wheat : Color.White);
 
+        if (this.TryDrawArrow(batch, button))
+            return;
+
         string label = MenuText.Fit(button.name, Game1.smallFont, button.bounds.Width - 12);
         Vector2 size = Game1.smallFont.MeasureString(label);
         Vector2 position = new(
@@ -596,6 +599,40 @@ internal sealed class ConfigurationMenu : IClickableMenu
             button.bounds.Center.Y - size.Y / 2
         );
         Utility.drawTextWithShadow(batch, label, Game1.smallFont, position, Game1.textColor);
+    }
+
+    private bool TryDrawArrow(SpriteBatch batch, ClickableComponent button)
+    {
+        float? rotation = button.myID switch
+        {
+            PreviousCategoryButtonId => -MathF.PI / 2f,
+            NextCategoryButtonId => MathF.PI / 2f,
+            ScrollUpButtonId => 0f,
+            ScrollDownButtonId => MathF.PI,
+            _ => null
+        };
+        if (rotation is null)
+            return false;
+
+        Rectangle source = new(421, 459, 11, 12);
+        float scale = Math.Min(
+            (button.bounds.Width - 12f) / source.Width,
+            (button.bounds.Height - 12f) / source.Height
+        );
+        scale = Math.Max(1f, Math.Min(Game1.pixelZoom, scale));
+
+        batch.Draw(
+            Game1.mouseCursors,
+            button.bounds.Center.ToVector2(),
+            source,
+            Color.White,
+            rotation.Value,
+            new Vector2(source.Width / 2f, source.Height / 2f),
+            scale,
+            SpriteEffects.None,
+            0.9f
+        );
+        return true;
     }
 
     private void RestoreSelection(int? selectedId)
