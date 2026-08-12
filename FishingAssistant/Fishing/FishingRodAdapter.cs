@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Enchantments;
+using StardewValley.Minigames;
 using StardewValley.Tools;
 
 namespace FishingAssistant.Fishing;
@@ -17,6 +18,8 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
     }
 
     public bool IsTimingCast => rod.isTimingCast;
+
+    public bool IsSupportedFishingMinigame => Game1.currentMinigame is FishingGame { gameDone: false };
 
     public AutoHookConditions ReadAutoHookConditions(
         bool automationEnabled,
@@ -33,6 +36,7 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             rod.hasEnchantmentOfType<AutoHookEnchantment>(),
             Game1.activeClickableMenu is not null,
             Game1.isFestival(),
+            this.IsSupportedFishingMinigame,
             rod is
             {
                 hit: false,
@@ -60,6 +64,7 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             player.isMoving(),
             player.Stamina > staminaCost,
             Game1.isFestival(),
+            this.IsSupportedFishingMinigame,
             this.IsCastTargetFishable(castPower)
         );
     }

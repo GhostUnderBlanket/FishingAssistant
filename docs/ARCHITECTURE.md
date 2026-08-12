@@ -63,6 +63,10 @@ pure policy and a narrow rod adapter; it does not send multiplayer messages or m
 shared-world state directly. Automatic hooking uses the same boundary and a per-screen
 latch so one nibble can trigger at most one automated hook attempt.
 
+Festival automation is denied by default. The current exception is the game's active
+`FishingGame` minigame while it is still running; casting applies an additional startup
+buffer so automation cannot act during the minigame countdown.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:

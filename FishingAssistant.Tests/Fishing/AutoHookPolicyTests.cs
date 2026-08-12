@@ -6,7 +6,7 @@ namespace FishingAssistant.Tests.Fishing;
 public sealed class AutoHookPolicyTests
 {
     private static AutoHookConditions SafeConditions => new(
-        true, true, AutomationState.Hooking, true, false, false, false, false, true);
+        true, true, AutomationState.Hooking, true, false, false, false, false, false, true);
 
     [Fact]
     public void Decide_HooksOneSafeNibble()
@@ -57,6 +57,30 @@ public sealed class AutoHookPolicyTests
             HasBlockingMenu = blockingMenu,
             IsFestival = festival,
             IsHookSafe = hookSafe
+        };
+
+        Assert.Equal(AutoHookDecision.Wait, AutoHookPolicy.Decide(conditions));
+    }
+
+    [Fact]
+    public void Decide_AllowsSupportedFestivalFishingMinigame()
+    {
+        AutoHookConditions conditions = SafeConditions with
+        {
+            IsFestival = true,
+            IsSupportedFishingMinigame = true
+        };
+
+        Assert.Equal(AutoHookDecision.Hook, AutoHookPolicy.Decide(conditions));
+    }
+
+    [Fact]
+    public void Decide_StillBlocksNonFishingFestivalContext()
+    {
+        AutoHookConditions conditions = SafeConditions with
+        {
+            IsFestival = true,
+            IsSupportedFishingMinigame = false
         };
 
         Assert.Equal(AutoHookDecision.Wait, AutoHookPolicy.Decide(conditions));

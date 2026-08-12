@@ -18,6 +18,7 @@ internal sealed record AutoHookConditions(
     bool HasAutoHookEnchantment,
     bool HasBlockingMenu,
     bool IsFestival,
+    bool IsSupportedFishingMinigame,
     bool IsHookSafe);
 
 internal static class AutoHookPolicy
@@ -35,7 +36,7 @@ internal static class AutoHookPolicy
             && !conditions.HookAlreadyAttempted
             && !conditions.HasAutoHookEnchantment
             && !conditions.HasBlockingMenu
-            && !conditions.IsFestival
+            && (!conditions.IsFestival || conditions.IsSupportedFishingMinigame)
             && conditions.IsHookSafe;
         return shouldHook ? AutoHookDecision.Hook : AutoHookDecision.Wait;
     }

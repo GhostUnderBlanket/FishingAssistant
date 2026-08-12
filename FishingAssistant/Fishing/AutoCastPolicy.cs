@@ -18,6 +18,7 @@ internal sealed record AutoCastConditions(
     bool IsMoving,
     bool HasEnoughStamina,
     bool IsFestival,
+    bool IsSupportedFishingMinigame,
     bool IsTargetFishable);
 
 internal static class AutoCastPolicy
@@ -32,11 +33,11 @@ internal static class AutoCastPolicy
         bool safe = conditions.AutomationEnabled
             && conditions.AutoCastEnabled
             && conditions.State == AutomationState.Ready
-            && conditions.IsPlayerFree
+            && (conditions.IsPlayerFree || conditions.IsSupportedFishingMinigame)
             && conditions.CanMove
             && !conditions.IsMoving
             && conditions.HasEnoughStamina
-            && !conditions.IsFestival
+            && (!conditions.IsFestival || conditions.IsSupportedFishingMinigame)
             && conditions.IsTargetFishable;
         if (!safe)
             return AutoCastDecision.Reset;

@@ -100,6 +100,8 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
             config.DefaultCastPower
         );
         int requiredTicks = (int)Math.Ceiling(config.AutoCastDelaySeconds * 60f);
+        if (rod.IsSupportedFishingMinigame)
+            requiredTicks = Math.Max(requiredTicks, 75);
         switch (AutoCastPolicy.Decide(conditions, screen.ReadyTicks, requiredTicks))
         {
             case AutoCastDecision.Reset:
