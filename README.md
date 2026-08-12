@@ -38,6 +38,8 @@ Fishing treasure is collected into the correct local player's inventory when ena
 full-inventory handling follows the configured stop, drop, or discard policy.
 The fishing minigame can optionally be skipped for all fish or only species previously
 caught by the current local player.
+Bait can be attached and refilled from the current local player's inventory while the
+rod is idle, with optional spawned bait clearly treated as a cheat setting.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

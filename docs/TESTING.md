@@ -17,6 +17,7 @@ Status recorded on 2026-08-12:
 - Instant fish bites have not been tested in-game yet.
 - Automatic fishing-treasure collection has not been tested in-game yet.
 - Fishing-minigame skipping has not been tested in-game yet.
+- Automatic bait attachment and refill has not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -48,6 +49,10 @@ release-matrix scenarios are completed.
 - Verify `SkipAll` and `SkipOnlyCaught` with uncaught and previously caught fish,
   Challenge Bait, legendary fish, fish ponds, treasure targeting on/off, and supported
   festival minigames. Confirm `Off` preserves the normal minigame.
+- Verify automatic bait attachment with `Any` and a specific preference, refill across
+  multiple inventory stacks, rods without bait slots, manual bait already attached,
+  and the opt-in spawn fallback. Repeat for a multiplayer farmhand and local
+  split-screen player to confirm only the owning inventory is changed.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

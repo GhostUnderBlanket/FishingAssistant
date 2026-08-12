@@ -18,6 +18,7 @@ internal sealed class ModEntry : Mod
     private AutomationHudRenderer? automationHud;
     private StarterFishingRodService? starterFishingRod;
     private DebugWarpService? debugWarp;
+    private BaitAttachmentService? baitAttachment;
 
     public override void Entry(IModHelper helper)
     {
@@ -29,6 +30,7 @@ internal sealed class ModEntry : Mod
         this.automationHud = new AutomationHudRenderer(key => helper.Translation.Get(key));
         this.starterFishingRod = new StarterFishingRodService(this.Monitor, key => helper.Translation.Get(key));
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
+        this.baitAttachment = new BaitAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         ConfigValidationReport report = this.configManager.Load();
 
         this.Monitor.Log(
@@ -115,6 +117,7 @@ internal sealed class ModEntry : Mod
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
+        this.baitAttachment!.UpdateCurrent(this.configManager!.Active);
         this.automationRuntime!.UpdateCurrent();
     }
 

@@ -58,6 +58,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   explicit stop, ground-drop, or discard handling when the inventory is full.
 - Optional per-screen fishing-minigame skipping for every catch or only previously
   caught species, while vanilla resolves rewards, Challenge Bait, and festival scores.
+- Local-player automatic bait attachment and refill using inventory preference rules,
+  with an explicit opt-in fallback for spawning bait when none is available.
 
 ### Changed
 
