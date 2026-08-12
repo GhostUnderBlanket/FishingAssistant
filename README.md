@@ -29,6 +29,7 @@ phase, display it in a small HUD, automatically cast toward validated fishing wa
 after a configurable delay, hook a fish when a real nibble occurs, and steer the vanilla
 fishing bar toward the fish. Other gameplay automation stages are not connected yet.
 Treasure targeting is a per-screen runtime toggle and defaults to off.
+Normal and golden treasure chance overrides are functional outside festival minigames.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

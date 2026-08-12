@@ -1,11 +1,15 @@
+using FishingAssistant.Configuration;
 using FishingAssistant.Runtime;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.Minigames;
 
 namespace FishingAssistant.Fishing;
 
 internal sealed class BobberBarAdapter(BobberBar bar)
 {
+    public object Identity => bar;
+
     public static BobberBarAdapter? ForCurrentScreen()
     {
         return Game1.activeClickableMenu is BobberBar bar
@@ -46,6 +50,23 @@ internal sealed class BobberBarAdapter(BobberBar bar)
             bar.bobberPosition,
             bar.treasurePosition
         );
+    }
+
+    public TreasureChanceConditions ReadTreasureChanceConditions(ModConfig config)
+    {
+        return new TreasureChanceConditions(
+            config.TreasureChance,
+            config.GoldenTreasureChance,
+            bar.treasure,
+            bar.goldenTreasure,
+            Game1.isFestival() || Game1.currentMinigame is FishingGame
+        );
+    }
+
+    public void ApplyTreasureChance(TreasureChanceDecision decision)
+    {
+        bar.treasure = decision.HasTreasure;
+        bar.goldenTreasure = decision.IsGoldenTreasure;
     }
 
     public void SetBarSpeed(float speed)

@@ -60,6 +60,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         screen.AutomaticCastInProgress = false;
         screen.HookAttemptedForNibble = false;
         screen.IsPursuingTreasure = false;
+        screen.ConfiguredBobberBar = null;
         this.Log(screen.Session.Reset(reason));
     }
 
@@ -169,10 +170,23 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         if (bar is null)
         {
             screen.IsPursuingTreasure = false;
+            screen.ConfiguredBobberBar = null;
             return;
         }
 
         ModConfig config = getConfig();
+        if (!ReferenceEquals(screen.ConfiguredBobberBar, bar.Identity))
+        {
+            TreasureChanceDecision chance = TreasureChancePolicy.Decide(
+                bar.ReadTreasureChanceConditions(config));
+            bar.ApplyTreasureChance(chance);
+            screen.ConfiguredBobberBar = bar.Identity;
+            monitor.Log(
+                $"Applied treasure chance for local screen {Context.ScreenId}: " +
+                $"treasure={chance.HasTreasure}, golden={chance.IsGoldenTreasure}.",
+                LogLevel.Trace);
+        }
+
         bool assistanceActive = screen.Session.IsEnabled
             && config.AutoPlayMiniGame
             && screen.Session.State == AutomationState.Minigame;
@@ -207,5 +221,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         public bool HookAttemptedForNibble { get; set; }
 
         public bool IsPursuingTreasure { get; set; }
+
+        public object? ConfiguredBobberBar { get; set; }
     }
 }

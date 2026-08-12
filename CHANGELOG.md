@@ -46,6 +46,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   toward the fish without directly changing catch progress or results.
 - Per-screen treasure targeting toggled with the configured treasure key, including
   catch-progress hysteresis and HUD status.
+- Functional normal and golden treasure chance overrides applied once per catch, with
+  `Default`, `Always`, and `Never` behavior while festival rules remain vanilla.
 
 ### Changed
 

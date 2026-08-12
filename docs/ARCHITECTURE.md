@@ -76,6 +76,10 @@ Treasure targeting is an unsaved per-screen runtime preference. Its pure policy 
 targeting only after fish progress is high, uses hysteresis while pursuing the chest,
 and returns to the fish before catch progress reaches the failure boundary.
 
+Treasure chance overrides are decided once when a new `BobberBar` is observed. The
+adapter changes only the bar's treasure flags, `Default` preserves the vanilla roll,
+and festival fishing always keeps its vanilla result.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:
