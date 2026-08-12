@@ -32,6 +32,8 @@ The assistant also closes each normal catch popup after a short viewing delay wh
 that automation stage is enabled.
 Treasure targeting is a per-screen runtime toggle and defaults to off.
 Normal and golden treasure chance overrides are functional outside festival minigames.
+The optional instant-treasure rule captures a fishing chest as soon as it has fully
+appeared, or preserves it when skipping the minigame, while festivals stay vanilla.
 The optional instant-bite rule is functional in normal fishing and supported fishing
 festival minigames.
 Fishing treasure is collected into the correct local player's inventory when enabled;

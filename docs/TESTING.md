@@ -13,6 +13,7 @@ Status recorded on 2026-08-12:
 - Treasure targeting and the treasure chance overrides have not been tested in-game
   yet. `TreasureChance` is now connected to gameplay, so the deferred repeatable test
   can use `Always` to produce a treasure target.
+- Instant fishing-treasure capture has not been tested in-game yet.
 - Automatic catch-popup closing has not been tested in-game yet.
 - Instant fish bites have not been tested in-game yet.
 - Automatic fishing-treasure collection has not been tested in-game yet.
@@ -49,6 +50,11 @@ release-matrix scenarios are completed.
   status, start/abandon progress thresholds, completed treasure capture, and fallback
   to fish tracking when no treasure is available. Also verify `Default` and `Never`,
   plus all three golden-treasure modes.
+- With treasure chance set to `Always`, verify instant treasure captures normal and
+  golden chests only after they fully appear, works with manual/automatic minigames and
+  both skip modes, still requires successfully catching the fish to receive rewards,
+  and does not alter festival results. Repeat with F6 targeting both on and off, then as
+  each split-screen player, multiplayer host, and farmhand.
 - Verify automatic catch-popup closing for normal fish, trash, first catches, records,
   fish ponds, treasure catches, secret notes, and a full inventory. Confirm disabling
   either automation or `AutoClosePopup` leaves the popup under manual control.

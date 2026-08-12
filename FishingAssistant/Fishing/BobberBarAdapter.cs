@@ -74,6 +74,17 @@ internal sealed class BobberBarAdapter(BobberBar bar)
         );
     }
 
+    public InstantTreasureConditions ReadInstantTreasureConditions(bool enabled)
+    {
+        return new InstantTreasureConditions(
+            enabled,
+            !bar.fadeIn && !bar.fadeOut && !bar.handledFishResult,
+            bar.treasure,
+            bar.treasureCaught,
+            bar.treasureScale,
+            Game1.isFestival() || Game1.currentMinigame is FishingGame);
+    }
+
     public FishPreviewSnapshot ReadPreviewSnapshot()
     {
         string itemId = ItemRegistry.GetMetadata(bar.whichFish)?.QualifiedItemId ?? bar.whichFish;
@@ -136,6 +147,13 @@ internal sealed class BobberBarAdapter(BobberBar bar)
         bar.goldenTreasure = decision.IsGoldenTreasure;
     }
 
+    public void CaptureTreasure()
+    {
+        bar.treasureCaught = true;
+        bar.treasureCatchLevel = 1f;
+        Game1.playSound("newArtifact");
+    }
+
     public void ApplyLiveCatchModifiers(ModConfig config)
     {
         if (Game1.isFestival() || Game1.currentMinigame is FishingGame)
@@ -158,8 +176,13 @@ internal sealed class BobberBarAdapter(BobberBar bar)
 
     public void CompleteMinigame(bool collectTreasure)
     {
-        if (bar.treasure && collectTreasure)
+        if (bar.treasure
+            && collectTreasure
+            && !Game1.isFestival()
+            && Game1.currentMinigame is not FishingGame)
+        {
             bar.treasureCaught = true;
+        }
 
         bar.distanceFromCatching = 1f;
     }

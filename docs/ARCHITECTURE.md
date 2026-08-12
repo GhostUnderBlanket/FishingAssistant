@@ -91,6 +91,11 @@ Treasure chance overrides are decided once when a new `BobberBar` is observed. T
 adapter changes only the bar's treasure flags, `Default` preserves the vanilla roll,
 and festival fishing always keeps its vanilla result.
 
+Instant treasure capture uses a pure eligibility policy and changes only the current
+local bar's caught/progress fields after the chest reaches full scale. It is independent
+of automatic minigame steering; skipped minigames may also preserve an existing chest
+when the option is enabled. Both paths explicitly leave festival treasure untouched.
+
 Fish preview rendering is local-screen UI only. The `BobberBar` adapter produces an
 immutable snapshot containing the current item, reveal inputs, treasure state, and bar
 bounds. A pure policy controls concealment and optional details, while a separate

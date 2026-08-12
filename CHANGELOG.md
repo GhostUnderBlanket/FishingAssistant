@@ -82,6 +82,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Local-player automatic junk disposal driven by the visual junk and protected-item
   lists. It removes only newly acquired stack quantities, preserves existing stack
   contents, requires explicit permission for fish, and honors vanilla trashability.
+- Instant fishing-treasure capture once a chest has fully appeared, including skipped
+  minigames while preserving festival treasure rules.
 
 ### Changed
 

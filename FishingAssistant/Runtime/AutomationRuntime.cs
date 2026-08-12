@@ -294,6 +294,15 @@ internal sealed class AutomationRuntime(
                 LogLevel.Trace);
         }
 
+        if (InstantTreasurePolicy.Decide(bar.ReadInstantTreasureConditions(config.InstantCatchTreasure))
+            == InstantTreasureDecision.Capture)
+        {
+            bar.CaptureTreasure();
+            screen.IsPursuingTreasure = false;
+            monitor.Log($"Captured fishing treasure instantly for local screen {Context.ScreenId}.",
+                LogLevel.Trace);
+        }
+
         if (this.TrySkipMinigame(screen, bar, config))
             return;
 
@@ -323,7 +332,8 @@ internal sealed class AutomationRuntime(
         if (decision != SkipMinigameDecision.Skip)
             return false;
 
-        bar.CompleteMinigame(screen.Session.IsTreasureTargetingEnabled);
+        bar.CompleteMinigame(
+            screen.Session.IsTreasureTargetingEnabled || config.InstantCatchTreasure);
         screen.IsPursuingTreasure = false;
         monitor.Log(
             $"Skipped the fishing minigame for local screen {Context.ScreenId}; treasure targeting was " +

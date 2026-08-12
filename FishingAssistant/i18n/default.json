@@ -76,7 +76,7 @@
   "config.option.difficulty_additive": "Fish difficulty adjustment",
   "config.option.difficulty_additive.description": "Add or subtract this amount after applying the difficulty multiplier.",
   "config.option.instant_treasure": "Collect treasure during the minigame instantly",
-  "config.option.instant_treasure.description": "Complete treasure-bar progress immediately when a treasure target appears.",
+  "config.option.instant_treasure.description": "Capture any fully appeared fishing treasure immediately outside festivals.",
   "config.option.treasure_chance": "Fishing treasure chance",
   "config.option.treasure_chance.description": "Keep the vanilla chance, always create treasure, or prevent normal fishing treasure outside festivals.",
   "config.option.golden_treasure_chance": "Golden treasure chance",
