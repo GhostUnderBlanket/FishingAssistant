@@ -34,6 +34,8 @@ Treasure targeting is a per-screen runtime toggle and defaults to off.
 Normal and golden treasure chance overrides are functional outside festival minigames.
 The optional instant-bite rule is functional in normal fishing and supported fishing
 festival minigames.
+Fishing treasure is collected into the correct local player's inventory when enabled;
+full-inventory handling follows the configured stop, drop, or discard policy.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

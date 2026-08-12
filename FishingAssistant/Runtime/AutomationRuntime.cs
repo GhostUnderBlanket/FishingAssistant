@@ -7,7 +7,10 @@ using StardewValley.Tools;
 
 namespace FishingAssistant.Runtime;
 
-internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getConfig)
+internal sealed class AutomationRuntime(
+    IMonitor monitor,
+    Func<ModConfig> getConfig,
+    Func<string, string> translate)
 {
     private readonly PerScreen<ScreenContext> screens = new(() => new ScreenContext());
 
@@ -29,6 +32,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         this.UpdateInstantBite();
         this.UpdateAutomaticMinigame(screen);
         this.UpdateAutomaticCatchPopup(screen);
+        this.UpdateAutomaticTreasureLoot(screen);
         this.UpdateAutomaticHook(screen);
         this.UpdateAutomaticCast(screen);
     }
@@ -65,6 +69,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         screen.ConfiguredBobberBar = null;
         screen.FishPopupVisibleTicks = 0;
         screen.FishPopupCloseAttempted = false;
+        this.ResetTreasureLoot(screen);
         this.Log(screen.Session.Reset(reason));
     }
 
@@ -261,6 +266,102 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
             bar.SetBarSpeed(decision.BarSpeed);
     }
 
+    private void UpdateAutomaticTreasureLoot(ScreenContext screen)
+    {
+        FishingTreasureMenuAdapter? menu = FishingTreasureMenuAdapter.ForCurrentScreen();
+        if (menu is null)
+        {
+            this.ResetTreasureLoot(screen);
+            return;
+        }
+
+        if (!ReferenceEquals(screen.TreasureMenuIdentity, menu.Identity))
+        {
+            this.ResetTreasureLoot(screen);
+            screen.TreasureMenuIdentity = menu.Identity;
+        }
+
+        ModConfig config = getConfig();
+        TreasureLootConditions conditions = new(
+            screen.Session.IsEnabled,
+            config.AutoLootTreasure,
+            IsFishingTreasureMenu: true,
+            menu.IsPlayerHoldingItem,
+            screen.TreasureCollectionStopped,
+            menu.HasRemainingItems,
+            menu.HasUnblockedItem(screen.BlockedTreasureItems),
+            config.ActionIfInventoryFull
+        );
+        TreasureLootDecision decision = TreasureLootPolicy.Decide(
+            conditions,
+            screen.TreasureLootElapsedTicks,
+            screen.TreasureLootRequiredTicks
+        );
+        switch (decision)
+        {
+            case TreasureLootDecision.Reset:
+                this.ResetTreasureLoot(screen);
+                break;
+            case TreasureLootDecision.Wait:
+                if (conditions.IsEligible)
+                    screen.TreasureLootElapsedTicks++;
+                break;
+            case TreasureLootDecision.Collect:
+                this.CollectNextTreasureItem(screen, menu);
+                break;
+            case TreasureLootDecision.Close:
+                menu.Close();
+                this.ResetTreasureLoot(screen);
+                break;
+            case TreasureLootDecision.Stop:
+                this.StopForFullInventory(screen, "hud.treasure_full.stop");
+                break;
+            case TreasureLootDecision.Drop:
+                menu.DropRemainingItems();
+                this.StopForFullInventory(screen, "hud.treasure_full.drop");
+                break;
+            case TreasureLootDecision.Discard:
+                menu.DiscardRemainingItems();
+                this.StopForFullInventory(screen, "hud.treasure_full.discard");
+                break;
+        }
+    }
+
+    private void CollectNextTreasureItem(ScreenContext screen, FishingTreasureMenuAdapter menu)
+    {
+        TreasureCollectResult result = menu.TryCollectNext(screen.BlockedTreasureItems);
+        screen.TreasureLootElapsedTicks = 0;
+        screen.TreasureLootRequiredTicks = TreasureLootPolicy.ItemDelayTicks;
+        if (result is TreasureCollectResult.Collected or TreasureCollectResult.PartiallyCollected)
+        {
+            monitor.Log($"Collected fishing treasure for local screen {Context.ScreenId} ({result}).",
+                LogLevel.Trace);
+        }
+    }
+
+    private void StopForFullInventory(ScreenContext screen, string messageKey)
+    {
+        screen.TreasureCollectionStopped = true;
+        Game1.addHUDMessage(new HUDMessage(translate(messageKey), HUDMessage.error_type));
+        if (screen.Session.IsEnabled)
+        {
+            AutomationTransition transition = screen.Session.Toggle();
+            this.Log(transition);
+        }
+
+        monitor.Log($"Stopped fishing automation for local screen {Context.ScreenId} because the inventory " +
+                    "couldn't accept the remaining treasure.", LogLevel.Warn);
+    }
+
+    private void ResetTreasureLoot(ScreenContext screen)
+    {
+        screen.TreasureMenuIdentity = null;
+        screen.TreasureLootElapsedTicks = 0;
+        screen.TreasureLootRequiredTicks = TreasureLootPolicy.InitialDelayTicks;
+        screen.TreasureCollectionStopped = false;
+        screen.BlockedTreasureItems.Clear();
+    }
+
     private sealed class ScreenContext
     {
         public AutomationSession Session { get; } = new();
@@ -282,5 +383,15 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         public int FishPopupVisibleTicks { get; set; }
 
         public bool FishPopupCloseAttempted { get; set; }
+
+        public object? TreasureMenuIdentity { get; set; }
+
+        public int TreasureLootElapsedTicks { get; set; }
+
+        public int TreasureLootRequiredTicks { get; set; } = TreasureLootPolicy.InitialDelayTicks;
+
+        public bool TreasureCollectionStopped { get; set; }
+
+        public HashSet<Item> BlockedTreasureItems { get; } = new(ReferenceEqualityComparer.Instance);
     }
 }

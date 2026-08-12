@@ -15,7 +15,11 @@ internal static class FishingContextReader
 
         FishingRod? rod = Game1.player.CurrentTool as FishingRod;
         bool isMinigame = Game1.activeClickableMenu is BobberBar;
-        bool isTreasureMenu = rod?.showingTreasure == true && Game1.activeClickableMenu is ItemGrabMenu;
+        bool isTreasureMenu = Game1.activeClickableMenu is ItemGrabMenu
+        {
+            source: ItemGrabMenu.source_fishingChest,
+            context: FishingRod
+        };
         bool hasBlockingMenu = Game1.activeClickableMenu is not null && !isMinigame && !isTreasureMenu;
 
         return new FishingObservation(

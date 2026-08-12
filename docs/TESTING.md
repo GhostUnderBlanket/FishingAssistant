@@ -15,6 +15,7 @@ Status recorded on 2026-08-12:
   can use `Always` to produce a treasure target.
 - Automatic catch-popup closing has not been tested in-game yet.
 - Instant fish bites have not been tested in-game yet.
+- Automatic fishing-treasure collection has not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -39,6 +40,10 @@ release-matrix scenarios are completed.
 - Verify `InstantFishBite` in normal fishing with F5 automation both enabled and
   disabled. Confirm the game still chooses the catch normally and that supported
   festival fishing minigames trigger bites without affecting unrelated festivals.
+- Verify automatic treasure collection with free slots, mergeable partial stacks,
+  special no-slot items, and multiple rewards. For a full inventory, separately verify
+  Stop leaves rewards in the menu, Drop places them on the ground, and Discard removes
+  them only when explicitly selected; all three should disable automation.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

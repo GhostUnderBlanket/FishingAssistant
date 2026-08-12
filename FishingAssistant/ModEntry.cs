@@ -22,7 +22,10 @@ internal sealed class ModEntry : Mod
     public override void Entry(IModHelper helper)
     {
         this.configManager = new ConfigManager(helper, this.Monitor);
-        this.automationRuntime = new AutomationRuntime(this.Monitor, () => this.configManager.Active);
+        this.automationRuntime = new AutomationRuntime(
+            this.Monitor,
+            () => this.configManager.Active,
+            key => helper.Translation.Get(key));
         this.automationHud = new AutomationHudRenderer(key => helper.Translation.Get(key));
         this.starterFishingRod = new StarterFishingRodService(this.Monitor, key => helper.Translation.Get(key));
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
