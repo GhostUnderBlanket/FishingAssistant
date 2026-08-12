@@ -18,7 +18,7 @@ internal static class ConfigValidator
         NormalizeKeybind(report, nameof(config.EnableAutomationButton),
             () => config.EnableAutomationButton, value => config.EnableAutomationButton = value, SButton.F5);
         NormalizeKeybind(report, nameof(config.OpenConfigMenuButton),
-            () => config.OpenConfigMenuButton, value => config.OpenConfigMenuButton = value, SButton.None);
+            () => config.OpenConfigMenuButton, value => config.OpenConfigMenuButton = value, SButton.F6);
 
         NormalizeEnum(report, nameof(config.ModStatusPosition),
             () => config.ModStatusPosition, value => config.ModStatusPosition = value, HudPosition.Left);

@@ -21,7 +21,7 @@ internal sealed class ModConfig
 
     public KeybindList EnableAutomationButton { get; set; } = new(SButton.F5);
 
-    public KeybindList OpenConfigMenuButton { get; set; } = new(SButton.None);
+    public KeybindList OpenConfigMenuButton { get; set; } = new(SButton.F6);
 
     public HudPosition ModStatusPosition { get; set; } = HudPosition.Left;
 

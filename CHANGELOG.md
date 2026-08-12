@@ -92,6 +92,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   automation.
 - Replaced the temporary treasure-targeting hotkey and HUD icon with one persistent
   checkbox in the custom configuration menu.
+- Changed the default configuration-menu keybind from unbound to F6 after retiring the
+  treasure-targeting hotkey. Existing explicit keybind choices remain unchanged.
 - Replaced price-threshold junk classification with explicit visual item selection.
 - Replaced bait, tackle, and starter-rod cycling controls with searchable visual item
   pickers, and increased spacing in the remaining value selectors.
