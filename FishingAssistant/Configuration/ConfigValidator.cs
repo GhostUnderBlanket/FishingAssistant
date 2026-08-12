@@ -63,7 +63,8 @@ internal static class ConfigValidator
         NormalizeString(report, nameof(config.PreferredAdvIridiumTackle),
             () => config.PreferredAdvIridiumTackle, value => config.PreferredAdvIridiumTackle = value, "Any");
         NormalizeString(report, nameof(config.StartWithFishingRod),
-            () => config.StartWithFishingRod, value => config.StartWithFishingRod = value, "None");
+            () => config.StartWithFishingRod, value => config.StartWithFishingRod = value,
+            ModConfig.DefaultStarterRod);
         NormalizeItemList(report, nameof(config.JunkList),
             () => config.JunkList, value => config.JunkList = value);
         NormalizeItemList(report, nameof(config.JunkIgnoreList),
@@ -251,7 +252,7 @@ internal static class ConfigValidator
             "Any", ConfigItemKind.Tackle, catalog);
         NormalizeItemPreference(report, nameof(config.StartWithFishingRod),
             () => config.StartWithFishingRod, value => config.StartWithFishingRod = value,
-            "None", ConfigItemKind.FishingRod, catalog);
+            ModConfig.DefaultStarterRod, ConfigItemKind.FishingRod, catalog);
 
         NormalizeItemIds(report, nameof(config.JunkList),
             () => config.JunkList, value => config.JunkList = value, catalog);

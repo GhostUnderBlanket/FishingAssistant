@@ -6,6 +6,7 @@ namespace FishingAssistant.Configuration;
 internal sealed class ModConfig
 {
     internal const int CurrentVersion = 4;
+    internal const string DefaultStarterRod = "(T)AdvancedIridiumRod";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
     [
@@ -106,7 +107,7 @@ internal sealed class ModConfig
 
     public bool ShowLegendaryFish { get; set; }
 
-    public string StartWithFishingRod { get; set; } = "None";
+    public string StartWithFishingRod { get; set; } = DefaultStarterRod;
 
     public int DefaultCastPower { get; set; } = 100;
 

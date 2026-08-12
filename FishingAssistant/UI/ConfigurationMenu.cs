@@ -25,6 +25,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly Func<ModConfig> createDefaults;
     private readonly Func<string, string> translate;
     private readonly IConfigItemSource itemSource;
+    private readonly Action addTestFishingRod;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
     private readonly List<ClickableComponent> categoryButtons = [];
@@ -42,13 +43,15 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<ConfigEditSession, ConfigValidationReport> apply,
         Func<ModConfig> createDefaults,
         IConfigItemSource itemSource,
-        ITranslationHelper translations)
+        ITranslationHelper translations,
+        Action addTestFishingRod)
     {
         this.session = session;
         this.apply = apply;
         this.createDefaults = createDefaults;
         this.itemSource = itemSource;
         this.translate = key => translations.Get(key);
+        this.addTestFishingRod = addTestFishingRod;
 
         this.RebuildComponents();
         Game1.playSound("bigSelect");
@@ -609,6 +612,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.CatchTreasureButton = value);
                 this.AddKeybindDefinition("open_config", () => this.session.Draft.OpenConfigMenuButton,
                     value => this.session.Draft.OpenConfigMenuButton = value);
+                break;
+            case ConfigCategory.Debug:
+                this.AddActionDefinition("add_test_rod",
+                    () => this.translate("config.action.add"),
+                    this.addTestFishingRod);
                 break;
         }
     }

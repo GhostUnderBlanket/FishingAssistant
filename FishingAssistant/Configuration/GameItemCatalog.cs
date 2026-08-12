@@ -8,7 +8,8 @@ internal sealed class GameItemCatalog : IItemCatalog, IConfigItemSource
     private static readonly HashSet<string> SupportedStarterRods =
     [
         "(T)TrainingRod",
-        "(T)BambooPole"
+        "(T)BambooPole",
+        "(T)AdvancedIridiumRod"
     ];
 
     public ConfigItem? Find(string itemId)

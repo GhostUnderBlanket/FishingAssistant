@@ -27,6 +27,7 @@ public sealed class ConfigDefaultsTests
         Assert.Equal(SkipMinigameBehavior.Off, config.SkipFishingMiniGame);
         Assert.Equal(TreasureChanceBehavior.Default, config.TreasureChance);
         Assert.Equal(TreasureChanceBehavior.Default, config.GoldenTreasureChance);
+        Assert.Equal("(T)AdvancedIridiumRod", config.StartWithFishingRod);
     }
 
     [Fact]

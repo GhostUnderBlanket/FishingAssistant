@@ -8,5 +8,6 @@ internal enum ConfigCategory
     Fishing,
     Display,
     Enchantments,
-    Controls
+    Controls,
+    Debug
 }

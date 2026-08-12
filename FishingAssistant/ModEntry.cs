@@ -1,4 +1,5 @@
 using FishingAssistant.Configuration;
+using FishingAssistant.Equipment;
 using FishingAssistant.HUD;
 using FishingAssistant.Runtime;
 using FishingAssistant.UI;
@@ -14,12 +15,14 @@ internal sealed class ModEntry : Mod
     private GameItemCatalog? itemCatalog;
     private AutomationRuntime? automationRuntime;
     private AutomationHudRenderer? automationHud;
+    private StarterFishingRodService? starterFishingRod;
 
     public override void Entry(IModHelper helper)
     {
         this.configManager = new ConfigManager(helper, this.Monitor);
         this.automationRuntime = new AutomationRuntime(this.Monitor);
         this.automationHud = new AutomationHudRenderer(key => helper.Translation.Get(key));
+        this.starterFishingRod = new StarterFishingRodService(this.Monitor, key => helper.Translation.Get(key));
         ConfigValidationReport report = this.configManager.Load();
 
         this.Monitor.Log(
@@ -105,11 +108,13 @@ internal sealed class ModEntry : Mod
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
         this.automationRuntime!.ResetCurrent(AutomationTransitionReason.SaveLoaded);
+        this.EnsureConfiguredStarterRod();
     }
 
     private void OnDayStarted(object? sender, DayStartedEventArgs e)
     {
         this.automationRuntime!.ResetCurrent(AutomationTransitionReason.DayStarted);
+        this.EnsureConfiguredStarterRod();
     }
 
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
@@ -156,7 +161,8 @@ internal sealed class ModEntry : Mod
             this.ApplyConfig,
             ConfigManager.CreateDefaultDraft,
             this.itemCatalog!,
-            this.Helper.Translation
+            this.Helper.Translation,
+            this.starterFishingRod!.AddTestRodFromMenu
         );
     }
 
@@ -164,7 +170,9 @@ internal sealed class ModEntry : Mod
     {
         try
         {
-            return this.configManager!.Apply(session);
+            ConfigValidationReport report = this.configManager!.Apply(session);
+            this.EnsureConfiguredStarterRod();
+            return report;
         }
         catch (InvalidOperationException exception)
         {
@@ -176,5 +184,12 @@ internal sealed class ModEntry : Mod
             this.Monitor.Log($"The configuration draft couldn't be saved.\n{exception}", LogLevel.Error);
             throw;
         }
+    }
+
+    private void EnsureConfiguredStarterRod()
+    {
+        string itemId = this.configManager!.Active.StartWithFishingRod;
+        if (!string.Equals(itemId, "None", StringComparison.OrdinalIgnoreCase))
+            this.starterFishingRod!.EnsureRod(itemId);
     }
 }
