@@ -79,6 +79,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A per-screen fish preview beside the fishing bar with responsive viewport placement,
   caught/uncaught concealment, optional names, legendary reveal rules, and normal or
   golden treasure indicators without simulating an equipped Sonar Bobber.
+- Local-player automatic junk disposal driven by the visual junk and protected-item
+  lists. It removes only newly acquired stack quantities, preserves existing stack
+  contents, requires explicit permission for fish, and honors vanilla trashability.
 
 ### Changed
 

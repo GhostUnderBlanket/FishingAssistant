@@ -29,6 +29,8 @@ Status recorded on 2026-08-12:
   modifiers have not been tested in-game yet.
 - Fish preview visibility, responsive placement, and reveal options have not been
   tested in-game yet.
+- Automatic junk disposal and its stack-delta safeguards have not been tested in-game
+  yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -106,6 +108,14 @@ release-matrix scenarios are completed.
   fade-out, never grants Sonar Bobber behavior, stays within each split-screen viewport,
   and shows only the owning player's catch history and treasure state. Repeat in a
   fishing festival as host and farmhand.
+- Verify automatic junk disposal with automation on/off, the option on/off, each five
+  default trash item, a newly created stack, an existing partial stack, multiple items
+  gained in one tick, treasure rewards, and inventory-full reward handling. Confirm the
+  Junk Ignore List always protects an item, untrashable/quest items remain untouched,
+  fish require `AllowTrashFish`, only the newly gained quantity leaves an old stack,
+  and trash-can reclamation money matches vanilla. Repeat for both split-screen players
+  and as multiplayer host/farmhand, confirming only the event's owning inventory is
+  changed.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

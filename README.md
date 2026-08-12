@@ -69,6 +69,10 @@ base quality using Stardew Valley's normal quality upgrade.
 The fish preview now renders beside each local player's fishing bar. It can conceal
 uncaught targets, reveal legendary targets independently, show localized fish names,
 and indicate normal or golden treasure without changing the player's equipped tackle.
+Automatic junk disposal now uses the visual junk and protected-item lists while that
+player's automation is enabled. It removes only the quantity received by the latest
+inventory change, never an older matching stack, and refuses to discard fish unless
+the separate fish safeguard is enabled.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

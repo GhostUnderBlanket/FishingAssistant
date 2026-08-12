@@ -3,6 +3,7 @@ using FishingAssistant.Debugging;
 using FishingAssistant.Equipment;
 using FishingAssistant.Fishing;
 using FishingAssistant.HUD;
+using FishingAssistant.Inventory;
 using FishingAssistant.Runtime;
 using FishingAssistant.UI;
 using HarmonyLib;
@@ -25,6 +26,7 @@ internal sealed class ModEntry : Mod
     private TackleAttachmentService? tackleAttachment;
     private InfiniteAttachmentService? infiniteAttachment;
     private RodEnchantmentService? rodEnchantments;
+    private AutoTrashService? autoTrash;
 
     public override void Entry(IModHelper helper)
     {
@@ -41,6 +43,7 @@ internal sealed class ModEntry : Mod
         this.tackleAttachment = new TackleAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
         this.rodEnchantments = new RodEnchantmentService(this.Monitor, key => helper.Translation.Get(key));
+        this.autoTrash = new AutoTrashService(this.Monitor, key => helper.Translation.Get(key));
         ConfigValidationReport report = this.configManager.Load();
         CatchResultPatch.Apply(
             new Harmony(this.ModManifest.UniqueID),
@@ -62,6 +65,7 @@ internal sealed class ModEntry : Mod
         helper.Events.GameLoop.DayStarted += this.OnDayStarted;
         helper.Events.GameLoop.ReturnedToTitle += this.OnReturnedToTitle;
         helper.Events.Player.Warped += this.OnWarped;
+        helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
         helper.Events.Multiplayer.PeerConnected += this.OnPeerConnected;
         helper.Events.Display.RenderedHud += this.OnRenderedHud;
         helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
@@ -173,6 +177,14 @@ internal sealed class ModEntry : Mod
             this.infiniteAttachment!.RestoreCurrent();
             this.automationRuntime!.ResetCurrent(AutomationTransitionReason.Warped);
         }
+    }
+
+    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
+    {
+        this.autoTrash!.OnInventoryChanged(
+            e,
+            this.configManager!.Active,
+            this.automationRuntime!.Current.IsEnabled);
     }
 
     private void OnSaving(object? sender, SavingEventArgs e)

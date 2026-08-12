@@ -101,6 +101,13 @@ Automatic eating is a local-screen action over the owning player's inventory. A 
 policy selects food deterministically, while the game adapter starts the vanilla eat
 animation and decrements the selected stack only after the game accepts consumption.
 
+Automatic junk disposal consumes SMAPI's local-player `InventoryChanged` delta instead
+of rescanning or removing matching inventory stacks. A pure policy requires automation,
+the opt-in setting, explicit junk membership, vanilla trashability, and the fish safety
+setting. The service removes only the added stack or positive quantity delta from that
+exact item instance; the protected-item list always wins. Vanilla trash reclamation is
+then applied to a copy containing only the discarded quantity.
+
 Late-night warnings and their pending stop request are per-screen runtime state. The
 assistant disables automation only after the current rod, minigame, and reward menu are
 idle; it never pauses shared world time, which keeps host and farmhand behavior aligned.
