@@ -24,6 +24,7 @@ Status recorded on 2026-08-12:
 - Late-night warnings and safe automation pausing have not been tested in-game yet.
 - Low-energy cast protection has not been tested in-game yet.
 - Temporary rod enchantments have not been tested in-game yet.
+- Fish difficulty multiplier and additive adjustment have not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -84,6 +85,10 @@ release-matrix scenarios are completed.
   reloading, and return to title. Repeat in local split-screen. Connect a remote
   farmhand while enchantments are active and confirm they are removed, a warning is
   shown, and no assistant-added enchantment appears in the saved rod afterward.
+- Verify difficulty settings `1.0x/+0`, `0.0x/+0`, `0.5x/+10`, and `2.0x/-20` with
+  manual and automatic fishing, the first-catch tutorial, Blessing of Waters, legendary
+  fish, fish ponds, festival minigames, split-screen, host, and farmhand. Confirm each
+  local minigame is adjusted once and another player's fish behavior is unaffected.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

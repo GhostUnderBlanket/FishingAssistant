@@ -63,6 +63,27 @@ internal sealed class BobberBarAdapter(BobberBar bar)
         );
     }
 
+    public FishDifficultyDecision ApplyDifficulty(ModConfig config)
+    {
+        FishDifficultyDecision decision = FishDifficultyPolicy.Decide(new FishDifficultyConditions(
+            bar.difficulty,
+            config.FishDifficultyMultiplier,
+            config.FishDifficultyAdditive));
+        bar.difficulty = decision.AdjustedDifficulty;
+
+        // The constructor derives the initial target from difficulty. Keep it aligned
+        // while the menu is still fading in, before normal fish motion begins.
+        if (decision.WasChanged && bar.fadeIn)
+        {
+            bar.bobberTargetPosition = Math.Clamp(
+                (100f - decision.AdjustedDifficulty) / 100f * 548f,
+                -1f,
+                548f);
+        }
+
+        return decision;
+    }
+
     public SkipMinigameConditions ReadSkipMinigameConditions(SkipMinigameBehavior behavior)
     {
         string? qualifiedFishId = ItemRegistry.GetMetadata(bar.whichFish)?.QualifiedItemId;

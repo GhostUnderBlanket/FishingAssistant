@@ -58,6 +58,9 @@ Optional rod enchantments are session-only: the assistant remembers the exact in
 it added, removes them before every save, and never removes a player's existing
 enchantments. They support single-player and local split-screen, but are disabled while
 remote players are connected to prevent synchronized temporary state entering a save.
+Fish difficulty can be multiplied and then adjusted by a fixed amount for each local
+fishing minigame. The modifier preserves vanilla setup rules, supports manual and
+automatic fishing, and never edits shared fish data.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

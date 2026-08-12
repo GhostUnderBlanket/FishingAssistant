@@ -98,6 +98,10 @@ all tracked rods before saving and restored afterward for the session. Local
 split-screen is supported in-process; remote multiplayer disables this feature because
 the rod enchantment list is network-synchronized and could otherwise race the host save.
 
+Fish difficulty adjustment is a one-time mutation of the current local screen's
+`BobberBar`, after its constructor has applied vanilla tutorial and blessing rules. It
+does not patch fish data or synchronize a modified value to another player's minigame.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:

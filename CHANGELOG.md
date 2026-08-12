@@ -74,6 +74,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Session-only Auto-Hook, Efficient, Master, and Preserving rod enchantments which
   track exact assistant-owned instances, suspend during saving, preserve existing
   enchantments, support local split-screen, and disable when remote players connect.
+- Per-screen fish difficulty multiplier and additive adjustment applied once to each
+  fishing minigame after vanilla tutorial and blessing modifiers.
 
 ### Changed
 

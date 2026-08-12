@@ -281,12 +281,14 @@ internal sealed class AutomationRuntime(
         ModConfig config = getConfig();
         if (!ReferenceEquals(screen.ConfiguredBobberBar, bar.Identity))
         {
+            FishDifficultyDecision difficulty = bar.ApplyDifficulty(config);
             TreasureChanceDecision chance = TreasureChancePolicy.Decide(
                 bar.ReadTreasureChanceConditions(config));
             bar.ApplyTreasureChance(chance);
             screen.ConfiguredBobberBar = bar.Identity;
             monitor.Log(
-                $"Applied treasure chance for local screen {Context.ScreenId}: " +
+                $"Configured fishing minigame for local screen {Context.ScreenId}: " +
+                $"difficulty={difficulty.VanillaDifficulty:0.##}->{difficulty.AdjustedDifficulty:0.##}, " +
                 $"treasure={chance.HasTreasure}, golden={chance.IsGoldenTreasure}.",
                 LogLevel.Trace);
         }
