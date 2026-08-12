@@ -60,7 +60,8 @@ The runtime stores an `AutomationSession` and action timers in `PerScreen<T>`. I
 observes and controls only the current local player's equipped rod, and renders only
 into that local screen's HUD. Automatic casting is a local-player action guarded by a
 pure policy and a narrow rod adapter; it does not send multiplayer messages or mutate
-shared-world state directly.
+shared-world state directly. Automatic hooking uses the same boundary and a per-screen
+latch so one nibble can trigger at most one automated hook attempt.
 
 ## Automation lifecycle
 

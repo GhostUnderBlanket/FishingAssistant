@@ -38,6 +38,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Per-screen automatic casting with configurable power and recast delay, stamina and
   player-state safeguards, festival blocking, and validation of the predicted fishing
   target before casting.
+- Per-screen automatic hooking which responds once per real nibble, respects the
+  vanilla Auto-Hook enchantment, and avoids festival or menu-conflicted input.
 
 ### Changed
 

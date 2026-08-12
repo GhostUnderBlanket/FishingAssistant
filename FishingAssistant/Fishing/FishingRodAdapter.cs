@@ -2,6 +2,7 @@ using FishingAssistant.Runtime;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Enchantments;
 using StardewValley.Tools;
 
 namespace FishingAssistant.Fishing;
@@ -16,6 +17,32 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
     }
 
     public bool IsTimingCast => rod.isTimingCast;
+
+    public AutoHookConditions ReadAutoHookConditions(
+        bool automationEnabled,
+        bool autoHookEnabled,
+        AutomationState state,
+        bool hookAlreadyAttempted)
+    {
+        return new AutoHookConditions(
+            automationEnabled,
+            autoHookEnabled,
+            state,
+            rod.isNibbling,
+            hookAlreadyAttempted,
+            rod.hasEnchantmentOfType<AutoHookEnchantment>(),
+            Game1.activeClickableMenu is not null,
+            Game1.isFestival(),
+            rod is
+            {
+                hit: false,
+                isReeling: false,
+                pullingOutOfWater: false,
+                fishCaught: false,
+                showingTreasure: false
+            }
+        );
+    }
 
     public AutoCastConditions ReadAutoCastConditions(
         bool automationEnabled,
@@ -47,6 +74,14 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
     {
         if (rod.isTimingCast)
             rod.castingPower = Math.Clamp(castPower / 100f, 0f, 1f);
+    }
+
+    public void HookFish()
+    {
+        rod.timePerBobberBob = 1f;
+        rod.timeUntilFishingNibbleDone = FishingRod.maxTimeToNibble;
+        rod.DoFunction(player.currentLocation, (int)rod.bobber.X, (int)rod.bobber.Y, 1, player);
+        Rumble.rumble(0.95f, 200f);
     }
 
     private bool IsCastTargetFishable(int castPower)

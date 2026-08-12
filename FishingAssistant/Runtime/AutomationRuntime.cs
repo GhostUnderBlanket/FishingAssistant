@@ -26,6 +26,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         screen.LastTool = currentTool;
         screen.HasObservedTool = true;
         this.Log(screen.Session.Observe(FishingContextReader.Read(screen.Session.IsEnabled)));
+        this.UpdateAutomaticHook(screen);
         this.UpdateAutomaticCast(screen);
     }
 
@@ -45,6 +46,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         screen.LastTool = null;
         screen.ReadyTicks = 0;
         screen.AutomaticCastInProgress = false;
+        screen.HookAttemptedForNibble = false;
         this.Log(screen.Session.Reset(reason));
     }
 
@@ -115,6 +117,37 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         }
     }
 
+    private void UpdateAutomaticHook(ScreenContext screen)
+    {
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod is null)
+        {
+            screen.HookAttemptedForNibble = false;
+            return;
+        }
+
+        ModConfig config = getConfig();
+        AutoHookConditions conditions = rod.ReadAutoHookConditions(
+            screen.Session.IsEnabled,
+            config.AutoHookFish,
+            screen.Session.State,
+            screen.HookAttemptedForNibble
+        );
+        switch (AutoHookPolicy.Decide(conditions))
+        {
+            case AutoHookDecision.ResetAttempt:
+                screen.HookAttemptedForNibble = false;
+                break;
+            case AutoHookDecision.Wait:
+                break;
+            case AutoHookDecision.Hook:
+                screen.HookAttemptedForNibble = true;
+                rod.HookFish();
+                monitor.Log($"Hooked a fish automatically for local screen {Context.ScreenId}.", LogLevel.Trace);
+                break;
+        }
+    }
+
     private sealed class ScreenContext
     {
         public AutomationSession Session { get; } = new();
@@ -126,5 +159,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         public int ReadyTicks { get; set; }
 
         public bool AutomaticCastInProgress { get; set; }
+
+        public bool HookAttemptedForNibble { get; set; }
     }
 }

@@ -24,8 +24,9 @@ The mod currently contains the SMAPI project scaffold, a typed and validated
 configuration layer, a complete first pass of its custom configuration menu, and the
 first runtime automation slices. The menu can edit every setting through a safe draft.
 Per-screen runtime sessions can be toggled independently, observe the current fishing
-phase, display it in a small HUD, and automatically cast toward validated fishing water
-after a configurable delay. Other gameplay automation stages are not connected yet.
+phase, display it in a small HUD, automatically cast toward validated fishing water
+after a configurable delay, and hook a fish when a real nibble occurs. Other gameplay
+automation stages are not connected yet.
 Development happens incrementally on the `development` branch.
 
 ## Requirements
