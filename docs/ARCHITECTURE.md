@@ -92,6 +92,12 @@ Low-energy protection runs after automatic eating and before any automatic cast.
 uses the owning player's fishing level and rod enchantments, and disables only that
 screen's automation if the next vanilla stamina charge would cause exhaustion.
 
+Assistant-added rod enchantments are tracked by object identity per local screen and
+never replace or remove enchantments already owned by the player. They are removed from
+all tracked rods before saving and restored afterward for the session. Local
+split-screen is supported in-process; remote multiplayer disables this feature because
+the rod enchantment list is network-synchronized and could otherwise race the host save.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:

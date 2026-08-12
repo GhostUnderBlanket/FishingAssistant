@@ -21,6 +21,7 @@ internal sealed class ModEntry : Mod
     private BaitAttachmentService? baitAttachment;
     private TackleAttachmentService? tackleAttachment;
     private InfiniteAttachmentService? infiniteAttachment;
+    private RodEnchantmentService? rodEnchantments;
 
     public override void Entry(IModHelper helper)
     {
@@ -35,6 +36,7 @@ internal sealed class ModEntry : Mod
         this.baitAttachment = new BaitAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.tackleAttachment = new TackleAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
+        this.rodEnchantments = new RodEnchantmentService(this.Monitor, key => helper.Translation.Get(key));
         ConfigValidationReport report = this.configManager.Load();
 
         this.Monitor.Log(
@@ -47,10 +49,12 @@ internal sealed class ModEntry : Mod
         helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
         helper.Events.GameLoop.Saving += this.OnSaving;
+        helper.Events.GameLoop.Saved += this.OnSaved;
         helper.Events.GameLoop.TimeChanged += this.OnTimeChanged;
         helper.Events.GameLoop.DayStarted += this.OnDayStarted;
         helper.Events.GameLoop.ReturnedToTitle += this.OnReturnedToTitle;
         helper.Events.Player.Warped += this.OnWarped;
+        helper.Events.Multiplayer.PeerConnected += this.OnPeerConnected;
         helper.Events.Display.RenderedHud += this.OnRenderedHud;
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         helper.ConsoleCommands.Add("fa_config", "Open the Fishing Assistant configuration menu.",
@@ -123,7 +127,8 @@ internal sealed class ModEntry : Mod
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
-        this.infiniteAttachment!.UpdateCurrent(this.configManager!.Active);
+        this.rodEnchantments!.UpdateCurrent(this.configManager!.Active);
+        this.infiniteAttachment!.UpdateCurrent(this.configManager.Active);
         this.baitAttachment!.UpdateCurrent(this.configManager!.Active);
         this.tackleAttachment!.UpdateCurrent(this.configManager.Active);
         this.automationRuntime!.UpdateCurrent();
@@ -131,6 +136,7 @@ internal sealed class ModEntry : Mod
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
+        this.rodEnchantments!.ResetAll();
         this.infiniteAttachment!.ResetAll();
         this.automationRuntime!.ResetCurrent(AutomationTransitionReason.SaveLoaded);
         this.EnsureConfiguredStarterRod();
@@ -145,6 +151,7 @@ internal sealed class ModEntry : Mod
 
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
     {
+        this.rodEnchantments!.RemoveAllAndReset();
         this.infiniteAttachment!.RestoreAll();
         this.infiniteAttachment.ResetAll();
         this.automationRuntime!.ResetAll(AutomationTransitionReason.ReturnedToTitle);
@@ -162,11 +169,23 @@ internal sealed class ModEntry : Mod
     private void OnSaving(object? sender, SavingEventArgs e)
     {
         this.infiniteAttachment!.RestoreAll();
+        this.rodEnchantments!.SuspendAllForSave();
+    }
+
+    private void OnSaved(object? sender, SavedEventArgs e)
+    {
+        this.rodEnchantments!.ResumeAllAfterSave(this.configManager!.Active);
     }
 
     private void OnTimeChanged(object? sender, TimeChangedEventArgs e)
     {
         this.automationRuntime!.OnTimeChanged(e.NewTime);
+    }
+
+    private void OnPeerConnected(object? sender, PeerConnectedEventArgs e)
+    {
+        if (!e.Peer.IsSplitScreen)
+            this.rodEnchantments!.RemoveAllForRemoteConnection();
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)

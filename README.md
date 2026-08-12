@@ -54,6 +54,10 @@ not pause shared world time or force-open a game menu.
 Before an energy-consuming cast, the assistant gives automatic eating the first chance
 to recover energy and otherwise disables only that player's automation before the cast
 can cause exhaustion. Efficient and event-controlled casts remain available.
+Optional rod enchantments are session-only: the assistant remembers the exact instances
+it added, removes them before every save, and never removes a player's existing
+enchantments. They support single-player and local split-screen, but are disabled while
+remote players are connected to prevent synchronized temporary state entering a save.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

@@ -23,6 +23,7 @@ Status recorded on 2026-08-12:
 - Automatic food selection and eating has not been tested in-game yet.
 - Late-night warnings and safe automation pausing have not been tested in-game yet.
 - Low-energy cast protection has not been tested in-game yet.
+- Temporary rod enchantments have not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -78,6 +79,11 @@ release-matrix scenarios are completed.
   cost, both with and without automatic eating. Repeat with an Efficient rod and in a
   fishing festival; only the owning player's automation should stop, and no valid
   zero-cost cast should be blocked.
+- Verify each temporary rod enchantment alone and all four together, with an already
+  enchanted rod, option changes, rod switching, `RemoveWhenUnequipped` on/off, saving,
+  reloading, and return to title. Repeat in local split-screen. Connect a remote
+  farmhand while enchantments are active and confirm they are removed, a warning is
+  shown, and no assistant-added enchantment appears in the saved rod afterward.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

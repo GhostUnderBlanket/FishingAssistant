@@ -71,6 +71,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   disabling automation until the active fishing cycle and reward menus have ended.
 - Low-energy cast protection which lets automatic eating run first, then disables only
   the current screen's automation before a cast can cause exhaustion.
+- Session-only Auto-Hook, Efficient, Master, and Preserving rod enchantments which
+  track exact assistant-owned instances, suspend during saving, preserve existing
+  enchantments, support local split-screen, and disable when remote players connect.
 
 ### Changed
 
