@@ -490,13 +490,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.ActionIfInventoryFull = value);
                 this.AddDefinition("auto_trash", () => this.session.Draft.AutoTrashJunk,
                     value => this.session.Draft.AutoTrashJunk = value);
-                this.AddNumberDefinition("junk_price", () => this.session.Draft.JunkHighestPrice,
-                    value => this.session.Draft.JunkHighestPrice = Convert.ToInt32(value), 0, 1_000_000, 10,
-                    value => $"{value:0}g");
-                this.AddActionDefinition("junk_ignore_list",
+                this.AddActionDefinition("junk_lists",
                     () => string.Format(this.translate("config.junk_picker.selected"),
+                        this.session.Draft.JunkList.Count,
                         this.session.Draft.JunkIgnoreList.Count),
-                    () => this.SetChildMenu(new JunkIgnoreMenu(
+                    () => this.SetChildMenu(new JunkListMenu(
+                        this.session.Draft.JunkList,
                         this.session.Draft.JunkIgnoreList,
                         this.itemSource,
                         this.translate)));

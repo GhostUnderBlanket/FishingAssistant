@@ -2,24 +2,57 @@ using FishingAssistant.Configuration;
 
 namespace FishingAssistant.UI;
 
-internal static class JunkIgnoreSelection
+internal enum JunkListMode
 {
-    public static bool Toggle(List<string> selectedIds, string qualifiedItemId)
+    Junk,
+    Ignore
+}
+
+internal enum JunkItemState
+{
+    Normal,
+    Junk,
+    Ignore
+}
+
+internal static class JunkListSelection
+{
+    public static JunkItemState Toggle(
+        List<string> junkIds,
+        List<string> ignoreIds,
+        string qualifiedItemId,
+        JunkListMode mode)
     {
-        ArgumentNullException.ThrowIfNull(selectedIds);
+        ArgumentNullException.ThrowIfNull(junkIds);
+        ArgumentNullException.ThrowIfNull(ignoreIds);
         if (string.IsNullOrWhiteSpace(qualifiedItemId))
             throw new ArgumentException("The qualified item ID must not be empty.", nameof(qualifiedItemId));
 
-        int index = selectedIds.FindIndex(value =>
-            string.Equals(value, qualifiedItemId, StringComparison.OrdinalIgnoreCase));
-        if (index >= 0)
-        {
-            selectedIds.RemoveAt(index);
-            return false;
-        }
+        JunkItemState current = GetState(junkIds, ignoreIds, qualifiedItemId);
+        JunkItemState target = mode == JunkListMode.Junk ? JunkItemState.Junk : JunkItemState.Ignore;
+        JunkItemState result = current == target ? JunkItemState.Normal : target;
 
-        selectedIds.Add(qualifiedItemId);
-        return true;
+        junkIds.RemoveAll(value => string.Equals(value, qualifiedItemId, StringComparison.OrdinalIgnoreCase));
+        ignoreIds.RemoveAll(value => string.Equals(value, qualifiedItemId, StringComparison.OrdinalIgnoreCase));
+
+        if (result == JunkItemState.Junk)
+            junkIds.Add(qualifiedItemId);
+        else if (result == JunkItemState.Ignore)
+            ignoreIds.Add(qualifiedItemId);
+
+        return result;
+    }
+
+    public static JunkItemState GetState(
+        IReadOnlyCollection<string> junkIds,
+        IReadOnlyCollection<string> ignoreIds,
+        string qualifiedItemId)
+    {
+        if (ignoreIds.Contains(qualifiedItemId, StringComparer.OrdinalIgnoreCase))
+            return JunkItemState.Ignore;
+        if (junkIds.Contains(qualifiedItemId, StringComparer.OrdinalIgnoreCase))
+            return JunkItemState.Junk;
+        return JunkItemState.Normal;
     }
 
     public static IReadOnlyList<ConfigItem> Filter(IEnumerable<ConfigItem> items, string? search)

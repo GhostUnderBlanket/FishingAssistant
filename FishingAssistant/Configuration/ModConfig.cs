@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 3;
+    internal const int CurrentVersion = 4;
 
     public int ConfigVersion { get; set; } = CurrentVersion;
 
@@ -31,9 +31,9 @@ internal sealed class ModConfig
 
     public bool AutoTrashJunk { get; set; }
 
-    public int JunkHighestPrice { get; set; }
-
     public bool AllowTrashFish { get; set; }
+
+    public List<string> JunkList { get; set; } = [];
 
     public List<string> JunkIgnoreList { get; set; } = [];
 
@@ -123,6 +123,7 @@ internal sealed class ModConfig
         draft.EnableAutomationButton = KeybindList.Parse(this.EnableAutomationButton.ToString());
         draft.CatchTreasureButton = KeybindList.Parse(this.CatchTreasureButton.ToString());
         draft.OpenConfigMenuButton = KeybindList.Parse(this.OpenConfigMenuButton.ToString());
+        draft.JunkList = [.. this.JunkList];
         draft.JunkIgnoreList = [.. this.JunkIgnoreList];
         return draft;
     }

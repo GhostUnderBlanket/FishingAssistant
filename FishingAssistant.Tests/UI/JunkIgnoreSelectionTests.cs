@@ -3,18 +3,28 @@ using FishingAssistant.UI;
 
 namespace FishingAssistant.Tests.UI;
 
-public sealed class JunkIgnoreSelectionTests
+public sealed class JunkListSelectionTests
 {
     [Fact]
-    public void Toggle_AddsAndRemovesQualifiedIdsCaseInsensitively()
+    public void Toggle_MovesItemBetweenJunkIgnoreAndNormal()
     {
-        List<string> selected = [];
+        List<string> junk = [];
+        List<string> ignored = [];
 
-        Assert.True(JunkIgnoreSelection.Toggle(selected, "(O)168"));
-        Assert.Equal(["(O)168"], selected);
+        Assert.Equal(JunkItemState.Junk,
+            JunkListSelection.Toggle(junk, ignored, "(O)168", JunkListMode.Junk));
+        Assert.Equal(["(O)168"], junk);
+        Assert.Empty(ignored);
 
-        Assert.False(JunkIgnoreSelection.Toggle(selected, "(o)168"));
-        Assert.Empty(selected);
+        Assert.Equal(JunkItemState.Ignore,
+            JunkListSelection.Toggle(junk, ignored, "(o)168", JunkListMode.Ignore));
+        Assert.Empty(junk);
+        Assert.Equal(["(o)168"], ignored);
+
+        Assert.Equal(JunkItemState.Normal,
+            JunkListSelection.Toggle(junk, ignored, "(O)168", JunkListMode.Ignore));
+        Assert.Empty(junk);
+        Assert.Empty(ignored);
     }
 
     [Fact]
@@ -26,8 +36,8 @@ public sealed class JunkIgnoreSelectionTests
             new("(O)169", ConfigItemKind.Other, "Driftwood")
         ];
 
-        Assert.Equal([items[1]], JunkIgnoreSelection.Filter(items, "drift"));
-        Assert.Equal([items[0]], JunkIgnoreSelection.Filter(items, "168"));
-        Assert.Equal(items, JunkIgnoreSelection.Filter(items, "  "));
+        Assert.Equal([items[1]], JunkListSelection.Filter(items, "drift"));
+        Assert.Equal([items[0]], JunkListSelection.Filter(items, "168"));
+        Assert.Equal(items, JunkListSelection.Filter(items, "  "));
     }
 }

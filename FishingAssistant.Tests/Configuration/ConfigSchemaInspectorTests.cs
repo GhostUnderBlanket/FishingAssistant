@@ -18,7 +18,7 @@ public sealed class ConfigSchemaInspectorTests
     }
 
     [Fact]
-    public void IsLegacyJson_ReturnsFalseForVersionThree()
+    public void IsLegacyJson_ReturnsFalseWhenVersionIsPresent()
     {
         const string json = """
             {
@@ -37,6 +37,7 @@ public sealed class ConfigSchemaInspectorTests
             {
               "ConfigVersion": 2,
               "AutoCastFishingRod": true,
+              "JunkHighestPrice": 50,
               "RemovedLegacyOption": 42,
               "FutureOption": "value"
             }

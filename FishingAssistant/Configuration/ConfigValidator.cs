@@ -37,8 +37,6 @@ internal static class ConfigValidator
         NormalizeEnum(report, nameof(config.GoldenTreasureChance),
             () => config.GoldenTreasureChance, value => config.GoldenTreasureChance = value, TreasureChanceBehavior.Default);
 
-        NormalizeRange(report, nameof(config.JunkHighestPrice),
-            () => config.JunkHighestPrice, value => config.JunkHighestPrice = value, 0, 1_000_000);
         NormalizeRange(report, nameof(config.TimeToPause),
             () => config.TimeToPause, value => config.TimeToPause = value, 6, 25);
         NormalizeRange(report, nameof(config.WarnCount),
@@ -66,7 +64,11 @@ internal static class ConfigValidator
             () => config.PreferredAdvIridiumTackle, value => config.PreferredAdvIridiumTackle = value, "Any");
         NormalizeString(report, nameof(config.StartWithFishingRod),
             () => config.StartWithFishingRod, value => config.StartWithFishingRod = value, "None");
-        NormalizeIgnoreList(config, report);
+        NormalizeItemList(report, nameof(config.JunkList),
+            () => config.JunkList, value => config.JunkList = value);
+        NormalizeItemList(report, nameof(config.JunkIgnoreList),
+            () => config.JunkIgnoreList, value => config.JunkIgnoreList = value);
+        ResolveJunkListConflicts(config, report);
         NormalizeDependencies(config, report);
 
         if (itemCatalog is not null)
@@ -175,9 +177,13 @@ internal static class ConfigValidator
         report.Add(property, value, corrected, "The value was empty or had surrounding whitespace.");
     }
 
-    private static void NormalizeIgnoreList(ModConfig config, ConfigValidationReport report)
+    private static void NormalizeItemList(
+        ConfigValidationReport report,
+        string property,
+        Func<List<string>?> getValue,
+        Action<List<string>> setValue)
     {
-        List<string>? original = config.JunkIgnoreList;
+        List<string>? original = getValue();
         List<string> corrected = original?
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Select(value => value.Trim())
@@ -187,11 +193,24 @@ internal static class ConfigValidator
         if (original is not null && original.SequenceEqual(corrected, StringComparer.Ordinal))
             return;
 
-        config.JunkIgnoreList = corrected;
-        report.Add(nameof(config.JunkIgnoreList),
+        setValue(corrected);
+        report.Add(property,
             original is null ? null : string.Join(", ", original),
             string.Join(", ", corrected),
             "Empty and duplicate item IDs were removed.");
+    }
+
+    private static void ResolveJunkListConflicts(ModConfig config, ConfigValidationReport report)
+    {
+        HashSet<string> ignored = config.JunkIgnoreList.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        List<string> original = config.JunkList;
+        List<string> corrected = original.Where(itemId => !ignored.Contains(itemId)).ToList();
+        if (original.SequenceEqual(corrected, StringComparer.Ordinal))
+            return;
+
+        config.JunkList = corrected;
+        report.Add(nameof(config.JunkList), string.Join(", ", original), string.Join(", ", corrected),
+            "Items in the ignore list were removed from the junk list.");
     }
 
     private static void NormalizeDependencies(ModConfig config, ConfigValidationReport report)
@@ -234,7 +253,23 @@ internal static class ConfigValidator
             () => config.StartWithFishingRod, value => config.StartWithFishingRod = value,
             "None", ConfigItemKind.FishingRod, catalog);
 
-        List<string> original = config.JunkIgnoreList;
+        NormalizeItemIds(report, nameof(config.JunkList),
+            () => config.JunkList, value => config.JunkList = value, catalog);
+        NormalizeItemIds(report, nameof(config.JunkIgnoreList),
+            () => config.JunkIgnoreList, value => config.JunkIgnoreList = value, catalog);
+        ResolveJunkListConflicts(config, report);
+
+        return report;
+    }
+
+    private static void NormalizeItemIds(
+        ConfigValidationReport report,
+        string property,
+        Func<List<string>> getValue,
+        Action<List<string>> setValue,
+        IItemCatalog catalog)
+    {
+        List<string> original = getValue();
         List<string> corrected = original
             .Select(catalog.Find)
             .Where(item => item is not null)
@@ -244,12 +279,10 @@ internal static class ConfigValidator
 
         if (!original.SequenceEqual(corrected, StringComparer.Ordinal))
         {
-            config.JunkIgnoreList = corrected;
-            report.Add(nameof(config.JunkIgnoreList), string.Join(", ", original), string.Join(", ", corrected),
+            setValue(corrected);
+            report.Add(property, string.Join(", ", original), string.Join(", ", corrected),
                 "Unknown item IDs were removed and known IDs were qualified.");
         }
-
-        return report;
     }
 
     private static void NormalizeItemPreference(

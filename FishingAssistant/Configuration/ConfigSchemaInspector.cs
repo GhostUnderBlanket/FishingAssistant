@@ -8,6 +8,7 @@ internal static class ConfigSchemaInspector
     private static readonly HashSet<string> KnownProperties = typeof(ModConfig)
         .GetProperties(BindingFlags.Instance | BindingFlags.Public)
         .Select(property => property.Name)
+        .Append("JunkHighestPrice")
         .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     public static bool IsLegacyJson(string json)

@@ -23,7 +23,6 @@ public sealed class ConfigValidatorTests
             ConfigVersion = 2,
             EnableAutomationButton = null!,
             ModStatusPosition = (HudPosition)999,
-            JunkHighestPrice = -50,
             TimeToPause = 99,
             EnergyPercentToEat = 0,
             BaitAmountToSpawn = 5_000,
@@ -34,6 +33,7 @@ public sealed class ConfigValidatorTests
             UnlockCastPowerTime = -1,
             PreferredBait = "  ",
             PreferredTackle = "  (O)686  ",
+            JunkList = [" ", "(O)170", "(O)168"],
             JunkIgnoreList = [" ", "(O)168", "(o)168", " (O)169 "]
         };
 
@@ -43,7 +43,6 @@ public sealed class ConfigValidatorTests
         Assert.Equal(ModConfig.CurrentVersion, config.ConfigVersion);
         Assert.Equal("F5", config.EnableAutomationButton.ToString());
         Assert.Equal(HudPosition.Left, config.ModStatusPosition);
-        Assert.Equal(0, config.JunkHighestPrice);
         Assert.Equal(25, config.TimeToPause);
         Assert.Equal(5, config.EnergyPercentToEat);
         Assert.Equal(999, config.BaitAmountToSpawn);
@@ -54,6 +53,7 @@ public sealed class ConfigValidatorTests
         Assert.Equal(0f, config.UnlockCastPowerTime);
         Assert.Equal("Any", config.PreferredBait);
         Assert.Equal("(O)686", config.PreferredTackle);
+        Assert.Equal(["(O)170"], config.JunkList);
         Assert.Equal(["(O)168", "(O)169"], config.JunkIgnoreList);
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.ConfigVersion));
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.EnableAutomationButton));
@@ -106,12 +106,14 @@ public sealed class ConfigValidatorTests
             PreferredTackle = "(O)WrongCategory",
             PreferredAdvIridiumTackle = "missing",
             StartWithFishingRod = "TrainingRod",
+            JunkList = ["169", "missing", "(O)168"],
             JunkIgnoreList = ["168", "missing", "(O)168"]
         };
         FakeItemCatalog catalog = new(
             new ConfigItem("(O)685", ConfigItemKind.Bait),
             new ConfigItem("(O)WrongCategory", ConfigItemKind.Other),
             new ConfigItem("(T)TrainingRod", ConfigItemKind.FishingRod),
+            new ConfigItem("(O)169", ConfigItemKind.Other),
             new ConfigItem("(O)168", ConfigItemKind.Other)
         );
 
@@ -121,8 +123,9 @@ public sealed class ConfigValidatorTests
         Assert.Equal("Any", config.PreferredTackle);
         Assert.Equal("Any", config.PreferredAdvIridiumTackle);
         Assert.Equal("(T)TrainingRod", config.StartWithFishingRod);
+        Assert.Equal(["(O)169"], config.JunkList);
         Assert.Equal(["(O)168"], config.JunkIgnoreList);
-        Assert.Equal(5, report.Corrections.Count);
+        Assert.Equal(7, report.Corrections.Count);
     }
 
     private sealed class FakeItemCatalog(params ConfigItem[] items) : IItemCatalog

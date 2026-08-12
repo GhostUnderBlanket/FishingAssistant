@@ -39,7 +39,7 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         if (metadata.IsLegacy)
         {
             report.Add(nameof(ModConfig.ConfigVersion), "missing", ModConfig.CurrentVersion,
-                "The Fishing Assistant 2 configuration was migrated to version 3.");
+                "The Fishing Assistant 2 configuration was migrated to the current schema.");
         }
 
         foreach (string property in metadata.UnknownProperties)
