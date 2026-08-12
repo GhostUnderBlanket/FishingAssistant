@@ -1,5 +1,6 @@
 # Repository-local development tools
 .tools/
+.idea/
 
 # Decompiled proprietary game assemblies (reference use only)
 .reference/
