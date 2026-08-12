@@ -1,5 +1,6 @@
 using FishingAssistant.Configuration;
 using FishingAssistant.Fishing;
+using FishingAssistant.Inventory;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -13,6 +14,7 @@ internal sealed class AutomationRuntime(
     Func<string, string> translate)
 {
     private readonly PerScreen<ScreenContext> screens = new(() => new ScreenContext());
+    private readonly AutoEatService autoEat = new(monitor, translate);
 
     public AutomationSession Current => this.screens.Value.Session;
 
@@ -29,6 +31,7 @@ internal sealed class AutomationRuntime(
         screen.LastTool = currentTool;
         screen.HasObservedTool = true;
         this.Log(screen.Session.Observe(FishingContextReader.Read(screen.Session.IsEnabled)));
+        this.autoEat.UpdateCurrent(getConfig(), screen.Session);
         this.UpdateInstantBite();
         this.UpdateAutomaticMinigame(screen);
         this.UpdateAutomaticCatchPopup(screen);
@@ -69,6 +72,7 @@ internal sealed class AutomationRuntime(
         screen.ConfiguredBobberBar = null;
         screen.FishPopupVisibleTicks = 0;
         screen.FishPopupCloseAttempted = false;
+        this.autoEat.ResetCurrent();
         this.ResetTreasureLoot(screen);
         this.Log(screen.Session.Reset(reason));
     }
@@ -77,6 +81,7 @@ internal sealed class AutomationRuntime(
     {
         foreach (AutomationSession session in this.screens.GetActiveValues().Select(pair => pair.Value.Session))
             session.Reset(reason);
+        this.autoEat.ResetAll();
         this.screens.ResetAllScreens();
     }
 

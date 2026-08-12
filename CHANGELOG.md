@@ -64,6 +64,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Advanced Iridium Rod slots and an explicit opt-in spawn fallback.
 - Per-screen infinite bait and tackle preservation which snapshots real attachments
   during a cast and restores only consumed stack or durability before saving.
+- Per-screen automatic food consumption at the configured energy threshold, with
+  deterministic local-inventory selection and safeguards for fish, buffs, fullness,
+  quest items, and progression items.
 
 ### Changed
 

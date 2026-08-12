@@ -45,6 +45,9 @@ preferences for both slots on the Advanced Iridium Rod.
 Infinite bait and tackle preserve the actual equipped attachment across each fishing
 cycle without creating temporary replacement items, and snapshots are cleared before
 saving or leaving the session.
+Automatic eating can restore low energy from the current local player's inventory. It
+prefers efficient plain food, avoids quest and progression items, and only consumes a
+stack after Stardew Valley accepts the eating action.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

@@ -20,6 +20,7 @@ Status recorded on 2026-08-12:
 - Automatic bait attachment and refill has not been tested in-game yet.
 - Automatic tackle attachment has not been tested in-game yet.
 - Infinite bait and tackle preservation has not been tested in-game yet.
+- Automatic food selection and eating has not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -63,6 +64,10 @@ release-matrix scenarios are completed.
   uses and lower durability. Cover successful catches, escaped fish, treasure, tool
   switching, warps, day end, saving/reloading, farmhand play, and split-screen; confirm
   no duplicate or temporary attachment is written into the save.
+- Verify automatic eating at, below, and above the configured energy threshold with
+  plain food, buff food, fish allowed/disallowed, a one-item stack, food/drink fullness
+  buffs, and no eligible food. Repeat for multiplayer farmhand and split-screen
+  inventories and confirm only the owning player's stack is consumed.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

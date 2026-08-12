@@ -80,6 +80,10 @@ Treasure chance overrides are decided once when a new `BobberBar` is observed. T
 adapter changes only the bar's treasure flags, `Default` preserves the vanilla roll,
 and festival fishing always keeps its vanilla result.
 
+Automatic eating is a local-screen action over the owning player's inventory. A pure
+policy selects food deterministically, while the game adapter starts the vanilla eat
+animation and decrements the selected stack only after the game accepts consumption.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:
