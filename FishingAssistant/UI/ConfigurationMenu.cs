@@ -26,6 +26,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly Func<string, string> translate;
     private readonly IConfigItemSource itemSource;
     private readonly Action addTestFishingRod;
+    private readonly Action warpToBeachFishingSpot;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
     private readonly List<ClickableComponent> categoryButtons = [];
@@ -44,7 +45,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<ModConfig> createDefaults,
         IConfigItemSource itemSource,
         ITranslationHelper translations,
-        Action addTestFishingRod)
+        Action addTestFishingRod,
+        Action warpToBeachFishingSpot)
     {
         this.session = session;
         this.apply = apply;
@@ -52,6 +54,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         this.itemSource = itemSource;
         this.translate = key => translations.Get(key);
         this.addTestFishingRod = addTestFishingRod;
+        this.warpToBeachFishingSpot = warpToBeachFishingSpot;
 
         this.RebuildComponents();
         Game1.playSound("bigSelect");
@@ -620,6 +623,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddActionDefinition("add_test_rod",
                     () => this.translate("config.action.add"),
                     this.addTestFishingRod);
+                this.AddActionDefinition("warp_beach",
+                    () => this.translate("config.action.warp"),
+                    this.warpToBeachFishingSpot);
                 break;
         }
     }

@@ -1,4 +1,5 @@
 using FishingAssistant.Configuration;
+using FishingAssistant.Debugging;
 using FishingAssistant.Equipment;
 using FishingAssistant.HUD;
 using FishingAssistant.Runtime;
@@ -16,6 +17,7 @@ internal sealed class ModEntry : Mod
     private AutomationRuntime? automationRuntime;
     private AutomationHudRenderer? automationHud;
     private StarterFishingRodService? starterFishingRod;
+    private DebugWarpService? debugWarp;
 
     public override void Entry(IModHelper helper)
     {
@@ -23,6 +25,7 @@ internal sealed class ModEntry : Mod
         this.automationRuntime = new AutomationRuntime(this.Monitor, () => this.configManager.Active);
         this.automationHud = new AutomationHudRenderer(key => helper.Translation.Get(key));
         this.starterFishingRod = new StarterFishingRodService(this.Monitor, key => helper.Translation.Get(key));
+        this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
         ConfigValidationReport report = this.configManager.Load();
 
         this.Monitor.Log(
@@ -169,7 +172,8 @@ internal sealed class ModEntry : Mod
             ConfigManager.CreateDefaultDraft,
             this.itemCatalog!,
             this.Helper.Translation,
-            this.starterFishingRod!.AddTestRodFromMenu
+            this.starterFishingRod!.AddTestRodFromMenu,
+            this.debugWarp!.WarpToBeachFishingSpot
         );
     }
 

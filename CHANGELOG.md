@@ -48,6 +48,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   catch-progress hysteresis and HUD status.
 - Functional normal and golden treasure chance overrides applied once per catch, with
   `Default`, `Always`, and `Never` behavior while festival rules remain vanilla.
+- A per-screen Debug action which warps the local player to the ocean-fishing spot by
+  Willy's Fish Shop, while refusing to interrupt active events or minigames.
 
 ### Changed
 

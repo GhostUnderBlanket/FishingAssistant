@@ -119,6 +119,8 @@
   "config.option.open_config.description": "The keybind used to open this custom configuration menu.",
   "config.option.add_test_rod": "Add test fishing rod",
   "config.option.add_test_rod.description": "Add an Advanced Iridium Rod when this local player has no fishing rod.",
+  "config.option.warp_beach": "Warp to beach fishing spot",
+  "config.option.warp_beach.description": "Warp this local player near Willy's Fish Shop for quick ocean-fishing tests.",
   "config.keybind.listening": "Press a key or button...",
   "config.value.left": "Left",
   "config.value.right": "Right",
@@ -144,6 +146,7 @@
   "config.action.cancel": "Cancel",
   "config.action.done": "Done",
   "config.action.add": "Add",
+  "config.action.warp": "Warp",
   "config.junk_picker.title": "Junk list editor",
   "config.junk_picker.search": "Search items...",
   "config.junk_picker.selected": "{0} junk / {1} ignored",
@@ -173,5 +176,6 @@
   "hud.state.faulted": "Faulted",
   "debug.test_rod.already_owned": "This player already has a fishing rod.",
   "debug.test_rod.inventory_full": "The inventory is full. Free a slot and try again.",
-  "debug.test_rod.failed": "The test fishing rod could not be added. Check the SMAPI log."
+  "debug.test_rod.failed": "The test fishing rod could not be added. Check the SMAPI log.",
+  "debug.warp_beach.unavailable": "The beach warp is unavailable during an event or minigame."
 }
