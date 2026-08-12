@@ -19,6 +19,7 @@ Status recorded on 2026-08-12:
 - Fishing-minigame skipping has not been tested in-game yet.
 - Automatic bait attachment and refill has not been tested in-game yet.
 - Automatic tackle attachment has not been tested in-game yet.
+- Infinite bait and tackle preservation has not been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
@@ -58,6 +59,10 @@ release-matrix scenarios are completed.
   Iridium Rods, including independent first/second slots, preserved durability, manual
   tackle already attached, and the opt-in spawn fallback. Repeat ownership checks for
   multiplayer farmhand and split-screen inventories.
+- Verify infinite bait at stack size one and larger stacks, and infinite tackle at 19
+  uses and lower durability. Cover successful catches, escaped fish, treasure, tool
+  switching, warps, day end, saving/reloading, farmhand play, and split-screen; confirm
+  no duplicate or temporary attachment is written into the save.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.

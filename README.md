@@ -42,6 +42,9 @@ Bait can be attached and refilled from the current local player's inventory whil
 rod is idle, with optional spawned bait clearly treated as a cheat setting.
 Tackle can be attached under the same ownership safeguards, including independent
 preferences for both slots on the Advanced Iridium Rod.
+Infinite bait and tackle preserve the actual equipped attachment across each fishing
+cycle without creating temporary replacement items, and snapshots are cleared before
+saving or leaving the session.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

@@ -20,6 +20,7 @@ internal sealed class ModEntry : Mod
     private DebugWarpService? debugWarp;
     private BaitAttachmentService? baitAttachment;
     private TackleAttachmentService? tackleAttachment;
+    private InfiniteAttachmentService? infiniteAttachment;
 
     public override void Entry(IModHelper helper)
     {
@@ -33,6 +34,7 @@ internal sealed class ModEntry : Mod
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
         this.baitAttachment = new BaitAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.tackleAttachment = new TackleAttachmentService(this.Monitor, key => helper.Translation.Get(key));
+        this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
         ConfigValidationReport report = this.configManager.Load();
 
         this.Monitor.Log(
@@ -44,6 +46,7 @@ internal sealed class ModEntry : Mod
         helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
         helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
+        helper.Events.GameLoop.Saving += this.OnSaving;
         helper.Events.GameLoop.DayStarted += this.OnDayStarted;
         helper.Events.GameLoop.ReturnedToTitle += this.OnReturnedToTitle;
         helper.Events.Player.Warped += this.OnWarped;
@@ -119,6 +122,7 @@ internal sealed class ModEntry : Mod
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
+        this.infiniteAttachment!.UpdateCurrent(this.configManager!.Active);
         this.baitAttachment!.UpdateCurrent(this.configManager!.Active);
         this.tackleAttachment!.UpdateCurrent(this.configManager.Active);
         this.automationRuntime!.UpdateCurrent();
@@ -126,25 +130,37 @@ internal sealed class ModEntry : Mod
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
+        this.infiniteAttachment!.ResetAll();
         this.automationRuntime!.ResetCurrent(AutomationTransitionReason.SaveLoaded);
         this.EnsureConfiguredStarterRod();
     }
 
     private void OnDayStarted(object? sender, DayStartedEventArgs e)
     {
+        this.infiniteAttachment!.RestoreCurrent();
         this.automationRuntime!.ResetCurrent(AutomationTransitionReason.DayStarted);
         this.EnsureConfiguredStarterRod();
     }
 
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
     {
+        this.infiniteAttachment!.RestoreAll();
+        this.infiniteAttachment.ResetAll();
         this.automationRuntime!.ResetAll(AutomationTransitionReason.ReturnedToTitle);
     }
 
     private void OnWarped(object? sender, WarpedEventArgs e)
     {
         if (e.IsLocalPlayer)
+        {
+            this.infiniteAttachment!.RestoreCurrent();
             this.automationRuntime!.ResetCurrent(AutomationTransitionReason.Warped);
+        }
+    }
+
+    private void OnSaving(object? sender, SavingEventArgs e)
+    {
+        this.infiniteAttachment!.RestoreAll();
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)

@@ -62,6 +62,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with an explicit opt-in fallback for spawning bait when none is available.
 - Local-player automatic tackle attachment with independent preferences for both
   Advanced Iridium Rod slots and an explicit opt-in spawn fallback.
+- Per-screen infinite bait and tackle preservation which snapshots real attachments
+  during a cast and restores only consumed stack or durability before saving.
 
 ### Changed
 
