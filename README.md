@@ -16,7 +16,8 @@ or migration from Fishing Assistant 2 yet.
 - Add new assistance options without taking control away from the player.
 
 See the [development roadmap](docs/ROADMAP.md) for the planned milestones and release
-criteria.
+criteria, and [testing status](docs/TESTING.md) for scenarios which have actually been
+verified in-game.
 
 ## Current status
 
