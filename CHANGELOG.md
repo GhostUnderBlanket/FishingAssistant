@@ -36,8 +36,12 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Replaced price-threshold junk classification with explicit visual item selection.
+- Replaced bait, tackle, and starter-rod cycling controls with searchable visual item
+  pickers, and increased spacing in the remaining value selectors.
 
 ### Fixed
 
 - Category and scrolling arrows now use game sprites instead of font glyphs, avoiding
   the left arrow rendering as a heart in Stardew Valley's dialogue font.
+- The configuration-menu title now has a game-style backing panel for contrast against
+  dark menu backgrounds.

@@ -273,10 +273,18 @@ internal sealed class ConfigurationMenu : IClickableMenu
         SpriteFont titleFont = this.layout.Width >= 560 ? Game1.dialogueFont : Game1.smallFont;
         string title = MenuText.Fit(this.translate("config.title"), titleFont,
             this.layout.Width - this.layout.Padding * 2);
+        Vector2 titleSize = titleFont.MeasureString(title);
         Vector2 titlePosition = new(
             this.layout.X + this.layout.Padding,
             this.layout.Y + (this.layout.HeaderHeight - titleFont.LineSpacing) / 2f
         );
+        int backgroundPadding = 14;
+        drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
+            (int)titlePosition.X - backgroundPadding,
+            (int)titlePosition.Y - 6,
+            (int)titleSize.X + backgroundPadding * 2,
+            titleFont.LineSpacing + 12,
+            Color.White);
         Utility.drawTextWithShadow(batch, title, titleFont, titlePosition, Game1.textColor);
     }
 
@@ -663,7 +671,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
         string? sentinelLabelKey = null)
     {
         ConfigItem[] items = this.itemSource.GetAll(kind).ToArray();
-        string[] values = [sentinel, .. items.Select(item => item.QualifiedItemId)];
         Dictionary<string, string> labels = items.ToDictionary(
             item => item.QualifiedItemId,
             item => item.DisplayName,
@@ -673,15 +680,21 @@ internal sealed class ConfigurationMenu : IClickableMenu
             sentinelLabelKey ?? $"config.value.{sentinel.ToLowerInvariant()}"
         );
 
-        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigValueSelector<string>(
+        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigItemPicker(
             id,
             bounds,
             this.translate($"config.option.{key}"),
             this.translate($"config.option.{key}.description"),
             getValue,
-            setValue,
-            (current, direction) => OptionAdjustment.Cycle(values, current, direction),
-            value => labels.GetValueOrDefault(value, value)
+            value => labels.GetValueOrDefault(value, value),
+            () => this.SetChildMenu(new SingleItemPickerMenu(
+                this.translate($"config.option.{key}"),
+                items,
+                sentinel,
+                labels[sentinel],
+                getValue,
+                setValue,
+                this.translate))
         )));
     }
 

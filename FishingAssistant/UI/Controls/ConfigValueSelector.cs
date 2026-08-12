@@ -71,7 +71,7 @@ internal sealed class ConfigValueSelector<T> : IConfigControl
         this.DrawArrow(batch, new Vector2(valueBounds.Left + 18, valueBounds.Center.Y), -MathF.PI / 2f);
         this.DrawArrow(batch, new Vector2(valueBounds.Right - 18, valueBounds.Center.Y), MathF.PI / 2f);
 
-        string value = MenuText.Fit(this.formatValue(this.getValue()), Game1.smallFont, valueBounds.Width - 72);
+        string value = MenuText.Fit(this.formatValue(this.getValue()), Game1.smallFont, valueBounds.Width - 104);
         Vector2 size = Game1.smallFont.MeasureString(value);
         Utility.drawTextWithShadow(batch, value, Game1.smallFont,
             new Vector2(valueBounds.Center.X - size.X / 2f, valueBounds.Center.Y - size.Y / 2f),
@@ -81,15 +81,15 @@ internal sealed class ConfigValueSelector<T> : IConfigControl
     private Rectangle GetValueBounds()
     {
         Rectangle bounds = this.Component.bounds;
-        int width = Math.Clamp(bounds.Width * 2 / 5, 112, 260);
-        int height = Math.Min(44, Math.Max(1, bounds.Height - 8));
+        int width = Math.Clamp(bounds.Width * 43 / 100, 152, 320);
+        int height = Math.Min(48, Math.Max(1, bounds.Height - 4));
         return new Rectangle(bounds.Right - width, bounds.Center.Y - height / 2, width, height);
     }
 
     private void DrawArrow(SpriteBatch batch, Vector2 position, float rotation)
     {
         batch.Draw(Game1.mouseCursors, position, ArrowSource, Color.White, rotation,
-            new Vector2(ArrowSource.Width / 2f, ArrowSource.Height / 2f), 2f,
+            new Vector2(ArrowSource.Width / 2f, ArrowSource.Height / 2f), 1.75f,
             SpriteEffects.None, 0.9f);
     }
 }
