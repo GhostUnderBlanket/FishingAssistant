@@ -67,6 +67,11 @@ Festival automation is denied by default. The current exception is the game's ac
 `FishingGame` minigame while it is still running; casting applies an additional startup
 buffer so automation cannot act during the minigame countdown.
 
+The initial minigame controller reads the current local screen's `BobberBar` through a
+narrow adapter and writes only its vertical bar speed. A pure proportional controller
+targets the fish while vanilla code retains ownership of fish movement, catch progress,
+treasure, perfect status, and the final catch result.
+
 ## Automation lifecycle
 
 The automation coordinator will use explicit states rather than unrelated tick flags:

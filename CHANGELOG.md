@@ -42,6 +42,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   vanilla Auto-Hook enchantment, and avoids festival or menu-conflicted input.
 - Automatic casting and hooking inside Stardew Valley's fishing festival minigames,
   while unrelated festival contexts remain blocked.
+- Per-screen automatic fishing-minigame control which steers the vanilla fishing bar
+  toward the fish without directly changing catch progress or results.
 
 ### Changed
 

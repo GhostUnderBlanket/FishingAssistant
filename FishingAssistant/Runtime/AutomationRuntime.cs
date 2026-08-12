@@ -26,6 +26,7 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
         screen.LastTool = currentTool;
         screen.HasObservedTool = true;
         this.Log(screen.Session.Observe(FishingContextReader.Read(screen.Session.IsEnabled)));
+        this.UpdateAutomaticMinigame(screen);
         this.UpdateAutomaticHook(screen);
         this.UpdateAutomaticCast(screen);
     }
@@ -148,6 +149,22 @@ internal sealed class AutomationRuntime(IMonitor monitor, Func<ModConfig> getCon
                 monitor.Log($"Hooked a fish automatically for local screen {Context.ScreenId}.", LogLevel.Trace);
                 break;
         }
+    }
+
+    private void UpdateAutomaticMinigame(ScreenContext screen)
+    {
+        BobberBarAdapter? bar = BobberBarAdapter.ForCurrentScreen();
+        if (bar is null)
+            return;
+
+        ModConfig config = getConfig();
+        MinigameControlDecision decision = MinigameControlPolicy.Decide(bar.ReadConditions(
+            screen.Session.IsEnabled,
+            config.AutoPlayMiniGame,
+            screen.Session.State
+        ));
+        if (decision.ShouldControl)
+            bar.SetBarSpeed(decision.BarSpeed);
     }
 
     private sealed class ScreenContext
