@@ -44,8 +44,8 @@ Completed on 2026-08-13. Release verification passed with 265 automated tests.
 ## Milestone 2: Custom configuration menu
 
 - [x] Add deliberate confirmation before Reset Defaults changes the menu draft.
-- [x] Surface `ConfigValidationReport` corrections and warnings in the menu instead of
-  closing immediately after Apply with no user-visible result.
+- [x] Surface actionable validation warnings inline beneath their affected controls;
+  visual controls constrain values so Apply-time corrections aren't normally needed.
 - [ ] Add a reusable disabled state and unavailable-reason presentation for controls
   whose behavior is unsafe or unsupported in the current context.
 - [ ] Support gamepad trigger category navigation in addition to shoulder buttons.

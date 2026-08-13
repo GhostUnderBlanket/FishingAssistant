@@ -29,6 +29,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly ConfigResetWorkflow resetWorkflow;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
+    private readonly Dictionary<int, string> optionKeys = [];
     private readonly List<ClickableComponent> categoryButtons = [];
     private readonly List<ClickableComponent> scrollButtons = [];
     private readonly List<ClickableComponent> footerButtons = [];
@@ -240,11 +241,18 @@ internal sealed class ConfigurationMenu : IClickableMenu
         this.DrawCategorySelector(batch);
 
         Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
+        IReadOnlyDictionary<string, InlineConfigMessage> inlineMessages = InlineConfigValidation
+            .Evaluate(this.session.Draft)
+            .ToDictionary(message => message.OptionKey, StringComparer.Ordinal);
         foreach (IConfigControl option in this.options)
         {
             bool highlighted = option.Component.bounds.Contains(mouse)
                 || this.currentlySnappedComponent == option.Component;
-            option.Draw(batch, highlighted);
+            string? optionKey = this.optionKeys.GetValueOrDefault(option.Component.myID);
+            InlineConfigMessage? inlineMessage = optionKey is null
+                ? null
+                : inlineMessages.GetValueOrDefault(optionKey);
+            this.DrawOption(batch, option, highlighted, inlineMessage);
         }
 
         foreach (ClickableComponent button in this.scrollButtons)
@@ -317,31 +325,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
     {
         try
         {
-            ConfigValidationReport report = this.apply(this.session);
+            this.apply(this.session);
             Game1.playSound("coin");
-            ConfigApplyFeedback feedback = ConfigApplyFeedback.Create(report);
-            if (!feedback.HasMessages)
-            {
-                this.exitThisMenu(playSound: false);
-                return;
-            }
-
-            string affected = string.Join(", ", feedback.AffectedProperties);
-            if (feedback.AdditionalPropertyCount > 0)
-            {
-                affected = string.Format(this.translate("config.apply.feedback.more"),
-                    affected,
-                    feedback.AdditionalPropertyCount);
-            }
-
-            string message = string.Format(this.translate("config.apply.feedback.summary"),
-                feedback.CorrectionCount,
-                feedback.WarningCount,
-                affected);
-            this.SetChildMenu(new ConfigApplyFeedbackDialog(
-                message,
-                this.translate("config.action.done"),
-                () => this.exitThisMenu(playSound: false)));
+            this.exitThisMenu(playSound: false);
         }
         catch (InvalidOperationException exception)
         {
@@ -494,6 +480,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         int optionWidth = contentWidth - scrollWidth;
 
         this.options.Clear();
+        this.optionKeys.Clear();
         IEnumerable<(ControlDefinition Definition, int Index)> visible = this.definitions
             .Select((definition, index) => (definition, index))
             .Skip(this.scrollOffset)
@@ -507,7 +494,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 optionWidth,
                 this.layout.OptionHeight
             );
-            this.options.Add(definition.Create(FirstOptionId + index, bounds));
+            IConfigControl option = definition.Create(FirstOptionId + index, bounds);
+            this.options.Add(option);
+            this.optionKeys[option.Component.myID] = definition.Key;
             row++;
         }
 
@@ -679,7 +668,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     private void AddDefinition(string key, Func<bool> getValue, Action<bool> setValue)
     {
-        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigCheckbox(
+        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigCheckbox(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -693,7 +682,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         where TEnum : struct, Enum
     {
         TEnum[] values = Enum.GetValues<TEnum>();
-        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigValueSelector<TEnum>(
+        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigValueSelector<TEnum>(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -714,7 +703,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         double increment,
         Func<double, string>? format = null)
     {
-        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigValueSelector<double>(
+        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigValueSelector<double>(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -744,7 +733,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             sentinelLabelKey ?? $"config.value.{sentinel.ToLowerInvariant()}"
         );
 
-        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigItemPicker(
+        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigItemPicker(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -767,7 +756,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<KeybindList> getValue,
         Action<KeybindList> setValue)
     {
-        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigKeybind(
+        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigKeybind(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -780,7 +769,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     private void AddActionDefinition(string key, Func<string> getButtonLabel, Action activate)
     {
-        this.definitions.Add(new ControlDefinition((id, bounds) => new ConfigActionButton(
+        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigActionButton(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -884,6 +873,40 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Utility.drawTextWithShadow(batch, label, Game1.smallFont, position, Game1.textColor);
     }
 
+    private void DrawOption(
+        SpriteBatch batch,
+        IConfigControl option,
+        bool highlighted,
+        InlineConfigMessage? inlineMessage)
+    {
+        Rectangle originalBounds = option.Component.bounds;
+        int messageHeight = inlineMessage is null
+            ? 0
+            : Math.Min(Game1.tinyFont.LineSpacing + 4, Math.Max(0, originalBounds.Height / 2));
+        bool hasInlineSpace = messageHeight >= Game1.tinyFont.LineSpacing;
+        if (hasInlineSpace)
+        {
+            option.Component.bounds = new Rectangle(
+                originalBounds.X,
+                originalBounds.Y,
+                originalBounds.Width,
+                originalBounds.Height - messageHeight);
+        }
+
+        option.Draw(batch, highlighted);
+        option.Component.bounds = originalBounds;
+        if (inlineMessage is null)
+            return;
+
+        string warning = this.translate(inlineMessage.TranslationKey);
+        string fitted = MenuText.Fit(warning, Game1.tinyFont, originalBounds.Width - 20);
+        float y = hasInlineSpace
+            ? originalBounds.Bottom - messageHeight + 1
+            : originalBounds.Bottom - Game1.tinyFont.LineSpacing;
+        Utility.drawTextWithShadow(batch, fitted, Game1.tinyFont,
+            new Vector2(originalBounds.X + 8, y), new Color(190, 72, 24));
+    }
+
     private bool TryDrawArrow(SpriteBatch batch, ClickableComponent button)
     {
         float? rotation = button.myID switch
@@ -929,5 +952,5 @@ internal sealed class ConfigurationMenu : IClickableMenu
             ?? this.categoryButtons[0];
     }
 
-    private sealed record ControlDefinition(Func<int, Rectangle, IConfigControl> Create);
+    private sealed record ControlDefinition(string Key, Func<int, Rectangle, IConfigControl> Create);
 }
