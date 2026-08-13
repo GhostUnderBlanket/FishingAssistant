@@ -75,7 +75,9 @@ configuration validation. The menu provides Apply, Cancel, and Reset Defaults ac
 recalculates its bounds when the viewport changes, fits narrow split-screen viewports,
 supports mouse and controller/snappy navigation, and displays descriptions as tooltips.
 Category shoulder navigation and scrolling work without requiring a mouse. Reset
-changes only the draft until Apply is selected.
+opens a confirmation dialog before replacing the draft with defaults. Canceling that
+dialog leaves the draft untouched; confirming still changes only the draft until Apply
+is selected.
 
 Each open menu draft carries the configuration revision it was created from. If a
 second local split-screen player applies a newer draft first, the stale menu is asked to

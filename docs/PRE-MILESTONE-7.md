@@ -43,7 +43,7 @@ Completed on 2026-08-13. Release verification passed with 265 automated tests.
 
 ## Milestone 2: Custom configuration menu
 
-- [ ] Add deliberate confirmation before Reset Defaults changes the menu draft.
+- [x] Add deliberate confirmation before Reset Defaults changes the menu draft.
 - [ ] Surface `ConfigValidationReport` corrections and warnings in the menu instead of
   closing immediately after Apply with no user-visible result.
 - [ ] Add a reusable disabled state and unavailable-reason presentation for controls

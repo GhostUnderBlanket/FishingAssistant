@@ -24,6 +24,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and regression tests protecting malformed and future-schema files from overwrite.
 - Initial responsive custom configuration menu with draft-based automation checkboxes,
   Apply, Cancel, Reset Defaults, mouse input, and controller navigation.
+- A deliberate confirmation dialog for Reset Defaults which leaves the editable draft
+  unchanged when canceled.
 - Configuration-menu opening through a configurable keybind or the `fa_config` console
   command.
 - Responsive category navigation and scrolling for all boolean configuration settings.

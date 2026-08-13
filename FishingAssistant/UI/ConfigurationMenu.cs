@@ -22,11 +22,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private const int CancelButtonId = 202;
 
     private readonly Func<ConfigEditSession, ConfigValidationReport> apply;
-    private readonly Func<ModConfig> createDefaults;
     private readonly Func<string, string> translate;
     private readonly IConfigItemSource itemSource;
     private readonly Action addTestFishingRod;
     private readonly Action warpToBeachFishingSpot;
+    private readonly ConfigResetWorkflow resetWorkflow;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
     private readonly List<ClickableComponent> categoryButtons = [];
@@ -50,11 +50,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
     {
         this.session = session;
         this.apply = apply;
-        this.createDefaults = createDefaults;
         this.itemSource = itemSource;
         this.translate = key => translations.Get(key);
         this.addTestFishingRod = addTestFishingRod;
         this.warpToBeachFishingSpot = warpToBeachFishingSpot;
+        this.resetWorkflow = new ConfigResetWorkflow(createDefaults);
 
         this.RebuildComponents();
         Game1.playSound("bigSelect");
@@ -83,6 +83,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void emergencyShutDown()
     {
+        this.resetWorkflow.Cancel();
         this.CancelKeybindListening();
         base.emergencyShutDown();
     }
@@ -137,7 +138,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.ApplyAndClose();
                 break;
             case ResetButtonId:
-                this.ResetDraft();
+                this.RequestResetDraft();
                 break;
             case CancelButtonId:
                 this.exitThisMenu();
@@ -380,9 +381,27 @@ internal sealed class ConfigurationMenu : IClickableMenu
         this.applyMovementKey(direction > 0 ? 1 : 3);
     }
 
-    private void ResetDraft()
+    private void RequestResetDraft()
     {
-        this.session.Draft = this.createDefaults();
+        this.resetWorkflow.Request();
+        ConfirmationDialog? dialog = null;
+        dialog = new ConfirmationDialog(
+            this.translate("config.confirm.reset"),
+            _ =>
+            {
+                ModConfig? defaults = this.resetWorkflow.Confirm();
+                dialog!.exitThisMenu(playSound: false);
+                if (defaults is not null)
+                    this.ResetDraft(defaults);
+            },
+            _ => dialog!.exitThisMenu(playSound: false));
+        dialog.behaviorBeforeCleanup = _ => this.resetWorkflow.Cancel();
+        this.SetChildMenu(dialog);
+    }
+
+    private void ResetDraft(ModConfig defaults)
+    {
+        this.session.Draft = defaults;
         this.statusText = this.translate("config.status.defaults_loaded");
         this.RebuildOptions();
         Game1.playSound("shwip");

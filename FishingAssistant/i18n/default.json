@@ -155,6 +155,7 @@
   "config.junk_picker.state_junk": "Junk",
   "config.junk_picker.state_ignore": "Ignored",
   "config.junk_picker.empty": "No matching items found.",
+  "config.confirm.reset": "Reset every setting in this draft to its default value? Changes are not saved until you select Apply.",
   "config.status.defaults_loaded": "Defaults loaded. Select Apply to save them.",
   "config.status.save_failed": "The configuration could not be saved. Check the SMAPI log.",
   "hud.title": "Fishing Assistant",
