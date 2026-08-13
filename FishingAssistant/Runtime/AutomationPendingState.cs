@@ -8,6 +8,14 @@ internal sealed class AutomationPendingState
 
     public int ManualCastPowerTicks { get; set; }
 
+    public bool PlayerCastInputObserved { get; set; }
+
+    public bool ManualCastWasTiming { get; set; }
+
+    public bool ManualCastPowerUnlocked { get; set; }
+
+    public int? SessionCastPower { get; set; }
+
     public bool HookAttemptedForNibble { get; set; }
 
     public bool IsPursuingTreasure { get; set; }
@@ -33,6 +41,10 @@ internal sealed class AutomationPendingState
         this.ReadyTicks = 0;
         this.AutomaticCastInProgress = false;
         this.ManualCastPowerTicks = 0;
+        this.PlayerCastInputObserved = false;
+        this.ManualCastWasTiming = false;
+        this.ManualCastPowerUnlocked = false;
+        this.SessionCastPower = null;
         this.HookAttemptedForNibble = false;
         this.IsPursuingTreasure = false;
         this.ConfiguredBobberBar = null;

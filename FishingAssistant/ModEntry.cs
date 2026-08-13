@@ -279,6 +279,7 @@ internal sealed class ModEntry : Mod
         try
         {
             ConfigValidationReport report = this.configManager!.Apply(session);
+            this.automationRuntime!.ResetSessionCastPowerCurrent();
             this.EnsureConfiguredStarterRod();
             return report;
         }

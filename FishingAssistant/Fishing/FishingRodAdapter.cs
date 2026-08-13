@@ -25,6 +25,8 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
 
     public Vector2 BobberPosition => rod.bobber.Value;
 
+    public float CastingPower => Math.Clamp(rod.castingPower, 0f, 1f);
+
     public bool IsSupportedFishingMinigame => Game1.currentMinigame is FishingGame { gameDone: false };
 
     public AutoHookConditions ReadAutoHookConditions(

@@ -62,14 +62,21 @@ inventory, food, equipment, or keybind settings.
 Schema version 10 extends bubble steering to automatic casts. Relaxed and Training
 profiles enable it; Custom profiles retain the player's explicit choice.
 
-`UnlockCastPowerTime` retains its Fishing Assistant 2 behavior for manual casts while
-using a fresh state-scoped implementation. At `0`, manual casts use vanilla power
-control immediately. From `0.1` through `2.9` seconds, the cast stays at
-`DefaultCastPower` until the hold time elapses, then the vanilla oscillating power bar
-resumes. At `3`, the configured power remains locked for the entire manual cast.
-Automatic casts always use `DefaultCastPower` and don't consume this timer. The timer
-is isolated per local screen and resets between casts, tool changes, warps, saves, and
-other automation lifecycle resets.
+`UnlockCastPowerTime` extends the Fishing Assistant 2 smart-cast behavior with a
+per-screen session value. A session starts at `DefaultCastPower`. While automation is
+enabled, starting a manual cast marks player input and briefly holds the current session
+power. At `0`, vanilla power control unlocks immediately. From `0.1` through `2.9`
+seconds, it unlocks after that hold time. Releasing an unlocked manual cast remembers
+the selected vanilla power and uses it for later automatic casts in that session. At
+`3`, power never unlocks, so no manual value is learned. Brief releases before the
+threshold keep the existing session value. Disabling automation, changing tools,
+warping, saving/loading, returning to title, and other lifecycle resets clear the
+learned value; manual casts while automation is disabled remain entirely vanilla.
+
+In Catch Assistance, treasure controls are ordered as Target Fishing Treasure,
+Collect Treasure During the Minigame Instantly, Treasure Chest Ignore List, then When
+Only Ignored Treasure Remains. The ignore-list controls no longer appear under
+Inventory & Food.
 
 The migration test fixture contains every public Fishing Assistant 2 configuration
 property. It verifies that every still-supported non-default choice survives and that

@@ -70,6 +70,11 @@ internal sealed class AutomationRuntime(
         this.lateNight.OnTimeChanged(getConfig(), this.screens.Value.Session, newTime);
     }
 
+    public void ResetSessionCastPowerCurrent()
+    {
+        this.ResetManualCastTracking(this.screens.Value, preserveSessionPower: false);
+    }
+
     public void ResetCurrent(AutomationTransitionReason reason)
     {
         AutomationScreenState screen = this.screens.Value;
@@ -162,6 +167,7 @@ internal sealed class AutomationRuntime(
     private void UpdateAutomaticCast(AutomationScreenState screen)
     {
         ModConfig config = getConfig();
+        int castPower = screen.Pending.SessionCastPower ?? config.DefaultCastPower;
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         if (rod is null)
         {
@@ -173,7 +179,7 @@ internal sealed class AutomationRuntime(
         if (screen.Pending.AutomaticCastInProgress)
         {
             if (rod.IsTimingCast)
-                rod.SetCastPower(config.DefaultCastPower);
+                rod.SetCastPower(castPower);
 
             if (screen.Session.State is AutomationState.Ready or AutomationState.Casting)
             {
@@ -188,7 +194,7 @@ internal sealed class AutomationRuntime(
             screen.Session.IsEnabled,
             config.AutoCastFishingRod,
             screen.Session.State,
-            config.DefaultCastPower
+            castPower
         );
         int requiredTicks = (int)Math.Ceiling(config.AutoCastDelaySeconds * 60f);
         if (rod.IsSupportedFishingMinigame)
@@ -204,7 +210,7 @@ internal sealed class AutomationRuntime(
             case AutoCastDecision.Cast:
                 screen.Pending.ReadyTicks = 0;
                 screen.Pending.AutomaticCastInProgress = true;
-                rod.BeginAutomaticCast(config.DefaultCastPower);
+                rod.BeginAutomaticCast(castPower);
                 monitor.Log($"Started an automatic cast for local screen {Context.ScreenId}.", LogLevel.Trace);
                 break;
         }
@@ -214,24 +220,53 @@ internal sealed class AutomationRuntime(
     {
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         ModConfig config = getConfig();
-        ManualCastPowerDecision decision = ManualCastPowerPolicy.Decide(
-            rod?.IsTimingCast == true,
+        bool isTimingCast = rod?.IsTimingCast == true;
+        ManualCastPowerDecision decision = ManualCastPowerPolicy.Decide(new(
+            screen.Session.IsEnabled,
+            isTimingCast,
+            screen.Pending.ManualCastWasTiming,
+            screen.Pending.PlayerCastInputObserved,
             screen.Pending.AutomaticCastInProgress,
+            screen.Pending.ManualCastPowerUnlocked,
             screen.Pending.ManualCastPowerTicks,
-            config.UnlockCastPowerTime);
+            config.UnlockCastPowerTime));
 
         switch (decision)
         {
             case ManualCastPowerDecision.Reset:
-            case ManualCastPowerDecision.UseVanilla:
-                if (decision == ManualCastPowerDecision.Reset)
-                    screen.Pending.ManualCastPowerTicks = 0;
+                this.ResetManualCastTracking(screen);
                 break;
-            case ManualCastPowerDecision.HoldConfiguredPower:
-                rod!.SetCastPower(config.DefaultCastPower);
+            case ManualCastPowerDecision.UseVanilla:
+                screen.Pending.PlayerCastInputObserved = true;
+                screen.Pending.ManualCastWasTiming = true;
+                screen.Pending.ManualCastPowerUnlocked = true;
+                screen.Pending.ReadyTicks = 0;
+                break;
+            case ManualCastPowerDecision.HoldSessionPower:
+                screen.Pending.PlayerCastInputObserved = true;
+                screen.Pending.ManualCastWasTiming = true;
+                screen.Pending.ReadyTicks = 0;
+                rod!.SetCastPower(screen.Pending.SessionCastPower ?? config.DefaultCastPower);
                 screen.Pending.ManualCastPowerTicks++;
                 break;
+            case ManualCastPowerDecision.RememberVanillaPower:
+                screen.Pending.SessionCastPower = (int)Math.Round(rod!.CastingPower * 100f);
+                monitor.Log(
+                    $"Remembered manual cast power {screen.Pending.SessionCastPower}% for local screen {Context.ScreenId}.",
+                    LogLevel.Trace);
+                this.ResetManualCastTracking(screen, preserveSessionPower: true);
+                break;
         }
+    }
+
+    private void ResetManualCastTracking(AutomationScreenState screen, bool preserveSessionPower = true)
+    {
+        screen.Pending.ManualCastPowerTicks = 0;
+        screen.Pending.PlayerCastInputObserved = false;
+        screen.Pending.ManualCastWasTiming = false;
+        screen.Pending.ManualCastPowerUnlocked = false;
+        if (!preserveSessionPower)
+            screen.Pending.SessionCastPower = null;
     }
 
     private void UpdateBubbleSteering(AutomationScreenState screen)

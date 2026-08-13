@@ -4,31 +4,49 @@ internal enum ManualCastPowerDecision
 {
     Reset,
     UseVanilla,
-    HoldConfiguredPower
+    HoldSessionPower,
+    RememberVanillaPower
 }
+
+internal sealed record ManualCastPowerConditions(
+    bool AutomationEnabled,
+    bool IsTimingCast,
+    bool WasTimingManualCast,
+    bool PlayerInputObserved,
+    bool IsAutomaticCast,
+    bool WasUnlocked,
+    int ElapsedTicks,
+    float UnlockSeconds);
 
 internal static class ManualCastPowerPolicy
 {
     public const float NeverUnlockSeconds = 3f;
 
     public static ManualCastPowerDecision Decide(
-        bool isTimingCast,
-        bool isAutomaticCast,
-        int elapsedTicks,
-        float unlockSeconds)
+        ManualCastPowerConditions conditions)
     {
-        if (!isTimingCast || isAutomaticCast)
+        ArgumentNullException.ThrowIfNull(conditions);
+        if (!conditions.AutomationEnabled)
+            return ManualCastPowerDecision.Reset;
+        if (conditions.IsAutomaticCast)
             return ManualCastPowerDecision.Reset;
 
-        float seconds = Math.Clamp(unlockSeconds, 0f, NeverUnlockSeconds);
+        if (!conditions.IsTimingCast)
+            return conditions.WasTimingManualCast
+                && conditions.PlayerInputObserved
+                && conditions.WasUnlocked
+                ? ManualCastPowerDecision.RememberVanillaPower
+                : ManualCastPowerDecision.Reset;
+
+        float seconds = Math.Clamp(conditions.UnlockSeconds, 0f, NeverUnlockSeconds);
         if (seconds <= 0f)
             return ManualCastPowerDecision.UseVanilla;
         if (seconds >= NeverUnlockSeconds)
-            return ManualCastPowerDecision.HoldConfiguredPower;
+            return ManualCastPowerDecision.HoldSessionPower;
 
         int requiredTicks = (int)Math.Ceiling(seconds * 60f);
-        return elapsedTicks < requiredTicks
-            ? ManualCastPowerDecision.HoldConfiguredPower
+        return conditions.ElapsedTicks < requiredTicks
+            ? ManualCastPowerDecision.HoldSessionPower
             : ManualCastPowerDecision.UseVanilla;
     }
 }

@@ -575,16 +575,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
             case ConfigCategory.Inventory:
                 this.AddEnumDefinition("inventory_full_action", () => this.session.Draft.ActionIfInventoryFull,
                     value => this.session.Draft.ActionIfInventoryFull = value);
-                this.AddActionDefinition("treasure_ignore_list",
-                    () => string.Format(this.translate("config.treasure_ignore_picker.selected"),
-                        this.session.Draft.TreasureChestIgnoreList.Count),
-                    () => this.SetChildMenu(new JunkListMenu(
-                        this.session.Draft.TreasureChestIgnoreList,
-                        this.itemSource,
-                        this.translate)));
-                this.AddEnumDefinition("ignored_treasure_action",
-                    () => this.session.Draft.ActionIfOnlyIgnoredTreasureRemains,
-                    value => this.session.Draft.ActionIfOnlyIgnoredTreasureRemains = value);
                 this.AddDefinition("auto_trash", () => this.session.Draft.AutoTrashJunk,
                     value => this.session.Draft.AutoTrashJunk = value);
                 this.AddActionDefinition("junk_lists",
@@ -650,10 +640,20 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddNumberDefinition("difficulty_additive", () => this.session.Draft.FishDifficultyAdditive,
                     value => this.session.Draft.FishDifficultyAdditive = Convert.ToInt32(value), -100, 100, 5,
                     value => $"{value:+0;-0;0}");
-                this.AddDefinition("instant_treasure", () => this.session.Draft.InstantCatchTreasure,
-                    value => this.session.Draft.InstantCatchTreasure = value);
                 this.AddDefinition("treasure_targeting", () => this.session.Draft.TreasureTargeting,
                     value => this.session.Draft.TreasureTargeting = value);
+                this.AddDefinition("instant_treasure", () => this.session.Draft.InstantCatchTreasure,
+                    value => this.session.Draft.InstantCatchTreasure = value);
+                this.AddActionDefinition("treasure_ignore_list",
+                    () => string.Format(this.translate("config.treasure_ignore_picker.selected"),
+                        this.session.Draft.TreasureChestIgnoreList.Count),
+                    () => this.SetChildMenu(new JunkListMenu(
+                        this.session.Draft.TreasureChestIgnoreList,
+                        this.itemSource,
+                        this.translate)));
+                this.AddEnumDefinition("ignored_treasure_action",
+                    () => this.session.Draft.ActionIfOnlyIgnoredTreasureRemains,
+                    value => this.session.Draft.ActionIfOnlyIgnoredTreasureRemains = value);
                 this.AddEnumDefinition("treasure_chance", () => this.session.Draft.TreasureChance,
                     value => this.session.Draft.TreasureChance = value);
                 this.AddEnumDefinition("golden_treasure_chance", () => this.session.Draft.GoldenTreasureChance,
