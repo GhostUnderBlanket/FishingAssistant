@@ -107,6 +107,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Reset Defaults confirmation now wraps to the current UI viewport instead of creating
+  an oversized, off-screen vanilla dialog.
 - Category and scrolling arrows now use game sprites instead of font glyphs, avoiding
   the left arrow rendering as a heart in Stardew Valley's dialogue font.
 - The configuration-menu title now has a game-style backing panel for contrast against

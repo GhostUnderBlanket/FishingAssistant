@@ -384,9 +384,14 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private void RequestResetDraft()
     {
         this.resetWorkflow.Request();
+        int messageWidth = ResetConfirmationLayout.GetTextWidth(Game1.uiViewport.Width);
+        string message = Game1.parseText(
+            this.translate("config.confirm.reset"),
+            Game1.dialogueFont,
+            messageWidth);
         ConfirmationDialog? dialog = null;
         dialog = new ConfirmationDialog(
-            this.translate("config.confirm.reset"),
+            message,
             _ =>
             {
                 ModConfig? defaults = this.resetWorkflow.Confirm();
