@@ -27,7 +27,7 @@ public sealed class ConfigDefaultsTests
         Assert.Equal(TreasureChanceBehavior.Default, config.TreasureChance);
         Assert.Equal(TreasureChanceBehavior.Default, config.GoldenTreasureChance);
         Assert.False(config.TreasureTargeting);
-        Assert.Equal("(T)AdvancedIridiumRod", config.StartWithFishingRod);
+        Assert.Equal("None", config.StartWithFishingRod);
         Assert.Equal(1f, config.AutoCastDelaySeconds);
     }
 

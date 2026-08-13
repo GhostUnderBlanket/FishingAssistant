@@ -6,7 +6,7 @@ namespace FishingAssistant.Configuration;
 internal sealed class ModConfig
 {
     internal const int CurrentVersion = 6;
-    internal const string DefaultStarterRod = "(T)AdvancedIridiumRod";
+    internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
     [

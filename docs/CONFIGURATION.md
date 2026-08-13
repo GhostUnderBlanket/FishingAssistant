@@ -103,4 +103,5 @@ controller B cancels capture; Backspace or Delete clears a binding.
 The combined junk/junk-ignore editor and the bait, tackle, and starter-rod pickers show
 localized item names and sprites, support search and scrolling, and preserve the same
 Apply/Cancel draft behavior. Every current setting can be edited without manually
-changing `config.json`.
+changing `config.json`. Starter rod defaults to `No starter rod`; selecting a rod is an
+explicit opt-in and never replaces a rod the local player already owns.
