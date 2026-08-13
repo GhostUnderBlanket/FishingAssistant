@@ -5,7 +5,7 @@ using StardewValley.Menus;
 
 namespace FishingAssistant.UI.Controls;
 
-internal sealed class ConfigValueSelector<T> : IMouseWheelAdjustableConfigControl
+internal sealed class ConfigValueSelector<T> : IConfigControl
 {
     private readonly Func<T> getValue;
     private readonly Action<T> setValue;
@@ -35,8 +35,6 @@ internal sealed class ConfigValueSelector<T> : IMouseWheelAdjustableConfigContro
     public string Description { get; }
 
     public int InlineMessageRight => this.GetValueBounds().Left - 8;
-
-    public Rectangle MouseWheelBounds => this.GetValueBounds();
 
     public void ReceiveLeftClick(int x, int y)
     {

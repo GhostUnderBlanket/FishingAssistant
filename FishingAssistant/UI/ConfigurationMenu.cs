@@ -178,21 +178,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveScrollWheelAction(int direction)
     {
-        int adjustment = MouseWheelAdjustment.GetDirection(direction);
-        if (adjustment == 0)
-            return;
-
-        Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
-        IMouseWheelAdjustableConfigControl? selector = this.options
-            .OfType<IMouseWheelAdjustableConfigControl>()
-            .FirstOrDefault(option => MouseWheelAdjustment.IsPointerOver(option.MouseWheelBounds, mouse));
-        if (selector is not null)
-        {
-            if (this.TryUseOption(selector))
-                selector.Adjust(adjustment);
-            return;
-        }
-
         if (direction > 0)
             this.Scroll(-1);
         else if (direction < 0)
@@ -526,7 +511,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
         int contentWidth = this.layout.Width - this.layout.Padding * 2;
         bool showScroll = this.MaximumScrollOffset > 0;
         int scrollWidth = showScroll ? Math.Min(44, contentWidth / 5) : 0;
-        int optionWidth = contentWidth - scrollWidth;
+        int scrollGap = showScroll ? MenuVisualMetrics.ScrollbarGap : 0;
+        int optionWidth = contentWidth - scrollWidth - scrollGap;
 
         this.options.Clear();
         this.optionKeys.Clear();
@@ -556,11 +542,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
         if (showScroll)
         {
             int buttonHeight = Math.Min(44, Math.Max(1, this.layout.OptionHeight));
-            int x = contentX + optionWidth;
-            this.scrollButtons.Add(this.CreateButton(ScrollUpButtonId, x, this.layout.ContentTop,
+            int x = contentX + optionWidth + scrollGap;
+            this.scrollButtons.Add(this.CreateButton(ScrollUpButtonId, x,
+                this.layout.ContentTop + MenuVisualMetrics.ScrollbarVerticalInset,
                 scrollWidth, buttonHeight, "^"));
             this.scrollButtons.Add(this.CreateButton(ScrollDownButtonId, x,
-                this.layout.ContentBottom - buttonHeight, scrollWidth, buttonHeight, "v"));
+                this.layout.ContentBottom - buttonHeight - MenuVisualMetrics.ScrollbarVerticalInset,
+                scrollWidth, buttonHeight, "v"));
         }
     }
 

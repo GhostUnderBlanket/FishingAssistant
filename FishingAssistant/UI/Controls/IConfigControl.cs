@@ -1,4 +1,3 @@
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Menus;
 
@@ -17,9 +16,4 @@ internal interface IConfigControl
     bool Adjust(int direction);
 
     void Draw(SpriteBatch batch, bool highlighted, int labelBottomInset = 0);
-}
-
-internal interface IMouseWheelAdjustableConfigControl : IConfigControl
-{
-    Rectangle MouseWheelBounds { get; }
 }

@@ -115,8 +115,6 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Value selectors and numeric steppers can now be adjusted with the mouse wheel while
-  hovered; scrolling elsewhere continues to move the configuration page.
 - Replaced the text automation-status HUD with a compact Fishing Assistant 2-style
   full-color fishing-rod icon and animated Vanilla emotes for active, disabled, paused,
   stopped, warning, and recovered states.
@@ -139,8 +137,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   counts, separated its search and mode controls from the upper frame, and replaced
   tiny-font item states with scaled small-font labels.
 - Refined picker spacing and header padding, added the missing item-picker title panel,
-  tightened two-line item-card labels, and limited mouse-wheel adjustment to the
-  selector box instead of the entire option row.
+  and tightened two-line item-card labels.
+- Added clear gutters between configuration options, pagination, and the scrollbar.
 - Disabling Automation with F5 no longer cancels a cast already in progress. Vanilla
   finishes that cast normally while every later automatic action remains disabled,
   avoiding stuck rod state or shared fishing audio in local co-op.
