@@ -127,6 +127,8 @@
   "config.option.open_config.description": "The keybind used to open this custom configuration menu. Controller Back also opens it while no menu is active.",
   "config.option.warp_beach": "Warp to beach fishing spot",
   "config.option.warp_beach.description": "Warp this local player near Willy's Fish Shop for quick ocean-fishing tests.",
+  "config.option.create_bubble": "Create test fishing bubble",
+  "config.option.create_bubble.description": "Create a reachable bubble near the current default cast landing point, offset sideways when possible to test steering.",
   "config.keybind.listening": "Press a key or button...",
   "config.value.left": "Left",
   "config.value.right": "Right",
@@ -161,6 +163,7 @@
   "config.action.done": "Done",
   "config.action.add": "Add",
   "config.action.warp": "Warp",
+  "config.action.create": "Create",
   "config.junk_picker.title": "Junk list editor",
   "config.junk_picker.search": "Search items...",
   "config.junk_picker.selected": "{0} junk / {1} ignored",
@@ -216,5 +219,8 @@
   "hud.energy.no_food": "Fishing automation paused: energy reached the eating threshold, but no suitable food was consumed.",
   "hud.energy.exhaustion": "Fishing automation paused to prevent the next cast from exhausting this player.",
   "hud.enchantment.remote_unsupported": "Temporary rod enchantments are disabled while remote players are connected.",
-  "debug.warp_beach.unavailable": "The beach warp is unavailable during an event or minigame."
+  "debug.warp_beach.unavailable": "The beach warp is unavailable during an event or minigame.",
+  "debug.bubble.unavailable": "A test fishing bubble can't be created during an event or minigame.",
+  "debug.bubble.no_target": "No fishable tile was found near the current cast landing point.",
+  "debug.bubble.created": "Created a test fishing bubble at tile {0}, {1}."
 }

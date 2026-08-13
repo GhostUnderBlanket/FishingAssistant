@@ -82,6 +82,12 @@ Collect Treasure During the Minigame Instantly, Treasure Chest Ignore List, then
 Only Ignored Treasure Remains. The ignore-list controls no longer appear under
 Inventory & Food.
 
+The Debug page includes Create Test Fishing Bubble, also available through the
+`fa_bubble` console command. It uses the current `DefaultCastPower`, searches the
+landing tile and its two sideways neighbors for fishable water, and prefers a sideways
+tile so steering is visible. It never changes the player position or creates a bubble
+during an event or minigame.
+
 The migration test fixture contains every public Fishing Assistant 2 configuration
 property. It verifies that every still-supported non-default choice survives and that
 both retired choices are reported deliberately.

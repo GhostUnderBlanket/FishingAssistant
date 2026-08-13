@@ -27,6 +27,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly Func<string, string> translate;
     private readonly IConfigItemSource itemSource;
     private readonly Action warpToBeachFishingSpot;
+    private readonly Action<int> createFishingBubble;
     private readonly ConfigResetWorkflow resetWorkflow;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
@@ -51,13 +52,15 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<ModConfig> createDefaults,
         IConfigItemSource itemSource,
         ITranslationHelper translations,
-        Action warpToBeachFishingSpot)
+        Action warpToBeachFishingSpot,
+        Action<int> createFishingBubble)
     {
         this.session = session;
         this.apply = apply;
         this.itemSource = itemSource;
         this.translate = key => translations.Get(key);
         this.warpToBeachFishingSpot = warpToBeachFishingSpot;
+        this.createFishingBubble = createFishingBubble;
         this.resetWorkflow = new ConfigResetWorkflow(createDefaults);
 
         this.RebuildComponents();
@@ -715,6 +718,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddActionDefinition("warp_beach",
                     () => this.translate("config.action.warp"),
                     this.warpToBeachFishingSpot);
+                this.AddActionDefinition("create_bubble",
+                    () => this.translate("config.action.create"),
+                    () => this.createFishingBubble(this.session.Draft.DefaultCastPower));
                 break;
         }
     }

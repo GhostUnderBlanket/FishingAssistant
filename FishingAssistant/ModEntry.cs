@@ -23,6 +23,7 @@ internal sealed class ModEntry : Mod
     private FishPreviewRenderer? fishPreview;
     private StarterFishingRodService? starterFishingRod;
     private DebugWarpService? debugWarp;
+    private DebugFishingBubbleService? debugFishingBubble;
     private BaitAttachmentService? baitAttachment;
     private TackleAttachmentService? tackleAttachment;
     private InfiniteAttachmentService? infiniteAttachment;
@@ -45,6 +46,8 @@ internal sealed class ModEntry : Mod
         this.fishPreview = new FishPreviewRenderer();
         this.starterFishingRod = new StarterFishingRodService(this.Monitor);
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
+        this.debugFishingBubble = new DebugFishingBubbleService(
+            this.Monitor, key => helper.Translation.Get(key));
         this.baitAttachment = new BaitAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.tackleAttachment = new TackleAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
@@ -79,6 +82,8 @@ internal sealed class ModEntry : Mod
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         helper.ConsoleCommands.Add("fa_config", "Open the Fishing Assistant configuration menu.",
             this.OnConfigCommand);
+        helper.ConsoleCommands.Add("fa_bubble", "Create a reachable fishing bubble for testing.",
+            this.OnBubbleCommand);
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -248,6 +253,11 @@ internal sealed class ModEntry : Mod
         this.TryOpenConfigMenu();
     }
 
+    private void OnBubbleCommand(string command, string[] arguments)
+    {
+        this.debugFishingBubble!.Create(this.configManager!.Active.DefaultCastPower);
+    }
+
     private bool TryOpenConfigMenu()
     {
         if (Game1.activeClickableMenu is ConfigurationMenu menu)
@@ -269,7 +279,8 @@ internal sealed class ModEntry : Mod
             ConfigManager.CreateDefaultDraft,
             this.itemCatalog!,
             this.Helper.Translation,
-            this.debugWarp!.WarpToBeachFishingSpot
+            this.debugWarp!.WarpToBeachFishingSpot,
+            castPower => this.debugFishingBubble!.Create(castPower)
         );
         return true;
     }
