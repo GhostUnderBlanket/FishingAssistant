@@ -1,12 +1,30 @@
 using FishingAssistant.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
 
 namespace FishingAssistant.Tests.Configuration;
 
 public sealed class LegacyConfigSerializationTests
 {
+    private static readonly string[] FishingAssistant2Properties =
+    [
+        "EnableAutomationButton", "CatchTreasureButton", "OpenConfigMenuButton", "ModStatusPosition",
+        "AutoCastFishingRod", "AutoHookFish", "AutoPlayMiniGame", "AutoClosePopup", "AutoLootTreasure",
+        "ActionIfInventoryFull", "AutoTrashJunk", "JunkHighestPrice", "AllowTrashFish", "JunkIgnoreList",
+        "AutoPauseFishing", "TimeToPause", "WarnCount", "AutoEatFood", "EnergyPercentToEat",
+        "AllowEatingFish", "AutoAttachBait", "PreferredBait", "SpawnBaitIfDontHave", "BaitAmountToSpawn",
+        "AutoAttachTackles", "PreferredTackle", "PreferredAdvIridiumTackle", "SpawnTackleIfDontHave",
+        "SkipFishingMiniGame", "InstantFishBite", "PreferFishAmount", "PreferFishQuality", "AlwaysPerfect",
+        "AlwaysMaxFishSize", "FishDifficultyMultiplier", "FishDifficultyAdditive", "InstantCatchTreasure",
+        "TreasureChance", "GoldenTreasureChance", "DisplayFishPreview", "ShowFishName", "ShowTreasure",
+        "ShowUncaughtFish", "ShowLegendaryFish", "StartWithFishingRod", "DefaultCastPower",
+        "UnlockCastPowerTime", "InfiniteBait", "InfiniteTackle", "AddAutoHookEnchantment",
+        "AddEfficientEnchantment", "AddMasterEnchantment", "AddPreservingEnchantment",
+        "RemoveWhenUnequipped"
+    ];
+
     private static readonly JsonSerializerSettings SmapiCompatibleSettings = CreateSmapiCompatibleSettings();
 
     [Fact]
@@ -82,6 +100,52 @@ public sealed class LegacyConfigSerializationTests
         Assert.Equal("(O)685", config.PreferredBait);
         Assert.Contains(report.Corrections,
             correction => correction.Property == nameof(config.ModStatusPosition));
+    }
+
+    [Fact]
+    public void FullFishingAssistant2Config_PreservesEverySupportedChoice()
+    {
+        string json = ReadFixture("FishingAssistant2-full-config.json");
+        JObject legacy = JObject.Parse(json);
+        Assert.Equal(FishingAssistant2Properties.Order(), legacy.Properties().Select(property => property.Name).Order());
+
+        ModConfig config = JsonConvert.DeserializeObject<ModConfig>(json, SmapiCompatibleSettings)!;
+        ConfigValidationReport report = ConfigValidator.Normalize(config);
+        JObject migrated = JObject.Parse(JsonConvert.SerializeObject(config, SmapiCompatibleSettings));
+
+        foreach (string property in FishingAssistant2Properties.Except(["CatchTreasureButton", "JunkHighestPrice"]))
+        {
+            Assert.True(JToken.DeepEquals(legacy[property], migrated[property]),
+                $"Legacy property '{property}' changed from {legacy[property]} to {migrated[property]}.");
+        }
+
+        Assert.Null(migrated["CatchTreasureButton"]);
+        Assert.Null(migrated["JunkHighestPrice"]);
+        Assert.Equal(ModConfig.CurrentVersion, migrated[nameof(ModConfig.ConfigVersion)]!.Value<int>());
+        Assert.DoesNotContain(report.Warnings, warning =>
+            FishingAssistant2Properties.Contains(warning.Property, StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void FullFishingAssistant2Config_IdentifiesBothRetiredChoices()
+    {
+        string json = ReadFixture("FishingAssistant2-full-config.json");
+
+        IReadOnlyList<ConfigPropertySnapshot> retired = ConfigSchemaInspector.FindRetiredProperties(json);
+
+        Assert.Equal(["CatchTreasureButton", "JunkHighestPrice"], retired.Select(property => property.Name));
+        Assert.Equal(["\"F2\"", "75"], retired.Select(property => property.DisplayValue));
+        Assert.Empty(ConfigSchemaInspector.FindUnknownProperties(json));
+    }
+
+    private static string ReadFixture(string name)
+    {
+        string resourceName = $"FishingAssistant.Tests.Configuration.Fixtures.{name}";
+        using Stream stream = typeof(LegacyConfigSerializationTests).Assembly
+            .GetManifestResourceStream(resourceName)
+            ?? throw new InvalidOperationException($"Missing embedded fixture '{resourceName}'.");
+        using StreamReader reader = new(stream);
+        return reader.ReadToEnd();
     }
 
     private static JsonSerializerSettings CreateSmapiCompatibleSettings()

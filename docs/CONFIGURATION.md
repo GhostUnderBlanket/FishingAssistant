@@ -13,15 +13,27 @@ is identified as legacy, normalized, assigned the current version, and written b
 SMAPI.
 
 Unknown top-level properties are reported in the SMAPI log before a migrated file is
-written. They are not silently treated as supported options. A file whose
+written. Reports include a bounded representation of the original JSON value so the
+setting can be identified; values with credential-like property names are redacted.
+They are not silently treated as supported options. A file whose
 `ConfigVersion` is newer than 6 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
-Schema version 6 retires `CatchTreasureButton`. Existing copies are accepted silently
-during migration and omitted when the normalized file is rewritten. The replacement
-`TreasureTargeting` boolean is edited only through the custom configuration menu and
-defaults to off.
+Schema version 6 retires two Fishing Assistant 2 settings and reports both during
+migration:
+
+- `CatchTreasureButton` is omitted when the normalized file is rewritten. Its
+  replacement, `TreasureTargeting`, is edited only through the custom configuration
+  menu and defaults to off.
+- `JunkHighestPrice` is omitted because price-based junk classification was replaced
+  by the visual Junk List/Junk Ignore List editor. A price threshold cannot be mapped
+  safely to a stable set of item IDs, so the editor starts from the documented default
+  trash list and preserves the legacy `JunkIgnoreList`.
+
+The migration test fixture contains every public Fishing Assistant 2 configuration
+property. It verifies that every still-supported non-default choice survives and that
+both retired choices are reported deliberately.
 
 ## Validation
 

@@ -42,9 +42,17 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
                 "The Fishing Assistant 2 configuration was migrated to the current schema.");
         }
 
-        foreach (string property in metadata.UnknownProperties)
+        foreach (ConfigPropertySnapshot property in metadata.RetiredProperties)
         {
-            report.Warn(property, "unknown",
+            string reason = property.Name.Equals("JunkHighestPrice", StringComparison.OrdinalIgnoreCase)
+                ? "This Fishing Assistant 2 price threshold was retired; use the visual Junk List editor instead."
+                : "This Fishing Assistant 2 treasure-targeting hotkey was retired; use the config-menu setting instead.";
+            report.Warn(property.Name, property.DisplayValue, reason);
+        }
+
+        foreach (ConfigPropertySnapshot property in metadata.UnknownProperties)
+        {
+            report.Warn(property.Name, property.DisplayValue,
                 "This property isn't recognized by Fishing Assistant 3 and wasn't migrated.");
         }
 
@@ -120,7 +128,8 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
             string json = File.ReadAllText(path);
             return new ConfigFileMetadata(
                 ConfigSchemaInspector.IsLegacyJson(json),
-                ConfigSchemaInspector.FindUnknownProperties(json)
+                ConfigSchemaInspector.FindUnknownProperties(json),
+                ConfigSchemaInspector.FindRetiredProperties(json)
             );
         }
         catch (System.Text.Json.JsonException)
@@ -152,8 +161,11 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         }
     }
 
-    private sealed record ConfigFileMetadata(bool IsLegacy, IReadOnlyList<string> UnknownProperties)
+    private sealed record ConfigFileMetadata(
+        bool IsLegacy,
+        IReadOnlyList<ConfigPropertySnapshot> UnknownProperties,
+        IReadOnlyList<ConfigPropertySnapshot> RetiredProperties)
     {
-        public static ConfigFileMetadata Empty { get; } = new(false, []);
+        public static ConfigFileMetadata Empty { get; } = new(false, [], []);
     }
 }

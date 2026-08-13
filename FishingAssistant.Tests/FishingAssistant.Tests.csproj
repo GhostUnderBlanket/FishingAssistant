@@ -24,6 +24,10 @@
     <ProjectReference Include="..\FishingAssistant\FishingAssistant.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\Fixtures\*.json" />
+  </ItemGroup>
+
   <Target Name="CopySmapiRuntimeForTests" AfterTargets="Build">
     <ItemGroup>
       <TestRuntimeAssembly Include="$(GamePath)\*.dll" />

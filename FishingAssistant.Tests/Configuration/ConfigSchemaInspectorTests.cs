@@ -44,8 +44,45 @@ public sealed class ConfigSchemaInspectorTests
             }
             """;
 
-        IReadOnlyList<string> properties = ConfigSchemaInspector.FindUnknownProperties(json);
+        IReadOnlyList<ConfigPropertySnapshot> properties = ConfigSchemaInspector.FindUnknownProperties(json);
 
-        Assert.Equal(["FutureOption", "RemovedLegacyOption"], properties);
+        Assert.Equal(["FutureOption", "RemovedLegacyOption"], properties.Select(property => property.Name));
+        Assert.Equal(["\"value\"", "42"], properties.Select(property => property.DisplayValue));
+    }
+
+    [Fact]
+    public void FindRetiredProperties_ReportsLegacyValuesSeparately()
+    {
+        const string json = """
+            {
+              "JunkHighestPrice": 75,
+              "CatchTreasureButton": "F6",
+              "AutoCastFishingRod": true
+            }
+            """;
+
+        IReadOnlyList<ConfigPropertySnapshot> properties = ConfigSchemaInspector.FindRetiredProperties(json);
+
+        Assert.Collection(properties,
+            property => Assert.Equal(new ConfigPropertySnapshot("CatchTreasureButton", "\"F6\""), property),
+            property => Assert.Equal(new ConfigPropertySnapshot("JunkHighestPrice", "75"), property));
+    }
+
+    [Fact]
+    public void FindUnknownProperties_RedactsSensitiveAndBoundsLongValues()
+    {
+        string json = $$"""
+            {
+              "ApiKey": "do-not-log-this",
+              "LargeLegacyValue": "{{new string('x', 200)}}"
+            }
+            """;
+
+        IReadOnlyList<ConfigPropertySnapshot> properties = ConfigSchemaInspector.FindUnknownProperties(json);
+
+        Assert.Equal("[redacted]", properties.Single(property => property.Name == "ApiKey").DisplayValue);
+        string bounded = properties.Single(property => property.Name == "LargeLegacyValue").DisplayValue;
+        Assert.EndsWith("…", bounded);
+        Assert.True(bounded.Length <= 121);
     }
 }

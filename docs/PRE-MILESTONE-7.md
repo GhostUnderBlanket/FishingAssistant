@@ -25,21 +25,21 @@ Audit baseline:
 
 ## Milestone 1: Configuration and migration
 
-- [ ] Document that the Fishing Assistant 2 `JunkHighestPrice` setting is retired and
+- [x] Document that the Fishing Assistant 2 `JunkHighestPrice` setting is retired and
   replaced by the visual Junk List/Junk Ignore List editor.
-- [ ] Add a complete Fishing Assistant 2 migration fixture covering every legacy
+- [x] Add a complete Fishing Assistant 2 migration fixture covering every legacy
   property, not only the representative enum and keybind subset.
-- [ ] Verify the fixture preserves every still-supported user choice and deliberately
+- [x] Verify the fixture preserves every still-supported user choice and deliberately
   reports every retired setting.
-- [ ] Preserve enough information about unknown legacy properties to produce a useful
-  migration report. The current inspector retains only property names; either retain a
-  safe representation of their values or explicitly revise and document this roadmap
-  requirement.
-- [ ] Confirm malformed and future-schema configuration files still activate safe
+- [x] Preserve enough information about unknown legacy properties to produce a useful,
+  bounded migration report while redacting credential-like property names.
+- [x] Confirm malformed and future-schema configuration files still activate safe
   defaults/read-only behavior without overwriting the original file.
 
 Milestone 1 is cleared when a full V2 fixture has deterministic documented results and
 all migration, malformed-file, unknown-value, and future-schema tests pass.
+
+Completed on 2026-08-13. Release verification passed with 265 automated tests.
 
 ## Milestone 2: Custom configuration menu
 
