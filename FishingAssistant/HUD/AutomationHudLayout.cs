@@ -18,8 +18,8 @@ internal static class AutomationHudLayout
     public const int BoxSize = 96;
     public const int IconSize = 56;
     public const int BadgeSize = 28;
-    public const int BadgeLeftInset = 4;
-    public const int BadgeTopInset = 12;
+    public const int BadgeLeftInset = 12;
+    public const int BadgeTopInset = 20;
     public const int IconShadowOffset = 4;
     public const int ScreenMargin = 8;
     public const int ToolbarGap = 2;
@@ -65,10 +65,9 @@ internal static class AutomationHudLayout
     public static Rectangle PlaceIcon(Rectangle panelBounds)
     {
         int size = Math.Min(IconSize, Math.Min(panelBounds.Width, panelBounds.Height));
-        int shadowOffset = Math.Min(IconShadowOffset, Math.Max(0, panelBounds.Height - size));
         return new Rectangle(
             panelBounds.Center.X - size / 2,
-            panelBounds.Bottom - shadowOffset - size,
+            panelBounds.Center.Y - size / 2,
             size,
             size);
     }

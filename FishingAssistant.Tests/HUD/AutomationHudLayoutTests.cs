@@ -79,7 +79,7 @@ public sealed class AutomationHudLayoutTests
     {
         Rectangle result = AutomationHudLayout.PlaceBadge(new Rectangle(100, 200, 96, 96));
 
-        Assert.Equal(new Rectangle(104, 212, 28, 28), result);
+        Assert.Equal(new Rectangle(112, 220, 28, 28), result);
     }
 
     [Fact]
@@ -93,11 +93,10 @@ public sealed class AutomationHudLayoutTests
     }
 
     [Fact]
-    public void PlaceIcon_CentersRodAtBottomOfFootprint()
+    public void PlaceIcon_CentersRodWithinToolbarSizedFootprint()
     {
         Rectangle result = AutomationHudLayout.PlaceIcon(new Rectangle(100, 200, 96, 96));
 
-        Assert.Equal(new Rectangle(120, 236, 56, 56), result);
-        Assert.Equal(296, result.Bottom + AutomationHudLayout.IconShadowOffset);
+        Assert.Equal(new Rectangle(120, 220, 56, 56), result);
     }
 }
