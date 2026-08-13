@@ -82,7 +82,9 @@ Config Menu.
 - Build a responsive `IClickableMenu` shell with title, categories, scrolling, footer,
   tooltips, and validation messages.
 - Add reusable controls: checkbox, enum selector, number slider/stepper, keybind editor,
-  text/list editor, action button, section header, and description block.
+  text/list editor, and action button. Categories intentionally replace per-page section
+  headers, while tooltips and inline validation/unavailable messages replace persistent
+  description blocks so narrow split-screen layouts retain space for editable controls.
 - Implement Apply, Cancel, and Reset Defaults using a draft configuration.
 - Support mouse, keyboard, controller, snappy navigation, scroll wheel, and gamepad
   shoulder/trigger navigation.

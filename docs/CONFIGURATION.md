@@ -79,6 +79,12 @@ opens a confirmation dialog before replacing the draft with defaults. Canceling 
 dialog leaves the draft untouched; confirming still changes only the draft until Apply
 is selected.
 
+Each category is a single focused settings page, so the category title deliberately
+replaces additional section headers. Persistent description blocks are also deliberately
+omitted: option descriptions are available as hover/controller tooltips, while warnings
+and unavailable reasons appear inline beneath only the controls they affect. This keeps
+the editable control visible in small and split-screen viewports.
+
 Each open menu draft carries the configuration revision it was created from. If a
 second local split-screen player applies a newer draft first, the stale menu is asked to
 close and reopen instead of silently overwriting the other player's changes.
