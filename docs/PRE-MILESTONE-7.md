@@ -91,8 +91,10 @@ sessions recover without stuck input, and the two-screen isolation smoke test pa
 
 - [ ] Verify disabling automation or manually cancelling during every cast-to-catch
   stage stops further automatic actions immediately and safely.
-- [ ] Add runtime-level integration coverage around the pure decision policies so event
-  ordering and adapter mutations are tested together where practical.
+- [x] Add runtime-level integration coverage around the pure decision policies so event
+  ordering and adapter mutations are tested together where practical. Workflow tests
+  disable Automation at every fishing state, verify all transient work is cleared, and
+  confirm core policies issue no cast, hook, minigame, popup, or loot action afterward.
 - [ ] Complete repeated cast, bite, hook, minigame, popup, and treasure-loot loops with
   every automation stage independently disabled.
 - [ ] Complete the compatibility cases for tutorial catches, fish ponds, legendary

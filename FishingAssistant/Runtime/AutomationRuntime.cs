@@ -55,9 +55,9 @@ internal sealed class AutomationRuntime(
     public void ToggleCurrent()
     {
         AutomationScreenState screen = this.screens.Value;
-        if (screen.Session.IsEnabled)
-            this.CancelPendingActions(screen, AutomationTransitionReason.Disabled, disable: false);
-        AutomationTransition transition = screen.Session.Toggle();
+        if (screen.Session.IsEnabled && screen.Pending.AutomaticCastInProgress)
+            FishingRodAdapter.ForCurrentPlayer()?.CancelAutomaticCast();
+        AutomationTransition transition = screen.Toggle();
         this.autoEat.ResetCurrent();
         monitor.Log(
             $"Automation {(this.Current.IsEnabled ? "enabled" : "disabled")} for local screen {Context.ScreenId}.",

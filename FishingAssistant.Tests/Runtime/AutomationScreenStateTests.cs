@@ -57,6 +57,41 @@ public sealed class AutomationScreenStateTests
         Assert.Null(state.LastTool);
     }
 
+    [Theory]
+    [InlineData((int)AutomationState.Ready)]
+    [InlineData((int)AutomationState.Casting)]
+    [InlineData((int)AutomationState.WaitingForBite)]
+    [InlineData((int)AutomationState.Hooking)]
+    [InlineData((int)AutomationState.Minigame)]
+    [InlineData((int)AutomationState.CatchResult)]
+    [InlineData((int)AutomationState.TreasureMenu)]
+    public void Toggle_DisablingAtEveryFishingStageClearsTransientWork(int targetState)
+    {
+        AutomationScreenState state = CreatePopulatedState();
+        AdvanceTo(state.Session, (AutomationState)targetState);
+
+        AutomationTransition transition = state.Toggle();
+
+        AssertTransientStateCleared(state);
+        Assert.False(state.Session.IsEnabled);
+        Assert.Equal(AutomationState.Idle, state.Session.State);
+        Assert.Equal(AutomationTransitionReason.Disabled, transition.Reason);
+    }
+
+    [Fact]
+    public void Toggle_ReenablingStartsFromCleanIdleState()
+    {
+        AutomationScreenState state = CreatePopulatedState();
+        state.Toggle();
+
+        AutomationTransition transition = state.Toggle();
+
+        Assert.True(state.Session.IsEnabled);
+        Assert.Equal(AutomationState.Idle, state.Session.State);
+        Assert.Equal(AutomationTransitionReason.Enabled, transition.Reason);
+        AssertTransientStateCleared(state);
+    }
+
     private static AutomationScreenState CreatePopulatedState()
     {
         AutomationScreenState state = new()
@@ -95,5 +130,34 @@ public sealed class AutomationScreenStateTests
         Assert.Equal(TreasureLootPolicy.InitialDelayTicks, state.TreasureLootRequiredTicks);
         Assert.False(state.TreasureCollectionStopped);
         Assert.Empty(state.BlockedTreasureItems);
+    }
+
+    private static void AdvanceTo(AutomationSession session, AutomationState target)
+    {
+        session.Observe(new(true, true, true));
+        if (target == AutomationState.Ready)
+            return;
+
+        session.Observe(new(true, true, true, IsCasting: true));
+        if (target == AutomationState.Casting)
+            return;
+
+        session.Observe(new(true, true, true, IsFishing: true));
+        if (target == AutomationState.WaitingForBite)
+            return;
+
+        session.Observe(new(true, true, true, IsNibbling: true));
+        if (target == AutomationState.Hooking)
+            return;
+
+        session.Observe(new(true, true, true, IsMinigame: true));
+        if (target == AutomationState.Minigame)
+            return;
+
+        session.Observe(new(true, true, true, IsFishCaught: true));
+        if (target == AutomationState.CatchResult)
+            return;
+
+        session.Observe(new(true, true, true, IsTreasureMenu: true));
     }
 }

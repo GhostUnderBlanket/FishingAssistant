@@ -35,6 +35,17 @@ internal sealed class AutomationScreenState
             : this.Session.Reset(reason);
     }
 
+    public AutomationTransition Toggle()
+    {
+        if (this.Session.IsEnabled)
+        {
+            this.Pending.Clear();
+            this.ResetTreasureLoot();
+        }
+
+        return this.Session.Toggle();
+    }
+
     public void ResetObservedTool()
     {
         this.HasObservedTool = false;
