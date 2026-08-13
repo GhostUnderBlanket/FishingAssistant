@@ -20,6 +20,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private const int ApplyButtonId = 200;
     private const int ResetButtonId = 201;
     private const int CancelButtonId = 202;
+    private const float InlineMessageScale = 0.72f;
 
     private readonly Func<ConfigEditSession, ConfigValidationReport> apply;
     private readonly Func<string, string> translate;
@@ -880,10 +881,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
         InlineConfigMessage? inlineMessage)
     {
         Rectangle originalBounds = option.Component.bounds;
+        int inlineLineHeight = (int)Math.Ceiling(Game1.smallFont.LineSpacing * InlineMessageScale);
         int messageHeight = inlineMessage is null
             ? 0
-            : Math.Min(Game1.tinyFont.LineSpacing + 4, Math.Max(0, originalBounds.Height / 2));
-        bool hasInlineSpace = messageHeight >= Game1.tinyFont.LineSpacing;
+            : Math.Min(inlineLineHeight + 4, Math.Max(0, originalBounds.Height / 2));
+        bool hasInlineSpace = messageHeight >= inlineLineHeight;
         if (hasInlineSpace)
         {
             option.Component.bounds = new Rectangle(
@@ -899,12 +901,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
             return;
 
         string warning = this.translate(inlineMessage.TranslationKey);
-        string fitted = MenuText.Fit(warning, Game1.tinyFont, originalBounds.Width - 20);
+        string fitted = MenuText.Fit(warning, Game1.smallFont,
+            (originalBounds.Width - 20) / InlineMessageScale);
         float y = hasInlineSpace
             ? originalBounds.Bottom - messageHeight + 1
-            : originalBounds.Bottom - Game1.tinyFont.LineSpacing;
-        Utility.drawTextWithShadow(batch, fitted, Game1.tinyFont,
-            new Vector2(originalBounds.X + 8, y), new Color(190, 72, 24));
+            : originalBounds.Bottom - inlineLineHeight;
+        Utility.drawTextWithShadow(batch, fitted, Game1.smallFont,
+            new Vector2(originalBounds.X + 8, y), new Color(190, 72, 24), InlineMessageScale);
     }
 
     private bool TryDrawArrow(SpriteBatch batch, ClickableComponent button)
