@@ -49,7 +49,7 @@ Completed on 2026-08-13. Release verification passed with 265 automated tests.
 - [x] Add a reusable disabled state and unavailable-reason presentation for controls
   whose behavior is unsafe or unsupported in the current context.
 - [x] Support gamepad trigger category navigation in addition to shoulder buttons.
-- [ ] Rebuild layout, clickable bounds, and snappy-navigation links after locale,
+- [x] Rebuild layout, clickable bounds, and snappy-navigation links after locale,
   effective UI scale, and option-visibility changes.
 - [ ] Add reusable section-header and description-block controls, or document the
   deliberate replacement if the final menu design no longer needs them.

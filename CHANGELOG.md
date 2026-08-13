@@ -9,6 +9,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Automatic configuration-menu layout and navigation rebuilding when viewport size, UI
+  scale, zoom, language, or visible option set changes while the menu is open.
 - Left and right trigger support for configuration-menu category navigation.
 - A reusable disabled configuration-control state with inline unavailable reasons;
   temporary rod enchantment controls are disabled while remote players are connected.

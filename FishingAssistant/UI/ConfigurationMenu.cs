@@ -38,6 +38,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly ConfigEditSession session;
     private ConfigCategory category;
     private MenuLayout layout = null!;
+    private MenuLayoutContext layoutContext;
     private int scrollOffset;
     private string hoverText = "";
     private string statusText = "";
@@ -63,7 +64,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Game1.playSound("bigSelect");
     }
 
-    private int MaximumScrollOffset => Math.Max(0, this.definitions.Count - this.layout.VisibleOptionCount);
+    private int MaximumScrollOffset => Math.Max(0, this.VisibleDefinitionCount - this.layout.VisibleOptionCount);
+
+    private int VisibleDefinitionCount => this.definitions.Count(definition => definition.IsVisible?.Invoke() ?? true);
 
     public bool IsListeningForKeybind => this.options.OfType<ConfigKeybind>().Any(control => control.IsListening);
 
@@ -84,6 +87,17 @@ internal sealed class ConfigurationMenu : IClickableMenu
     }
 
     public override bool readyToClose() => !this.IsListeningForKeybind;
+
+    public override void update(GameTime time)
+    {
+        if (this.layoutContext != this.GetCurrentLayoutContext())
+        {
+            this.CancelKeybindListening();
+            this.RebuildComponents();
+        }
+
+        base.update(time);
+    }
 
     public override void emergencyShutDown()
     {
@@ -456,6 +470,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         this.RebuildVisibleOptions();
         this.BuildNavigation();
         this.RestoreSelection(selectedId);
+        this.layoutContext = this.GetCurrentLayoutContext();
         Game1.playSound("shwip");
     }
 
@@ -496,6 +511,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         this.optionStateProviders.Clear();
         IEnumerable<(ControlDefinition Definition, int Index)> visible = this.definitions
             .Select((definition, index) => (definition, index))
+            .Where(entry => entry.definition.IsVisible?.Invoke() ?? true)
             .Skip(this.scrollOffset)
             .Take(this.layout.VisibleOptionCount);
         int row = 0;
@@ -967,6 +983,19 @@ internal sealed class ConfigurationMenu : IClickableMenu
         return false;
     }
 
+    private MenuLayoutContext GetCurrentLayoutContext()
+    {
+        return MenuLayoutContext.Create(
+            Game1.uiViewport.Width,
+            Game1.uiViewport.Height,
+            Game1.options.uiScale,
+            Game1.options.zoomLevel,
+            LocalizedContentManager.CurrentLanguageCode.ToString(),
+            this.definitions
+                .Where(definition => definition.IsVisible?.Invoke() ?? true)
+                .Select(definition => definition.Key));
+    }
+
     private bool TryDrawArrow(SpriteBatch batch, ClickableComponent button)
     {
         float? rotation = button.myID switch
@@ -1015,5 +1044,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private sealed record ControlDefinition(
         string Key,
         Func<int, Rectangle, IConfigControl> Create,
-        Func<ConfigControlState> GetState);
+        Func<ConfigControlState> GetState,
+        Func<bool>? IsVisible = null);
 }
