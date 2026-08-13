@@ -886,17 +886,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             ? 0
             : Math.Min(inlineLineHeight + 4, Math.Max(0, originalBounds.Height / 2));
         bool hasInlineSpace = messageHeight >= inlineLineHeight;
-        if (hasInlineSpace)
-        {
-            option.Component.bounds = new Rectangle(
-                originalBounds.X,
-                originalBounds.Y,
-                originalBounds.Width,
-                originalBounds.Height - messageHeight);
-        }
-
-        option.Draw(batch, highlighted);
-        option.Component.bounds = originalBounds;
+        option.Draw(batch, highlighted, hasInlineSpace ? messageHeight : 0);
         if (inlineMessage is null)
             return;
 
@@ -906,7 +896,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Rectangle messageBounds = new(
             originalBounds.X + 4,
             (int)y,
-            Math.Max(1, originalBounds.Width - 8),
+            Math.Max(1, option.InlineMessageRight - originalBounds.X - 4),
             Math.Min(inlineLineHeight + 2, Math.Max(1, originalBounds.Bottom - (int)y)));
         batch.Draw(Game1.staminaRect, messageBounds, MenuVisualMetrics.InlineMessageBackground);
         batch.Draw(Game1.staminaRect,

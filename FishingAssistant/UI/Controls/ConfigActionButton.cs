@@ -28,6 +28,15 @@ internal sealed class ConfigActionButton : IConfigControl
 
     public string Description { get; }
 
+    public int InlineMessageRight
+    {
+        get
+        {
+            Rectangle bounds = this.Component.bounds;
+            return bounds.Right - MenuVisualMetrics.GetControlWidth(bounds.Width) - 8;
+        }
+    }
+
     public void ReceiveLeftClick(int x, int y)
     {
         this.activate();
@@ -36,7 +45,7 @@ internal sealed class ConfigActionButton : IConfigControl
 
     public bool Adjust(int direction) => false;
 
-    public void Draw(SpriteBatch batch, bool highlighted)
+    public void Draw(SpriteBatch batch, bool highlighted, int labelBottomInset = 0)
     {
         Rectangle bounds = this.Component.bounds;
         if (highlighted)
@@ -53,7 +62,9 @@ internal sealed class ConfigActionButton : IConfigControl
         string label = MenuText.Fit(this.Component.name, Game1.smallFont,
             buttonBounds.Left - bounds.Left - 20);
         Utility.drawTextWithShadow(batch, label, Game1.smallFont,
-            new Vector2(bounds.X + 8, bounds.Center.Y - Game1.smallFont.LineSpacing / 2f), Game1.textColor);
+            new Vector2(bounds.X + 8,
+                bounds.Center.Y - Game1.smallFont.LineSpacing / 2f - labelBottomInset / 2f),
+            Game1.textColor);
 
         IClickableMenu.drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
             buttonBounds.X, buttonBounds.Y, buttonBounds.Width, buttonBounds.Height,

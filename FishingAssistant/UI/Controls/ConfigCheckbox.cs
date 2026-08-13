@@ -32,6 +32,15 @@ internal sealed class ConfigCheckbox : IConfigControl
 
     public string Description { get; }
 
+    public int InlineMessageRight
+    {
+        get
+        {
+            int checkboxSize = 9 * Game1.pixelZoom;
+            return this.Component.bounds.Right - checkboxSize - 8;
+        }
+    }
+
     public void ReceiveLeftClick(int x, int y)
     {
         bool value = !this.getValue();
@@ -44,7 +53,7 @@ internal sealed class ConfigCheckbox : IConfigControl
         return false;
     }
 
-    public void Draw(SpriteBatch batch, bool highlighted)
+    public void Draw(SpriteBatch batch, bool highlighted, int labelBottomInset = 0)
     {
         Rectangle bounds = this.Component.bounds;
         if (highlighted)
@@ -60,7 +69,8 @@ internal sealed class ConfigCheckbox : IConfigControl
         batch.Draw(Game1.mouseCursors, checkboxPosition, source, Color.White, 0f, Vector2.Zero,
             Game1.pixelZoom, SpriteEffects.None, 0.4f);
 
-        Vector2 labelPosition = new(bounds.X + 8, bounds.Center.Y - Game1.smallFont.LineSpacing / 2f);
+        Vector2 labelPosition = new(bounds.X + 8,
+            bounds.Center.Y - Game1.smallFont.LineSpacing / 2f - labelBottomInset / 2f);
         string label = MenuText.Fit(this.Component.name, Game1.smallFont,
             bounds.Width - checkboxSize - 24);
         Utility.drawTextWithShadow(batch, label, Game1.smallFont, labelPosition, Game1.textColor);

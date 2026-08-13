@@ -33,6 +33,15 @@ internal sealed class ConfigKeybind : IConfigControl
 
     public string Description { get; }
 
+    public int InlineMessageRight
+    {
+        get
+        {
+            Rectangle bounds = this.Component.bounds;
+            return bounds.Right - MenuVisualMetrics.GetControlWidth(bounds.Width) - 8;
+        }
+    }
+
     public bool IsListening { get; private set; }
 
     public void ReceiveLeftClick(int x, int y)
@@ -75,7 +84,7 @@ internal sealed class ConfigKeybind : IConfigControl
             this.StopListening();
     }
 
-    public void Draw(SpriteBatch batch, bool highlighted)
+    public void Draw(SpriteBatch batch, bool highlighted, int labelBottomInset = 0)
     {
         Rectangle bounds = this.Component.bounds;
         if (highlighted)
@@ -86,7 +95,8 @@ internal sealed class ConfigKeybind : IConfigControl
         int valueHeight = MenuVisualMetrics.GetControlHeight(bounds.Height);
         string label = MenuText.Fit(this.Component.name, Game1.smallFont, bounds.Width - valueWidth - 20);
         string fittedValue = MenuText.Fit(value, Game1.smallFont, valueWidth - 20);
-        Vector2 labelPosition = new(bounds.X + 8, bounds.Center.Y - Game1.smallFont.LineSpacing / 2f);
+        Vector2 labelPosition = new(bounds.X + 8,
+            bounds.Center.Y - Game1.smallFont.LineSpacing / 2f - labelBottomInset / 2f);
         Utility.drawTextWithShadow(batch, label, Game1.smallFont, labelPosition, Game1.textColor);
 
         Rectangle valueBounds = new(bounds.Right - valueWidth, bounds.Center.Y - valueHeight / 2,

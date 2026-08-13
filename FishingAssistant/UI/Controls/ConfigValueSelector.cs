@@ -34,6 +34,8 @@ internal sealed class ConfigValueSelector<T> : IConfigControl
 
     public string Description { get; }
 
+    public int InlineMessageRight => this.GetValueBounds().Left - 8;
+
     public void ReceiveLeftClick(int x, int y)
     {
         Rectangle valueBounds = this.GetValueBounds();
@@ -53,7 +55,7 @@ internal sealed class ConfigValueSelector<T> : IConfigControl
         return true;
     }
 
-    public void Draw(SpriteBatch batch, bool highlighted)
+    public void Draw(SpriteBatch batch, bool highlighted, int labelBottomInset = 0)
     {
         Rectangle bounds = this.Component.bounds;
         if (highlighted)
@@ -62,7 +64,8 @@ internal sealed class ConfigValueSelector<T> : IConfigControl
         Rectangle valueBounds = this.GetValueBounds();
         string label = MenuText.Fit(this.Component.name, Game1.smallFont,
             valueBounds.Left - bounds.Left - 20);
-        Vector2 labelPosition = new(bounds.X + 8, bounds.Center.Y - Game1.smallFont.LineSpacing / 2f);
+        Vector2 labelPosition = new(bounds.X + 8,
+            bounds.Center.Y - Game1.smallFont.LineSpacing / 2f - labelBottomInset / 2f);
         Utility.drawTextWithShadow(batch, label, Game1.smallFont, labelPosition, Game1.textColor);
 
         IClickableMenu.drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
