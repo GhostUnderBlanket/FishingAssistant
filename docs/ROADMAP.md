@@ -235,15 +235,21 @@ Goal: add new value only after parity behavior is stable.
 
 Candidate features, subject to separate design approval:
 
-- Named automation profiles such as Relaxed, Treasure Hunter, Training, and Manual+
-  with per-save or per-player selection.
+- Treasure Chest Ignore List: visually select rewards that automatic treasure looting
+  leaves behind, then choose whether an ignored-only chest stays open, drops its
+  contents, or discards them. This is the first Milestone 8 feature.
+- Automatic Bubble Steering: while a player is manually casting, steer the cast left
+  or right toward a reachable fishing bubble. It must never move the player or change
+  automatic recasts unexpectedly. This follows the treasure ignore list.
+- Named automation profiles: Relaxed automates the whole loop, Training leaves the
+  minigame to the player, Manual+ enables preview and quality-of-life assistance, and
+  Custom preserves individually edited values. This follows bubble steering so the
+  new automation option can be included in the profile mapping once.
 - Context-aware pause rules for stamina, time, inventory capacity, weather, festivals,
   player movement, and nearby hazards.
 - Session statistics: casts, catches, perfect catches, treasure, time spent, and stop
   reasons, stored locally and resettable.
 - Accessible minigame assistance levels between fully manual and fully automatic.
-- Bubble cast guidance/assist that respects real cast range and never affects automatic
-  recasts unexpectedly.
 - A compact on-screen control panel for changing the most common runtime toggles without
   opening the full configuration menu.
 

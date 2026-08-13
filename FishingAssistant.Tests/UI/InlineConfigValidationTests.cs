@@ -28,6 +28,17 @@ public sealed class InlineConfigValidationTests
         Assert.Equal(translationKey, message.TranslationKey);
     }
 
+    [Fact]
+    public void Evaluate_AttachesDestructiveIgnoredTreasureMessage()
+    {
+        ModConfig config = new() { ActionIfOnlyIgnoredTreasureRemains = IgnoredTreasureAction.Discard };
+
+        InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
+
+        Assert.Equal("ignored_treasure_action", message.OptionKey);
+        Assert.Equal("config.warning.ignored_treasure_discard", message.TranslationKey);
+    }
+
     [Theory]
     [InlineData("auto_trash", "config.warning.auto_trash")]
     [InlineData("trash_fish", "config.warning.trash_fish")]

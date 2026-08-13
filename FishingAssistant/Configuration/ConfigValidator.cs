@@ -24,6 +24,10 @@ internal static class ConfigValidator
             () => config.ModStatusPosition, value => config.ModStatusPosition = value, HudPosition.Left);
         NormalizeEnum(report, nameof(config.ActionIfInventoryFull),
             () => config.ActionIfInventoryFull, value => config.ActionIfInventoryFull = value, InventoryFullAction.Stop);
+        NormalizeEnum(report, nameof(config.ActionIfOnlyIgnoredTreasureRemains),
+            () => config.ActionIfOnlyIgnoredTreasureRemains,
+            value => config.ActionIfOnlyIgnoredTreasureRemains = value,
+            IgnoredTreasureAction.KeepOpen);
         NormalizeEnum(report, nameof(config.AutoPauseFishing),
             () => config.AutoPauseFishing, value => config.AutoPauseFishing = value, PauseFishingBehavior.WarnAndPause);
         NormalizeEnum(report, nameof(config.SkipFishingMiniGame),
@@ -69,6 +73,8 @@ internal static class ConfigValidator
             () => config.JunkList, value => config.JunkList = value);
         NormalizeItemList(report, nameof(config.JunkIgnoreList),
             () => config.JunkIgnoreList, value => config.JunkIgnoreList = value);
+        NormalizeItemList(report, nameof(config.TreasureChestIgnoreList),
+            () => config.TreasureChestIgnoreList, value => config.TreasureChestIgnoreList = value);
         ResolveJunkListConflicts(config, report);
         NormalizeDependencies(config, report);
 
@@ -258,6 +264,8 @@ internal static class ConfigValidator
             () => config.JunkList, value => config.JunkList = value, catalog);
         NormalizeItemIds(report, nameof(config.JunkIgnoreList),
             () => config.JunkIgnoreList, value => config.JunkIgnoreList = value, catalog);
+        NormalizeItemIds(report, nameof(config.TreasureChestIgnoreList),
+            () => config.TreasureChestIgnoreList, value => config.TreasureChestIgnoreList = value, catalog);
         ResolveJunkListConflicts(config, report);
 
         return report;

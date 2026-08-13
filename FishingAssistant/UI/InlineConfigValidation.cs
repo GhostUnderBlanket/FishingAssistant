@@ -18,6 +18,13 @@ internal static class InlineConfigValidation
                 "config.warning.inventory_discard"));
         }
 
+        if (config.ActionIfOnlyIgnoredTreasureRemains == IgnoredTreasureAction.Discard)
+        {
+            messages.Add(new InlineConfigMessage(
+                "ignored_treasure_action",
+                "config.warning.ignored_treasure_discard"));
+        }
+
         if (config.AutoTrashJunk)
         {
             messages.Add(new InlineConfigMessage(

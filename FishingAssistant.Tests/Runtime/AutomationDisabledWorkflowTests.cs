@@ -27,7 +27,7 @@ public sealed class AutomationDisabledWorkflowTests
             false, false, false), visibleTicks: AutoClosePopupPolicy.DefaultDelayTicks));
         Assert.Equal(TreasureLootDecision.Wait, TreasureLootPolicy.Decide(new(
             screen.Session.IsEnabled, true, true, false, false, true, true,
-            InventoryFullAction.Stop),
+            false, false, InventoryFullAction.Stop, IgnoredTreasureAction.KeepOpen),
             elapsedTicks: TreasureLootPolicy.InitialDelayTicks,
             requiredTicks: TreasureLootPolicy.InitialDelayTicks));
     }

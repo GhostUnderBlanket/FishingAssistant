@@ -17,6 +17,14 @@ internal enum InventoryFullAction
     Discard
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<IgnoredTreasureAction>))]
+internal enum IgnoredTreasureAction
+{
+    KeepOpen,
+    Drop,
+    Discard
+}
+
 [JsonConverter(typeof(SafeStringEnumConverter<PauseFishingBehavior>))]
 internal enum PauseFishingBehavior
 {

@@ -9,8 +9,11 @@ internal enum TreasureLootDecision
     Collect,
     Close,
     Stop,
-    Drop,
-    Discard
+    DropBlocked,
+    DiscardBlocked,
+    KeepIgnoredOpen,
+    DropIgnored,
+    DiscardIgnored
 }
 
 internal sealed record TreasureLootConditions(
@@ -20,8 +23,11 @@ internal sealed record TreasureLootConditions(
     bool IsPlayerHoldingItem,
     bool CollectionStopped,
     bool HasRemainingItems,
-    bool HasUnblockedItem,
-    InventoryFullAction InventoryFullAction)
+    bool HasCollectibleItem,
+    bool HasBlockedNonIgnoredItem,
+    bool HasIgnoredItem,
+    InventoryFullAction InventoryFullAction,
+    IgnoredTreasureAction IgnoredTreasureAction)
 {
     public bool IsEligible => AutomationEnabled
         && AutoLootEnabled
@@ -48,13 +54,23 @@ internal static class TreasureLootPolicy
             return TreasureLootDecision.Wait;
         if (!conditions.HasRemainingItems)
             return TreasureLootDecision.Close;
-        if (conditions.HasUnblockedItem)
+        if (conditions.HasCollectibleItem)
             return TreasureLootDecision.Collect;
+
+        if (!conditions.HasBlockedNonIgnoredItem && conditions.HasIgnoredItem)
+        {
+            return conditions.IgnoredTreasureAction switch
+            {
+                IgnoredTreasureAction.Drop => TreasureLootDecision.DropIgnored,
+                IgnoredTreasureAction.Discard => TreasureLootDecision.DiscardIgnored,
+                _ => TreasureLootDecision.KeepIgnoredOpen
+            };
+        }
 
         return conditions.InventoryFullAction switch
         {
-            InventoryFullAction.Drop => TreasureLootDecision.Drop,
-            InventoryFullAction.Discard => TreasureLootDecision.Discard,
+            InventoryFullAction.Drop => TreasureLootDecision.DropBlocked,
+            InventoryFullAction.Discard => TreasureLootDecision.DiscardBlocked,
             _ => TreasureLootDecision.Stop
         };
     }

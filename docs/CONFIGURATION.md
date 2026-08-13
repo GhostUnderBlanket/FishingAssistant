@@ -2,7 +2,7 @@
 
 Fishing Assistant 3 loads SMAPI's standard `config.json` as the migration-compatible
 base template. Once a player is loaded, that player's settings are stored separately in
-`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `6`.
+`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `7`.
 Saved configuration, the active validated player profile, and an editable menu draft
 are treated as separate objects.
 
@@ -25,7 +25,7 @@ Unknown top-level properties are reported in the SMAPI log before a migrated fil
 written. Reports include a bounded representation of the original JSON value so the
 setting can be identified; values with credential-like property names are redacted.
 They are not silently treated as supported options. A file whose
-`ConfigVersion` is newer than 6 is loaded read-only: its schema version is not
+`ConfigVersion` is newer than 7 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
@@ -39,6 +39,12 @@ migration:
   by the visual Junk List/Junk Ignore List editor. A price threshold cannot be mapped
   safely to a stable set of item IDs, so the editor starts from the documented default
   trash list and preserves the legacy `JunkIgnoreList`.
+
+Schema version 7 adds a visual `TreasureChestIgnoreList` and the
+`ActionIfOnlyIgnoredTreasureRemains` policy. The safe default keeps the fishing chest
+open for manual handling; players may instead opt into dropping ignored items into the
+world or permanently discarding them. Inventory-full handling remains separate and
+never classifies ignored treasure as an item that failed to fit.
 
 The migration test fixture contains every public Fishing Assistant 2 configuration
 property. It verifies that every still-supported non-default choice survives and that
@@ -56,7 +62,8 @@ so one obsolete value doesn't prevent the remaining user choices from loading. I
 JSON document itself can't be read, the mod uses safe defaults for that session and
 leaves the original file untouched for manual recovery.
 
-After SMAPI raises `GameLaunched`, item preferences and both junk lists are
+After SMAPI raises `GameLaunched`, item preferences, both junk lists, and the treasure
+ignore list are
 resolved through Stardew Valley's item registry. Existing IDs are converted to their
 qualified form. Missing IDs or items in an incompatible category fall back to `Any` or
 `None`, while missing junk-list IDs are removed. Delaying this pass until
@@ -116,7 +123,7 @@ content-pack bait and tackle can appear by localized name. The controls category
 capture keyboard, mouse, controller, and multi-button keybinds through SMAPI. Escape or
 controller B cancels capture; Backspace or Delete clears a binding.
 
-The combined junk/junk-ignore editor and the bait, tackle, and starter-rod pickers show
+The combined junk/junk-ignore editor, treasure-ignore editor, and the bait, tackle, and starter-rod pickers show
 localized item names and sprites, support search and scrolling, and preserve the same
 Apply/Cancel draft behavior. Every current setting can be edited without manually
 changing `config.json`. Starter rod defaults to `No starter rod`; selecting a rod is an
