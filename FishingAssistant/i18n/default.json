@@ -170,6 +170,7 @@
   "config.junk_picker.state_junk": "Junk",
   "config.junk_picker.state_ignore": "Ignored",
   "config.junk_picker.empty": "No matching items found.",
+  "config.item_picker.state_selected": "Selected",
   "config.treasure_ignore_picker.title": "Treasure chest ignore list",
   "config.treasure_ignore_picker.selected": "{0} ignored",
   "config.confirm.reset": "Reset every setting to its default value? Changes are not saved until you select Apply.",
