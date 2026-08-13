@@ -1,5 +1,4 @@
 using FishingAssistant.Runtime;
-using Microsoft.Xna.Framework;
 
 namespace FishingAssistant.HUD;
 
@@ -11,33 +10,31 @@ internal static class AutomationHudVisualPolicy
         AutomationTransitionReason reason)
     {
         if (reason == AutomationTransitionReason.LateNight)
-            return new(Color.White * 0.2f, AutomationHudBadge.LateNight);
+            return new(AutomationHudBadge.LateNight);
 
         if (reason == AutomationTransitionReason.LowEnergy)
-            return new(Color.White * 0.2f, AutomationHudBadge.LowEnergy);
+            return new(AutomationHudBadge.LowEnergy);
 
         if (reason == AutomationTransitionReason.TimedOut)
-            return new(Color.White * 0.2f, AutomationHudBadge.Warning);
+            return new(AutomationHudBadge.Warning);
 
         if (!enabled)
-            return new(Color.White * 0.2f, AutomationHudBadge.Disabled);
+            return new(AutomationHudBadge.Disabled);
 
         if (state == AutomationState.Paused || reason == AutomationTransitionReason.MenuInterrupted)
-            return new(Color.Gold, AutomationHudBadge.Paused);
+            return new(AutomationHudBadge.Paused);
 
         if (reason == AutomationTransitionReason.Recovered)
-            return new(Color.LightGreen, AutomationHudBadge.Recovered);
+            return new(AutomationHudBadge.Recovered);
 
         if (state != AutomationState.Idle)
-            return new(Color.White, AutomationHudBadge.Working);
+            return new(AutomationHudBadge.Working);
 
-        return new(Color.White, AutomationHudBadge.None);
+        return new(AutomationHudBadge.None);
     }
 }
 
-internal sealed record AutomationHudVisual(
-    Color IconTint,
-    AutomationHudBadge Badge);
+internal sealed record AutomationHudVisual(AutomationHudBadge Badge);
 
 internal enum AutomationHudBadge
 {

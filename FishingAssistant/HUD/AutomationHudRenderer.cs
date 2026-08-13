@@ -38,7 +38,7 @@ internal sealed class AutomationHudRenderer
             session.State,
             session.LastReason);
 
-        DrawRod(batch, AutomationHudLayout.PlaceIcon(bounds), visual.IconTint, opacity);
+        DrawRod(batch, AutomationHudLayout.PlaceIcon(bounds), opacity);
 
         if (visual.Badge != AutomationHudBadge.None)
             DrawBadge(batch, AutomationHudLayout.PlaceBadge(bounds), visual, opacity);
@@ -55,7 +55,7 @@ internal sealed class AutomationHudRenderer
         }
     }
 
-    private static void DrawRod(SpriteBatch batch, Rectangle bounds, Color tint, float opacity)
+    private static void DrawRod(SpriteBatch batch, Rectangle bounds, float opacity)
     {
         string rodId = Game1.player.CurrentTool is StardewValley.Tools.FishingRod rod
             ? rod.QualifiedItemId
@@ -82,7 +82,7 @@ internal sealed class AutomationHudRenderer
             texture,
             bounds,
             source,
-            tint * opacity,
+            Color.White * opacity,
             0f,
             Vector2.Zero,
             SpriteEffects.None,

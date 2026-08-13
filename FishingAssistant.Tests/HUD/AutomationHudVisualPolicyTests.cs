@@ -1,6 +1,5 @@
 using FishingAssistant.HUD;
 using FishingAssistant.Runtime;
-using Microsoft.Xna.Framework;
 
 namespace FishingAssistant.Tests.HUD;
 
@@ -14,7 +13,6 @@ public sealed class AutomationHudVisualPolicyTests
             AutomationState.Idle,
             AutomationTransitionReason.Disabled);
 
-        Assert.Equal(Color.White * 0.2f, result.IconTint);
         Assert.Equal(AutomationHudBadge.Disabled, result.Badge);
     }
 
@@ -26,7 +24,6 @@ public sealed class AutomationHudVisualPolicyTests
             AutomationState.Paused,
             AutomationTransitionReason.Observation);
 
-        Assert.Equal(Color.Gold, result.IconTint);
         Assert.Equal(AutomationHudBadge.Paused, result.Badge);
     }
 
@@ -52,7 +49,6 @@ public sealed class AutomationHudVisualPolicyTests
             AutomationState.Ready,
             AutomationTransitionReason.Recovered);
 
-        Assert.Equal(Color.LightGreen, result.IconTint);
         Assert.Equal(AutomationHudBadge.Recovered, result.Badge);
     }
 
@@ -64,7 +60,6 @@ public sealed class AutomationHudVisualPolicyTests
             AutomationState.Minigame,
             AutomationTransitionReason.Observation);
 
-        Assert.Equal(Color.White, result.IconTint);
         Assert.Equal(AutomationHudBadge.Working, result.Badge);
     }
 
@@ -76,7 +71,6 @@ public sealed class AutomationHudVisualPolicyTests
             AutomationState.Idle,
             AutomationTransitionReason.Observation);
 
-        Assert.Equal(Color.White, result.IconTint);
         Assert.Equal(AutomationHudBadge.None, result.Badge);
     }
 }
