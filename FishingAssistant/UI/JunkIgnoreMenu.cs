@@ -173,6 +173,12 @@ internal sealed class JunkListMenu : IClickableMenu
 
     public override void receiveGamePadButton(Buttons button)
     {
+        // Game1 sends a matching keyboard-direction event after this gamepad
+        // event. receiveKeyPress owns directional navigation to avoid moving
+        // the snapped component twice per controller press.
+        if (ConfigurationMenuGamepadNavigation.IsDirectional(button))
+            return;
+
         switch (button)
         {
             case Buttons.A:
@@ -186,22 +192,6 @@ internal sealed class JunkListMenu : IClickableMenu
                 break;
             case Buttons.RightShoulder:
                 this.SetMode(JunkListMode.Ignore);
-                break;
-            case Buttons.DPadUp:
-            case Buttons.LeftThumbstickUp:
-                this.MoveVertical(-1);
-                break;
-            case Buttons.DPadDown:
-            case Buttons.LeftThumbstickDown:
-                this.MoveVertical(1);
-                break;
-            case Buttons.DPadLeft:
-            case Buttons.LeftThumbstickLeft:
-                this.applyMovementKey(3);
-                break;
-            case Buttons.DPadRight:
-            case Buttons.LeftThumbstickRight:
-                this.applyMovementKey(1);
                 break;
         }
     }

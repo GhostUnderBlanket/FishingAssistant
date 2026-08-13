@@ -6,18 +6,18 @@ namespace FishingAssistant.Tests.UI;
 public sealed class ConfigurationMenuGamepadNavigationTests
 {
     [Theory]
-    [InlineData(Buttons.DPadUp, 0)]
-    [InlineData(Buttons.DPadRight, 1)]
-    [InlineData(Buttons.DPadDown, 2)]
-    [InlineData(Buttons.DPadLeft, 3)]
-    public void GetManualDirection_MapsDirectionalInputWithoutSnappyMenus(Buttons button, int expectedDirection)
+    [InlineData(Buttons.DPadUp)]
+    [InlineData(Buttons.LeftThumbstickRight)]
+    [InlineData(Buttons.DPadDown)]
+    [InlineData(Buttons.LeftThumbstickLeft)]
+    public void IsDirectional_RecognizesControllerNavigationInput(Buttons button)
     {
-        Assert.Equal(expectedDirection, ConfigurationMenuGamepadNavigation.GetManualDirection(button, false));
+        Assert.True(ConfigurationMenuGamepadNavigation.IsDirectional(button));
     }
 
     [Fact]
-    public void GetManualDirection_DefersToVanillaSnappyNavigation()
+    public void IsDirectional_DoesNotTreatActivationAsNavigation()
     {
-        Assert.Null(ConfigurationMenuGamepadNavigation.GetManualDirection(Buttons.DPadDown, true));
+        Assert.False(ConfigurationMenuGamepadNavigation.IsDirectional(Buttons.A));
     }
 }

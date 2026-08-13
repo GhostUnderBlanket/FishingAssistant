@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 
 namespace FishingAssistant.UI.Controls;
@@ -13,6 +14,12 @@ internal sealed record KeybindCaptureResult(KeybindCaptureAction Action, IReadOn
 
 internal static class KeybindCapture
 {
+    public static SButton? FromGamePadButton(Buttons button)
+    {
+        string name = $"Controller{button}";
+        return Enum.TryParse(name, out SButton result) ? result : null;
+    }
+
     public static KeybindCaptureResult Resolve(IReadOnlyList<SButton> buttons)
     {
         ArgumentNullException.ThrowIfNull(buttons);

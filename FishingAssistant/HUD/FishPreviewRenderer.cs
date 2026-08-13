@@ -22,6 +22,9 @@ internal sealed class FishPreviewRenderer
         if (bar is null)
             return;
 
+        // BobberBar stores screen-local bounds. In split-screen, refresh them in
+        // the active viewport before using them as the preview anchor.
+        bar.RepositionForCurrentScreen();
         FishPreviewSnapshot snapshot = bar.ReadPreviewSnapshot();
         FishPreviewDecision decision = FishPreviewPolicy.Decide(new FishPreviewConditions(
             config.DisplayFishPreview,

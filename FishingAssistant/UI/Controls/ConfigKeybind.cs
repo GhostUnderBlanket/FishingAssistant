@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -55,6 +56,19 @@ internal sealed class ConfigKeybind : IConfigControl
     }
 
     public bool Adjust(int direction) => false;
+
+    public bool ReceiveGamePadButton(Buttons button)
+    {
+        if (!this.IsListening)
+            return false;
+
+        SButton? input = KeybindCapture.FromGamePadButton(button);
+        if (input is null)
+            return false;
+
+        this.Capture([input.Value]);
+        return true;
+    }
 
     public void Capture(IReadOnlyList<SButton> buttons)
     {

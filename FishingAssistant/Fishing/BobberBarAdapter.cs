@@ -21,6 +21,11 @@ internal sealed class BobberBarAdapter(BobberBar bar)
 {
     public object Identity => bar;
 
+    public void RepositionForCurrentScreen()
+    {
+        bar.Reposition();
+    }
+
     public static BobberBarAdapter? ForCurrentScreen()
     {
         return Game1.activeClickableMenu is BobberBar bar

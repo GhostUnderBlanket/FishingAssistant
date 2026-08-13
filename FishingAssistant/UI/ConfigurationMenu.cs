@@ -42,6 +42,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private int scrollOffset;
     private string hoverText = "";
     private string statusText = "";
+    private Keys? ignoredGamePadKeyPress;
 
     public ConfigurationMenu(
         ConfigEditSession session,
@@ -177,6 +178,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveKeyPress(Keys key)
     {
+        if (this.ignoredGamePadKeyPress == key)
+        {
+            this.ignoredGamePadKeyPress = null;
+            return;
+        }
+
         if (this.IsListeningForKeybind)
             return;
 
@@ -205,7 +212,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
     public override void receiveGamePadButton(Buttons button)
     {
         if (this.IsListeningForKeybind)
+        {
+            ConfigKeybind? keybind = this.options.OfType<ConfigKeybind>()
+                .FirstOrDefault(control => control.IsListening);
+            if (keybind?.ReceiveGamePadButton(button) == true)
+                this.ignoredGamePadKeyPress = Utility.mapGamePadButtonToKey(button);
             return;
+        }
 
         int? categoryDirection = CategoryNavigationInput.GetDirection(button);
         if (categoryDirection is not null)
@@ -213,15 +226,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.ChangeCategory(categoryDirection.Value);
             return;
         }
-
-        int? manualDirection = ConfigurationMenuGamepadNavigation.GetManualDirection(
-            button,
-            Game1.options.snappyMenus);
-        if (manualDirection is not null)
-        {
-            this.applyMovementKey(manualDirection.Value);
+        if (ConfigurationMenuGamepadNavigation.IsDirectional(button))
             return;
-        }
 
         switch (button)
         {
