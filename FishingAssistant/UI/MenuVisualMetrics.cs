@@ -10,6 +10,12 @@ internal static class MenuVisualMetrics
 
     public static Rectangle ArrowSource { get; } = new(421, 459, 11, 12);
 
+    public static Color InlineMessageBackground { get; } = new(255, 239, 190);
+
+    public static Color InlineMessageAccent { get; } = new(166, 52, 32);
+
+    public static Color InlineMessageText { get; } = new(82, 28, 22);
+
     public static int GetControlWidth(int availableWidth)
     {
         return Math.Clamp(availableWidth * 43 / 100, 152, 320);

@@ -900,14 +900,30 @@ internal sealed class ConfigurationMenu : IClickableMenu
         if (inlineMessage is null)
             return;
 
-        string warning = this.translate(inlineMessage.TranslationKey);
-        string fitted = MenuText.Fit(warning, Game1.smallFont,
-            (originalBounds.Width - 20) / InlineMessageScale);
         float y = hasInlineSpace
             ? originalBounds.Bottom - messageHeight + 1
             : originalBounds.Bottom - inlineLineHeight;
-        Utility.drawTextWithShadow(batch, fitted, Game1.smallFont,
-            new Vector2(originalBounds.X + 8, y), new Color(190, 72, 24), InlineMessageScale);
+        Rectangle messageBounds = new(
+            originalBounds.X + 4,
+            (int)y,
+            Math.Max(1, originalBounds.Width - 8),
+            Math.Min(inlineLineHeight + 2, Math.Max(1, originalBounds.Bottom - (int)y)));
+        batch.Draw(Game1.staminaRect, messageBounds, MenuVisualMetrics.InlineMessageBackground);
+        batch.Draw(Game1.staminaRect,
+            new Rectangle(messageBounds.X, messageBounds.Y, Math.Min(4, messageBounds.Width), messageBounds.Height),
+            MenuVisualMetrics.InlineMessageAccent);
+
+        string warning = this.translate(inlineMessage.TranslationKey);
+        string fitted = MenuText.Fit(warning, Game1.smallFont,
+            Math.Max(1, messageBounds.Width - 16) / InlineMessageScale);
+        batch.DrawString(Game1.smallFont, fitted,
+            new Vector2(messageBounds.X + 10, messageBounds.Y),
+            MenuVisualMetrics.InlineMessageText,
+            0f,
+            Vector2.Zero,
+            InlineMessageScale,
+            SpriteEffects.None,
+            0.9f);
     }
 
     private bool TryDrawArrow(SpriteBatch batch, ClickableComponent button)

@@ -1,4 +1,5 @@
 using FishingAssistant.UI;
+using Microsoft.Xna.Framework;
 
 namespace FishingAssistant.Tests.UI;
 
@@ -17,5 +18,18 @@ public sealed class MenuVisualMetricsTests
     {
         Assert.Equal(36, MenuVisualMetrics.GetControlHeight(40));
         Assert.Equal(152, MenuVisualMetrics.GetControlWidth(300));
+    }
+
+    [Fact]
+    public void InlineMessagePalette_UsesDarkTextOnALightBackground()
+    {
+        Color text = MenuVisualMetrics.InlineMessageText;
+        Color background = MenuVisualMetrics.InlineMessageBackground;
+
+        int textBrightness = text.R + text.G + text.B;
+        int backgroundBrightness = background.R + background.G + background.B;
+
+        Assert.True(backgroundBrightness - textBrightness >= 400);
+        Assert.NotEqual(MenuVisualMetrics.InlineMessageAccent, text);
     }
 }
