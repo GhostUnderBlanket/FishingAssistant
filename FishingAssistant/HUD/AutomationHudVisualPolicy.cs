@@ -28,6 +28,9 @@ internal static class AutomationHudVisualPolicy
         if (reason == AutomationTransitionReason.Recovered)
             return new(Color.LightGreen, AutomationHudBadge.Recovered);
 
+        if (state != AutomationState.Idle)
+            return new(Color.White, AutomationHudBadge.Working);
+
         return new(Color.White, AutomationHudBadge.None);
     }
 }
@@ -44,5 +47,6 @@ internal enum AutomationHudBadge
     LateNight,
     LowEnergy,
     Warning,
-    Recovered
+    Recovered,
+    Working
 }

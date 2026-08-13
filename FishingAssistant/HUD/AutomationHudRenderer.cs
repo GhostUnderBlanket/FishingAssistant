@@ -106,6 +106,7 @@ internal sealed class AutomationHudRenderer
             AutomationHudBadge.LowEnergy => Character.sadEmote,
             AutomationHudBadge.Warning => Character.exclamationEmote,
             AutomationHudBadge.Recovered => Character.happyEmote,
+            AutomationHudBadge.Working => Character.musicNoteEmote,
             _ => -1
         };
         if (baseEmoteIndex < 0)

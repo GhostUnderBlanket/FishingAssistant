@@ -57,11 +57,23 @@ public sealed class AutomationHudVisualPolicyTests
     }
 
     [Fact]
-    public void GetVisual_UsesNormalAppearanceForActiveState()
+    public void GetVisual_ShowsWorkingBadgeForActiveState()
     {
         AutomationHudVisual result = AutomationHudVisualPolicy.GetVisual(
             true,
             AutomationState.Minigame,
+            AutomationTransitionReason.Observation);
+
+        Assert.Equal(Color.White, result.IconTint);
+        Assert.Equal(AutomationHudBadge.Working, result.Badge);
+    }
+
+    [Fact]
+    public void GetVisual_HidesBadgeForIdleState()
+    {
+        AutomationHudVisual result = AutomationHudVisualPolicy.GetVisual(
+            true,
+            AutomationState.Idle,
             AutomationTransitionReason.Observation);
 
         Assert.Equal(Color.White, result.IconTint);

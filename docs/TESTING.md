@@ -165,7 +165,8 @@ release-matrix scenarios are completed.
   and as multiplayer host/farmhand, confirming only the event's owning inventory is
   changed.
 - Verify the visual status HUD with F5 on/off, every automation state, and each badge:
-  ordinary disabled, menu pause, late night, low energy, action timeout, and recovery.
+  active work, ordinary disabled, menu pause, late night, low energy, action timeout,
+  and recovery. Confirm enabled idle has no emote.
   Verify the background-free rod sprite, drop shadow, and animated Vanilla emotes
   remain readable over light and dark terrain. Test toolbar pinned and
   automatic top/bottom movement,
