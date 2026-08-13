@@ -43,6 +43,46 @@ public sealed class AutomationHudLayoutTests
     }
 
     [Fact]
+    public void Place_CentersDuringFestivalInsteadOfFollowingToolbar()
+    {
+        Rectangle result = AutomationHudLayout.Place(new(
+            1280,
+            720,
+            HudPosition.Right,
+            ToolbarWidth: 896,
+            ToolbarOpacity: 1f,
+            IsFishingMinigame: false,
+            IsFestival: true,
+            IsToolbarAtTop: false));
+
+        Assert.Equal(592, result.X);
+        Assert.Equal(616, result.Y);
+    }
+
+    [Theory]
+    [InlineData(1280, 720)]
+    [InlineData(1024, 576)]
+    [InlineData(819, 432)]
+    [InlineData(640, 360)]
+    public void Place_RemainsInsideScaledLocalUiViewport(int width, int height)
+    {
+        Rectangle result = AutomationHudLayout.Place(new(
+            width,
+            height,
+            HudPosition.Left,
+            ToolbarWidth: Math.Min(896, width),
+            ToolbarOpacity: 1f,
+            IsFishingMinigame: false,
+            IsFestival: false,
+            IsToolbarAtTop: false));
+
+        Assert.InRange(result.Left, 0, width - result.Width);
+        Assert.InRange(result.Right, result.Width, width);
+        Assert.InRange(result.Top, 0, height - result.Height);
+        Assert.InRange(result.Bottom, result.Height, height);
+    }
+
+    [Fact]
     public void Place_UsesTopEdgeWhenToolbarMovesAbovePlayer()
     {
         Rectangle result = AutomationHudLayout.Place(new(

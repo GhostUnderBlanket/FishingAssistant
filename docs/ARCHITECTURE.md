@@ -84,7 +84,11 @@ through a pure policy. Treasure targeting is intentionally config-only and has n
 runtime hotkey or HUD icon. A pure layout policy places the footprint beside the current
 toolbar, mirrors the configured side, follows the toolbar between screen edges, and
 clamps both rod and badge inside the local `uiViewport`; no reflection or shared HUD
-state is used.
+state is used. Because `uiViewport` is already Stardew's logical UI coordinate space,
+the layout does not apply UI scale or world zoom a second time. A separate visibility
+policy hides the HUD when Stardew hides its HUD, while a normal menu, non-festival
+event, or unrelated minigame is active. `BobberBar` and the supported festival
+`FishingGame` remain visible fishing contexts.
 
 Festival automation is denied by default. The current exception is the game's active
 `FishingGame` minigame while it is still running; casting applies an additional startup

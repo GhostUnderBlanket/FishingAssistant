@@ -138,7 +138,11 @@ state and disconnecting or disabling the mod leaves every affected rod valid.
 - [x] Ensure low-energy and late-night pauses have a distinct visual result instead of
   becoming indistinguishable from ordinary disabled/idle state.
 - [ ] Define and test HUD behavior while menus are open and at non-default UI scales,
-  zoom levels, festivals, small windows, and each split-screen viewport.
+  zoom levels, festivals, small windows, and each split-screen viewport. Automated
+  contracts now hide the HUD for ordinary menus, non-festival events, and unrelated
+  minigames; keep it visible for `BobberBar` and supported fishing festivals; and clamp
+  layout across representative logical UI viewport sizes. In-game visual verification
+  remains pending.
 - [x] Add Fiberglass Rod and Iridium Rod to the starter-rod picker. The picker now
   supports all five Vanilla fishing rods, and the superseded debug rod action is gone.
 - [x] Correct stale testing text which still calls the visual panel an

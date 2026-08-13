@@ -15,9 +15,15 @@ internal sealed class AutomationHudRenderer
 
     public void Draw(SpriteBatch batch, AutomationSession session, ModConfig config)
     {
-        if (!Game1.displayHUD
-            || (Game1.eventUp && !Game1.isFestival())
-            || (Game1.currentMinigame is not null && Game1.currentMinigame is not FishingGame))
+        bool isFishingMinigame = Game1.currentMinigame is FishingGame;
+        bool hasBlockingMenu = Game1.activeClickableMenu is not null
+            && Game1.activeClickableMenu is not BobberBar;
+        if (!AutomationHudVisibilityPolicy.ShouldDraw(new(
+                Game1.displayHUD,
+                hasBlockingMenu,
+                Game1.eventUp,
+                Game1.isFestival(),
+                Game1.currentMinigame is not null && !isFishingMinigame)))
         {
             return;
         }
@@ -29,7 +35,7 @@ internal sealed class AutomationHudRenderer
             config.ModStatusPosition,
             toolbar?.width ?? 0,
             toolbar?.transparency ?? 0f,
-            IsFishingMinigame: Game1.currentMinigame is FishingGame,
+            IsFishingMinigame: isFishingMinigame,
             IsFestival: Game1.isFestival(),
             IsToolbarAtTop: IsToolbarAtTop()));
         float opacity = toolbar is null ? 1f : Math.Clamp(toolbar.transparency, 0.33f, 1f);

@@ -104,8 +104,11 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - Replaced the text automation-status HUD with a compact Fishing Assistant 2-style
-  fishing icon, with a dimmed off state and warning colors for paused or faulted
-  automation.
+  full-color fishing-rod icon and animated Vanilla emotes for active, disabled, paused,
+  stopped, warning, and recovered states.
+- The automation HUD now hides behind ordinary menus, non-festival events, and
+  unrelated minigames while remaining available during the fishing bar and supported
+  fishing festivals; layout stays within each local logical UI viewport.
 - Replaced the temporary treasure-targeting hotkey and HUD icon with one persistent
   checkbox in the custom configuration menu.
 - Changed the default configuration-menu keybind from unbound to F6 after retiring the
