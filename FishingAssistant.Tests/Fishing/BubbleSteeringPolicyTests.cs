@@ -21,7 +21,19 @@ public sealed class BubbleSteeringPolicyTests
     public void TryGetTarget_AcceptsReachableManualCast()
     {
         Assert.True(BubbleSteeringPolicy.TryGetTarget(ReachableVerticalCast, out Vector2 target));
-        Assert.Equal(new Vector2(416f, 672f), target);
+        Assert.Equal(new Vector2(384f, 640f), target);
+    }
+
+    [Fact]
+    public void TryGetTarget_AcceptsAdjacentBubbleAfterSmallMovementAway()
+    {
+        BubbleSteeringConditions conditions = ReachableVerticalCast with
+        {
+            LandingPixel = new Vector2(316f, 640f)
+        };
+
+        Assert.True(BubbleSteeringPolicy.TryGetTarget(conditions, out Vector2 target));
+        Assert.Equal(new Vector2(384f, 640f), target);
     }
 
     [Fact]

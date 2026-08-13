@@ -17,14 +17,11 @@ internal sealed record BubbleSteeringConditions(
 internal static class BubbleSteeringPolicy
 {
     internal const float TickMilliseconds = 1000f / 60f;
-    internal const float ForwardTolerance = Game1.tileSize / 2f;
 
     public static bool TryGetTarget(BubbleSteeringConditions conditions, out Vector2 target)
     {
         ArgumentNullException.ThrowIfNull(conditions);
-        target = new Vector2(
-            conditions.BubbleTile.X * Game1.tileSize + Game1.tileSize / 2f,
-            conditions.BubbleTile.Y * Game1.tileSize + Game1.tileSize / 2f);
+        target = GetClosestPointInTile(conditions.LandingPixel, conditions.BubbleTile);
 
         if (!conditions.Enabled
             || !conditions.IsBobberInAir
@@ -35,17 +32,29 @@ internal static class BubbleSteeringPolicy
             return false;
 
         bool horizontalCast = conditions.FacingDirection is Game1.left or Game1.right;
-        float forwardDifference = horizontalCast
-            ? Math.Abs(target.X - conditions.LandingPixel.X)
-            : Math.Abs(target.Y - conditions.LandingPixel.Y);
+        int landingForwardTile = horizontalCast
+            ? (int)Math.Floor(conditions.LandingPixel.X / Game1.tileSize)
+            : (int)Math.Floor(conditions.LandingPixel.Y / Game1.tileSize);
+        int bubbleForwardTile = horizontalCast ? conditions.BubbleTile.X : conditions.BubbleTile.Y;
         float sidewaysDifference = horizontalCast
             ? Math.Abs(target.Y - conditions.LandingPixel.Y)
             : Math.Abs(target.X - conditions.LandingPixel.X);
         float sidewaysSpeed = horizontalCast ? 4f : 2f;
         float availableTicks = Math.Max(1f, conditions.FlightMilliseconds / TickMilliseconds);
 
-        return forwardDifference <= ForwardTolerance
+        return landingForwardTile == bubbleForwardTile
             && sidewaysDifference <= sidewaysSpeed * availableTicks;
+    }
+
+    private static Vector2 GetClosestPointInTile(Vector2 point, Point tile)
+    {
+        float left = tile.X * Game1.tileSize;
+        float top = tile.Y * Game1.tileSize;
+        float right = left + Game1.tileSize - 1f;
+        float bottom = top + Game1.tileSize - 1f;
+        return new Vector2(
+            Math.Clamp(point.X, left, right),
+            Math.Clamp(point.Y, top, bottom));
     }
 
     public static Vector2 GetSteeringStep(Vector2 current, Vector2 target, int facingDirection)
