@@ -205,7 +205,7 @@ release-matrix scenarios are completed.
 - Verify automatic junk disposal with automation on/off, the option on/off, each five
   default trash item, a newly created stack, an existing partial stack, multiple items
   gained in one tick, treasure rewards, and inventory-full reward handling. Confirm the
-  Junk Ignore List always protects an item, untrashable/quest items remain untouched,
+  only explicitly selected Junk items are removed, untrashable/quest items remain untouched,
   fish require `AllowTrashFish`, only the newly gained quantity leaves an old stack,
   and trash-can reclamation money matches vanilla. Repeat for both split-screen players
   and as multiplayer host/farmhand, confirming only the event's owning inventory is

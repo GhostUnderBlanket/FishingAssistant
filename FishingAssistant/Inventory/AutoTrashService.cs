@@ -37,8 +37,7 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
                 config.AllowTrashFish,
                 acquiredQuantity,
                 item.Stack,
-                config.JunkList,
-                config.JunkIgnoreList));
+                config.JunkList));
             if (!decision.ShouldTrash)
                 continue;
 

@@ -16,6 +16,7 @@ internal static class ConfigValidator
 
         int originalVersion = config.ConfigVersion;
         NormalizeVersion(config, report);
+        RetireJunkIgnoreList(config, originalVersion, report);
         if (originalVersion < 9)
         {
             config.AutomationProfile = AutomationProfile.Custom;
@@ -87,11 +88,8 @@ internal static class ConfigValidator
             ModConfig.DefaultStarterRod);
         NormalizeItemList(report, nameof(config.JunkList),
             () => config.JunkList, value => config.JunkList = value);
-        NormalizeItemList(report, nameof(config.JunkIgnoreList),
-            () => config.JunkIgnoreList, value => config.JunkIgnoreList = value);
         NormalizeItemList(report, nameof(config.TreasureChestIgnoreList),
             () => config.TreasureChestIgnoreList, value => config.TreasureChestIgnoreList = value);
-        ResolveJunkListConflicts(config, report);
         NormalizeDependencies(config, report);
 
         if (itemCatalog is not null)
@@ -223,17 +221,21 @@ internal static class ConfigValidator
             "Empty and duplicate item IDs were removed.");
     }
 
-    private static void ResolveJunkListConflicts(ModConfig config, ConfigValidationReport report)
+    private static void RetireJunkIgnoreList(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
     {
+        if (originalVersion > ModConfig.CurrentVersion || config.JunkIgnoreList.Count == 0)
+            return;
+
         HashSet<string> ignored = config.JunkIgnoreList.ToHashSet(StringComparer.OrdinalIgnoreCase);
         List<string> original = config.JunkList;
         List<string> corrected = original.Where(itemId => !ignored.Contains(itemId)).ToList();
-        if (original.SequenceEqual(corrected, StringComparer.Ordinal))
-            return;
-
         config.JunkList = corrected;
-        report.Add(nameof(config.JunkList), string.Join(", ", original), string.Join(", ", corrected),
-            "Items in the ignore list were removed from the junk list.");
+        config.JunkIgnoreList = [];
+        report.Add(nameof(config.JunkIgnoreList), string.Join(", ", ignored), "retired",
+            "The obsolete junk ignore list was retired; protected items were removed from the explicit junk list.");
     }
 
     private static void NormalizeDependencies(ModConfig config, ConfigValidationReport report)
@@ -278,11 +280,8 @@ internal static class ConfigValidator
 
         NormalizeItemIds(report, nameof(config.JunkList),
             () => config.JunkList, value => config.JunkList = value, catalog);
-        NormalizeItemIds(report, nameof(config.JunkIgnoreList),
-            () => config.JunkIgnoreList, value => config.JunkIgnoreList = value, catalog);
         NormalizeItemIds(report, nameof(config.TreasureChestIgnoreList),
             () => config.TreasureChestIgnoreList, value => config.TreasureChestIgnoreList = value, catalog);
-        ResolveJunkListConflicts(config, report);
 
         return report;
     }

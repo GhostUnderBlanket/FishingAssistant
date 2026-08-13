@@ -2,7 +2,7 @@
 
 Fishing Assistant 3 loads SMAPI's standard `config.json` as the migration-compatible
 base template. Once a player is loaded, that player's settings are stored separately in
-`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `10`.
+`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `11`.
 Saved configuration, the active validated player profile, and an editable menu draft
 are treated as separate objects.
 
@@ -25,7 +25,7 @@ Unknown top-level properties are reported in the SMAPI log before a migrated fil
 written. Reports include a bounded representation of the original JSON value so the
 setting can be identified; values with credential-like property names are redacted.
 They are not silently treated as supported options. A file whose
-`ConfigVersion` is newer than 10 is loaded read-only: its schema version is not
+`ConfigVersion` is newer than 11 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
@@ -36,9 +36,8 @@ migration:
   replacement, `TreasureTargeting`, is edited only through the custom configuration
   menu and defaults to off.
 - `JunkHighestPrice` is omitted because price-based junk classification was replaced
-  by the visual Junk List/Junk Ignore List editor. A price threshold cannot be mapped
-  safely to a stable set of item IDs, so the editor starts from the documented default
-  trash list and preserves the legacy `JunkIgnoreList`.
+  by the visual Junk List editor. A price threshold cannot be mapped safely to a stable
+  set of item IDs, so the editor starts from the documented default trash list.
 
 Schema version 7 adds a visual `TreasureChestIgnoreList` and the
 `ActionIfOnlyIgnoredTreasureRemains` policy. The safe default keeps the fishing chest
@@ -61,6 +60,11 @@ inventory, food, equipment, or keybind settings.
 
 Schema version 10 extends bubble steering to automatic casts. Relaxed and Training
 profiles enable it; Custom profiles retain the player's explicit choice.
+
+Schema version 11 retires the redundant `JunkIgnoreList`. The explicit Junk List now
+has only Junk and Normal states. During migration, any legacy ignored item is removed
+from the Junk List before the obsolete field is cleared, preserving the user's request
+not to discard that item. The separate Treasure Chest Ignore List is unchanged.
 
 `UnlockCastPowerTime` extends the Fishing Assistant 2 smart-cast behavior with a
 per-screen session value. A session starts at `DefaultCastPower`. While automation is
@@ -104,7 +108,7 @@ so one obsolete value doesn't prevent the remaining user choices from loading. I
 JSON document itself can't be read, the mod uses safe defaults for that session and
 leaves the original file untouched for manual recovery.
 
-After SMAPI raises `GameLaunched`, item preferences, both junk lists, and the treasure
+After SMAPI raises `GameLaunched`, item preferences, the junk list, and the treasure
 ignore list are
 resolved through Stardew Valley's item registry. Existing IDs are converted to their
 qualified form. Missing IDs or items in an incompatible category fall back to `Any` or
@@ -165,7 +169,7 @@ content-pack bait and tackle can appear by localized name. The controls category
 capture keyboard, mouse, controller, and multi-button keybinds through SMAPI. Escape or
 controller B cancels capture; Backspace or Delete clears a binding.
 
-The combined junk/junk-ignore editor, treasure-ignore editor, and the bait, tackle, and starter-rod pickers show
+The junk editor, treasure-ignore editor, and the bait, tackle, and starter-rod pickers show
 localized item names and sprites, support search and scrolling, and preserve the same
 Apply/Cancel draft behavior. Every current setting can be edited without manually
 changing `config.json`. Starter rod defaults to `No starter rod`; selecting a rod is an

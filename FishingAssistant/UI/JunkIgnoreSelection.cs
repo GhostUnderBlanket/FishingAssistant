@@ -2,12 +2,6 @@ using FishingAssistant.Configuration;
 
 namespace FishingAssistant.UI;
 
-internal enum JunkListMode
-{
-    Junk,
-    Ignore
-}
-
 internal enum JunkItemState
 {
     Normal,
@@ -17,63 +11,46 @@ internal enum JunkItemState
 
 internal static class JunkListSelection
 {
-    public static JunkListGroups GroupForMode(
+    public static JunkListGroups Group(
         IEnumerable<ConfigItem> items,
-        IReadOnlyCollection<string> junkIds,
-        IReadOnlyCollection<string> ignoreIds,
-        JunkListMode mode)
+        IReadOnlyCollection<string> selectedIds)
     {
         ArgumentNullException.ThrowIfNull(items);
-        ArgumentNullException.ThrowIfNull(junkIds);
-        ArgumentNullException.ThrowIfNull(ignoreIds);
-
-        JunkItemState selectedState = mode == JunkListMode.Junk
-            ? JunkItemState.Junk
-            : JunkItemState.Ignore;
+        ArgumentNullException.ThrowIfNull(selectedIds);
         ConfigItem[] source = items.ToArray();
         return new JunkListGroups(
-            source.Where(item => GetState(junkIds, ignoreIds, item.QualifiedItemId) == selectedState)
+            source.Where(item => selectedIds.Contains(item.QualifiedItemId, StringComparer.OrdinalIgnoreCase))
                 .ToArray(),
-            source.Where(item => GetState(junkIds, ignoreIds, item.QualifiedItemId) == JunkItemState.Normal)
+            source.Where(item => !selectedIds.Contains(item.QualifiedItemId, StringComparer.OrdinalIgnoreCase))
                 .ToArray());
     }
 
     public static JunkItemState Toggle(
-        List<string> junkIds,
-        List<string> ignoreIds,
+        List<string> selectedIds,
         string qualifiedItemId,
-        JunkListMode mode)
+        JunkItemState selectedState)
     {
-        ArgumentNullException.ThrowIfNull(junkIds);
-        ArgumentNullException.ThrowIfNull(ignoreIds);
+        ArgumentNullException.ThrowIfNull(selectedIds);
         if (string.IsNullOrWhiteSpace(qualifiedItemId))
             throw new ArgumentException("The qualified item ID must not be empty.", nameof(qualifiedItemId));
 
-        JunkItemState current = GetState(junkIds, ignoreIds, qualifiedItemId);
-        JunkItemState target = mode == JunkListMode.Junk ? JunkItemState.Junk : JunkItemState.Ignore;
-        JunkItemState result = current == target ? JunkItemState.Normal : target;
-
-        junkIds.RemoveAll(value => string.Equals(value, qualifiedItemId, StringComparison.OrdinalIgnoreCase));
-        ignoreIds.RemoveAll(value => string.Equals(value, qualifiedItemId, StringComparison.OrdinalIgnoreCase));
-
-        if (result == JunkItemState.Junk)
-            junkIds.Add(qualifiedItemId);
-        else if (result == JunkItemState.Ignore)
-            ignoreIds.Add(qualifiedItemId);
+        bool removed = selectedIds.RemoveAll(value =>
+            string.Equals(value, qualifiedItemId, StringComparison.OrdinalIgnoreCase)) > 0;
+        JunkItemState result = removed ? JunkItemState.Normal : selectedState;
+        if (!removed)
+            selectedIds.Add(qualifiedItemId);
 
         return result;
     }
 
     public static JunkItemState GetState(
-        IReadOnlyCollection<string> junkIds,
-        IReadOnlyCollection<string> ignoreIds,
-        string qualifiedItemId)
+        IReadOnlyCollection<string> selectedIds,
+        string qualifiedItemId,
+        JunkItemState selectedState)
     {
-        if (ignoreIds.Contains(qualifiedItemId, StringComparer.OrdinalIgnoreCase))
-            return JunkItemState.Ignore;
-        if (junkIds.Contains(qualifiedItemId, StringComparer.OrdinalIgnoreCase))
-            return JunkItemState.Junk;
-        return JunkItemState.Normal;
+        return selectedIds.Contains(qualifiedItemId, StringComparer.OrdinalIgnoreCase)
+            ? selectedState
+            : JunkItemState.Normal;
     }
 
     public static IReadOnlyList<ConfigItem> Filter(IEnumerable<ConfigItem> items, string? search)

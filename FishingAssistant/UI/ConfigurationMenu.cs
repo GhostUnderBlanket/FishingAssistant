@@ -565,11 +565,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.AutoTrashJunk = value);
                 this.AddActionDefinition("junk_lists",
                     () => string.Format(this.translate("config.junk_picker.selected"),
-                        this.session.Draft.JunkList.Count,
-                        this.session.Draft.JunkIgnoreList.Count),
+                        this.session.Draft.JunkList.Count),
                     () => this.SetChildMenu(new JunkListMenu(
                         this.session.Draft.JunkList,
-                        this.session.Draft.JunkIgnoreList,
                         this.itemSource,
                         this.translate)));
                 this.AddDefinition("trash_fish", () => this.session.Draft.AllowTrashFish,
@@ -633,7 +631,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddActionDefinition("treasure_ignore_list",
                     () => string.Format(this.translate("config.treasure_ignore_picker.selected"),
                         this.session.Draft.TreasureChestIgnoreList.Count),
-                    () => this.SetChildMenu(new JunkListMenu(
+                    () => this.SetChildMenu(JunkListMenu.CreateTreasureIgnoreMenu(
                         this.session.Draft.TreasureChestIgnoreList,
                         this.itemSource,
                         this.translate)));

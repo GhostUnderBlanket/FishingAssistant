@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 10;
+    internal const int CurrentVersion = 11;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -50,6 +50,8 @@ internal sealed class ModConfig
     public List<string> JunkList { get; set; } = [.. DefaultJunkList];
 
     public List<string> JunkIgnoreList { get; set; } = [];
+
+    public bool ShouldSerializeJunkIgnoreList() => false;
 
     public PauseFishingBehavior AutoPauseFishing { get; set; } = PauseFishingBehavior.WarnAndPause;
 
