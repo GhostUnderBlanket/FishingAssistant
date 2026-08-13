@@ -51,6 +51,8 @@ checks still need to be observed in-game before Milestone 2 can be marked comple
 - Repeat with a controller: verify A/B, D-pad/left stick navigation, Left/Right
   Shoulder and Left/Right Trigger category navigation, selector adjustment, and
   keybind capture/cancel.
+- Known regressions currently deferred: local co-op Fish Preview placement and controller
+  keybind capture. See [KNOWN-ISSUES.md](KNOWN-ISSUES.md).
 - While the menu is open, change UI scale, zoom, window size, and game language. Check
   that no option or snappy-navigation focus is left at stale bounds after the menu
   rebuilds.
