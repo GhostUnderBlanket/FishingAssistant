@@ -39,6 +39,28 @@ Status recorded on 2026-08-12:
   been tested yet.
 - Mixed split-screen multiplayer has not been tested yet.
 
+## Pending configuration-menu checks
+
+The custom configuration menu's automated tests cover draft isolation, input mapping,
+inline warnings, unavailable controls, and layout-context detection. The following
+checks still need to be observed in-game before Milestone 2 can be marked complete:
+
+- In a normal fullscreen single-player session, open the menu with F6 and verify every
+  category, scrolling, Apply, Cancel, Reset confirmation, item picker, junk editor,
+  inline warning, and disabled-control explanation with mouse and keyboard.
+- Repeat with a controller: verify A/B, D-pad/left stick navigation, Left/Right
+  Shoulder and Left/Right Trigger category navigation, selector adjustment, and
+  keybind capture/cancel.
+- While the menu is open, change UI scale, zoom, window size, and game language. Check
+  that no option or snappy-navigation focus is left at stale bounds after the menu
+  rebuilds.
+- In a small local split-screen viewport, verify long localized labels, scrolling,
+  tooltips, footer buttons, picker dialogs, and Reset confirmation remain reachable
+  and inside that player's viewport.
+- With a remote player connected, open Rod Enchantments and confirm every temporary
+  enchantment option is visibly disabled, explains why, ignores edits, and becomes
+  editable again after the remote player leaves.
+
 The festival support and multiplayer-safe architecture currently present in the code
 must therefore be treated as implemented but manually unverified until the matching
 release-matrix scenarios are completed.

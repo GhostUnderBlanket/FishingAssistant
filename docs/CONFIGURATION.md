@@ -72,9 +72,10 @@ The menu can edit boolean settings across Automation, Inventory & Food, Bait & T
 Catch Assistance, Fish Preview, and Rod Enchantments. Boolean, enum, and numeric
 settings use reusable controls. Numeric steppers clamp at the same ranges enforced by
 configuration validation. The menu provides Apply, Cancel, and Reset Defaults actions,
-recalculates its bounds when the viewport changes, fits narrow split-screen viewports,
-supports mouse and controller/snappy navigation, and displays descriptions as tooltips.
-Category shoulder navigation and scrolling work without requiring a mouse. Reset
+recalculates its bounds when the viewport, UI scale, zoom, language, or visible option
+set changes, fits narrow split-screen viewports, supports mouse and controller/snappy
+navigation, and displays descriptions as tooltips. Category shoulder/trigger navigation
+and scrolling work without requiring a mouse. Reset
 opens a confirmation dialog before replacing the draft with defaults. Canceling that
 dialog leaves the draft untouched; confirming still changes only the draft until Apply
 is selected.
