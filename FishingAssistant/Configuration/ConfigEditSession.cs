@@ -1,10 +1,12 @@
 namespace FishingAssistant.Configuration;
 
-internal sealed class ConfigEditSession(ModConfig draft, int baseRevision)
+internal sealed class ConfigEditSession(ModConfig draft, int baseRevision, string? profileKey = null)
 {
     public ModConfig Draft { get; set; } = draft;
 
     public int BaseRevision { get; } = baseRevision;
+
+    public string? ProfileKey { get; } = profileKey;
 
     public void EnsureCurrent(int currentRevision)
     {

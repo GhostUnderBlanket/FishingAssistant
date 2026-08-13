@@ -56,6 +56,12 @@ Mutable local-screen state will use SMAPI's split-screen utilities. Static mutab
 is prohibited. A feature may touch shared-world state only after its authority and
 multiplayer behavior are documented.
 
+Configuration preferences are player-scoped. `config.json` remains the migration and
+new-profile template, while profiles are persisted under `config.players` using the
+player's stable `UniqueMultiplayerID`. Each profile has its own active object and draft
+revision, so applying settings on one local screen cannot mutate or stale another local
+player's configuration.
+
 The runtime stores an `AutomationSession` and action timers in `PerScreen<T>`. It
 observes and controls only the current local player's equipped rod, and renders only
 into that local screen's HUD. Automatic casting is a local-player action guarded by a

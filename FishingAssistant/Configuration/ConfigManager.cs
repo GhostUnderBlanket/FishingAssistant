@@ -2,14 +2,23 @@ using StardewModdingAPI;
 
 namespace FishingAssistant.Configuration;
 
-internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
+internal sealed class ConfigManager(
+    IModHelper helper,
+    IMonitor monitor,
+    Func<string?>? profileKeyProvider = null,
+    IConfigProfileStore? profileStore = null)
 {
     private const string ConfigFileName = "config.json";
+    private readonly Dictionary<string, ProfileState> profiles = new(StringComparer.Ordinal);
+    private readonly Func<string?> profileKeyProvider = profileKeyProvider ?? (() => null);
+    private readonly IConfigProfileStore profileStore = profileStore ?? new ConfigProfileStore(helper.Data);
     private IItemCatalog? itemCatalog;
     private bool loadedFutureSchema;
     private int revision;
 
-    public ModConfig Active { get; private set; } = new();
+    private ModConfig template = new();
+
+    public ModConfig Active => this.GetCurrentState()?.Config ?? this.template;
 
     public ConfigValidationReport Load()
     {
@@ -22,7 +31,7 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         catch (Exception exception)
         {
             loaded = new ModConfig();
-            this.Active = loaded;
+            this.template = loaded;
             this.revision++;
 
             ConfigValidationReport failedReport = new();
@@ -58,10 +67,10 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
 
         this.loadedFutureSchema = loaded.ConfigVersion > ModConfig.CurrentVersion;
 
-        this.Active = loaded;
+        this.template = loaded;
         this.revision++;
         if (report.WasChanged && !this.loadedFutureSchema)
-            helper.WriteConfig(this.Active);
+            helper.WriteConfig(this.template);
 
         this.LogCorrections(report);
         this.LogWarnings(report);
@@ -72,19 +81,35 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
     public ConfigValidationReport Apply(ConfigEditSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
-        session.EnsureCurrent(this.revision);
-        if (this.loadedFutureSchema)
+        string? currentKey = this.profileKeyProvider();
+        if (!string.Equals(session.ProfileKey, currentKey, StringComparison.Ordinal))
+            throw new InvalidOperationException("The local player changed after this menu opened.");
+
+        ProfileState? profile = this.GetCurrentState();
+        int currentRevision = profile?.Revision ?? this.revision;
+        session.EnsureCurrent(currentRevision);
+        string? readOnlyReason = profile?.ReadOnlyReason;
+        if (readOnlyReason is not null || (profile is null && this.loadedFutureSchema))
         {
             throw new InvalidOperationException(
-                "A configuration from a newer Fishing Assistant version is loaded and can't be overwritten."
+                readOnlyReason
+                ?? "A configuration from a newer Fishing Assistant version is loaded and can't be overwritten."
             );
         }
 
         ModConfig validated = session.Draft.CreateDraft();
         ConfigValidationReport report = ConfigValidator.Normalize(validated, this.itemCatalog);
-        helper.WriteConfig(validated);
-        this.Active = validated;
-        this.revision++;
+        if (currentKey is null)
+        {
+            helper.WriteConfig(validated);
+            this.template = validated;
+            this.revision++;
+        }
+        else
+        {
+            this.profileStore.Write(currentKey, validated);
+            this.profiles[currentKey] = new ProfileState(validated, currentRevision + 1, null);
+        }
         this.LogCorrections(report);
         this.LogWarnings(report);
         return report;
@@ -95,11 +120,22 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         ArgumentNullException.ThrowIfNull(itemCatalog);
 
         this.itemCatalog = itemCatalog;
-        ConfigValidationReport report = ConfigValidator.NormalizeItems(this.Active, itemCatalog);
+        ConfigValidationReport report = ConfigValidator.NormalizeItems(this.template, itemCatalog);
         if (report.WasChanged && !this.loadedFutureSchema)
         {
-            helper.WriteConfig(this.Active);
+            helper.WriteConfig(this.template);
             this.revision++;
+        }
+
+        foreach ((string key, ProfileState profile) in this.profiles.ToArray())
+        {
+            ConfigValidationReport profileReport = ConfigValidator.NormalizeItems(profile.Config, itemCatalog);
+            report.Append(profileReport);
+            if (profileReport.WasChanged && profile.ReadOnlyReason is null)
+            {
+                this.profileStore.Write(key, profile.Config);
+                this.profiles[key] = profile with { Revision = profile.Revision + 1 };
+            }
         }
 
         this.LogCorrections(report);
@@ -109,7 +145,12 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
 
     public ConfigEditSession CreateEditSession()
     {
-        return new ConfigEditSession(this.Active.CreateDraft(), this.revision);
+        string? profileKey = this.profileKeyProvider();
+        ProfileState? profile = this.GetCurrentState();
+        return new ConfigEditSession(
+            (profile?.Config ?? this.template).CreateDraft(),
+            profile?.Revision ?? this.revision,
+            profileKey);
     }
 
     public static ModConfig CreateDefaultDraft()
@@ -136,6 +177,43 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
         {
             return ConfigFileMetadata.Empty;
         }
+    }
+
+    private ProfileState? GetCurrentState()
+    {
+        string? key = this.profileKeyProvider();
+        if (key is null)
+            return null;
+
+        if (this.profiles.TryGetValue(key, out ProfileState? existing))
+            return existing;
+
+        ModConfig config;
+        string? readOnlyReason;
+        try
+        {
+            config = this.profileStore.Read(key) ?? this.template.CreateDraft();
+            readOnlyReason = config.ConfigVersion > ModConfig.CurrentVersion
+                ? "This player profile comes from a newer Fishing Assistant version and can't be overwritten."
+                : null;
+            ConfigValidationReport report = ConfigValidator.Normalize(config, this.itemCatalog);
+            this.LogCorrections(report);
+            this.LogWarnings(report);
+            if (report.WasChanged && readOnlyReason is null)
+                this.profileStore.Write(key, config);
+        }
+        catch (Exception exception)
+        {
+            config = this.template.CreateDraft();
+            readOnlyReason = "This player profile couldn't be read and won't be overwritten.";
+            monitor.Log(
+                $"Couldn't read configuration profile '{key}'; using the base configuration without overwriting the profile.\n{exception}",
+                LogLevel.Error);
+        }
+
+        ProfileState created = new(config, 1, readOnlyReason);
+        this.profiles[key] = created;
+        return created;
     }
 
     private void LogCorrections(ConfigValidationReport report)
@@ -168,4 +246,6 @@ internal sealed class ConfigManager(IModHelper helper, IMonitor monitor)
     {
         public static ConfigFileMetadata Empty { get; } = new(false, [], []);
     }
+
+    private sealed record ProfileState(ModConfig Config, int Revision, string? ReadOnlyReason);
 }

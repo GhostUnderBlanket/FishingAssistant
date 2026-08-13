@@ -31,7 +31,12 @@ internal sealed class ModEntry : Mod
 
     public override void Entry(IModHelper helper)
     {
-        this.configManager = new ConfigManager(helper, this.Monitor);
+        this.configManager = new ConfigManager(
+            helper,
+            this.Monitor,
+            () => Context.IsWorldReady
+                ? $"player-{Game1.player.UniqueMultiplayerID}"
+                : null);
         this.automationRuntime = new AutomationRuntime(
             this.Monitor,
             () => this.configManager.Active,

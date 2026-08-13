@@ -67,6 +67,10 @@ checks still need to be observed in-game before Milestone 2 can be marked comple
 - In local split-screen, confirm a D-pad press advances exactly one config option,
   Controller Back opens the menu for the controller-owning player, and Fish Preview
   stays beside that same player's BobberBar rather than another screen's viewport.
+- In local split-screen, give the two players visibly different automation, HUD-side,
+  preview, and equipment settings. Apply each menu in either order, return to title,
+  reload, and confirm each player keeps only their own profile. Confirm the files under
+  `config.players` use stable player IDs and no Apply changes the other screen at runtime.
 
 The festival support and multiplayer-safe architecture currently present in the code
 must therefore be treated as implemented but manually unverified until the matching

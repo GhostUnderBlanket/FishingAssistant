@@ -57,7 +57,9 @@ Completed on 2026-08-13. Release verification passed with 265 automated tests.
   isolation, disabled controls, and navigation rebuilding.
 - [ ] Verify the complete menu with mouse, keyboard, and controller in fullscreen and a
   small local split-screen viewport. Include long translated labels and non-default UI
-  scale.
+  scale. Player profiles and draft revisions are now isolated by stable multiplayer ID;
+  automated tests verify cross-screen Apply cannot mutate or stale another profile.
+  In-game menu and persistence verification remains pending.
 
 All 55 user-editable configuration properties are already represented in the menu;
 `ConfigVersion` is internal and must not be exposed as an editable option.

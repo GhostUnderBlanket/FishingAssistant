@@ -20,6 +20,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   ineffective or overridden, updated immediately while editing the configuration draft.
 - Inline safety notices for active item-discard, automatic consumption, starter-rod,
   and bait/tackle spawn choices, with automated coverage for their opt-in defaults.
+- Player-scoped configuration profiles keyed by stable multiplayer ID, preventing one
+  local co-op player's Apply action from changing another player's runtime or saved
+  settings while retaining `config.json` as the legacy-compatible template.
 - Initial SMAPI project scaffold for Fishing Assistant 3.
 - Startup log confirming that the mod loaded.
 - Development roadmap and project documentation.

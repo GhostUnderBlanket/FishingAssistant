@@ -1,8 +1,17 @@
 # Configuration
 
-Fishing Assistant 3 stores its settings in SMAPI's standard `config.json`. The current
-schema version is `6`. Saved configuration, the active validated configuration, and an
-editable menu draft are treated as separate objects.
+Fishing Assistant 3 loads SMAPI's standard `config.json` as the migration-compatible
+base template. Once a player is loaded, that player's settings are stored separately in
+`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `6`.
+Saved configuration, the active validated player profile, and an editable menu draft
+are treated as separate objects.
+
+Using Stardew's stable multiplayer player ID instead of split-screen order means each
+single-player, host, farmhand, and local co-op player retains their own settings when
+screens join or leave. A player without a profile starts from a deep copy of the base
+template, preserving existing Fishing Assistant 2/3 choices without linking later
+edits back to another player. Unreadable and future-schema profile files are activated
+read-only for the session and never overwritten automatically.
 
 ## Compatibility and migration
 
@@ -92,9 +101,10 @@ removal, automatic food/fish consumption, starter rods, and bait/tackle spawning
 safe defaults remain `Stop`, disabled, or `No starter rod`, so each behavior requires an
 explicit player choice.
 
-Each open menu draft carries the configuration revision it was created from. If a
-second local split-screen player applies a newer draft first, the stale menu is asked to
-close and reopen instead of silently overwriting the other player's changes.
+Each open menu draft carries both the owning player-profile key and the revision it was
+created from. Applying one local split-screen player's draft updates only that profile
+and doesn't invalidate another player's draft. A draft is rejected if its own profile
+changed after opening or the active local player no longer matches its owner.
 
 The menu opens through `OpenConfigMenuButton`, which defaults to F6, or the `fa_config`
 SMAPI console command. Controller Back is also available as a local controller fallback
