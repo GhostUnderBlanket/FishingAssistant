@@ -36,6 +36,8 @@ internal sealed class ConfigValueSelector<T> : IMouseWheelAdjustableConfigContro
 
     public int InlineMessageRight => this.GetValueBounds().Left - 8;
 
+    public Rectangle MouseWheelBounds => this.GetValueBounds();
+
     public void ReceiveLeftClick(int x, int y)
     {
         Rectangle valueBounds = this.GetValueBounds();

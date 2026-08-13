@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Menus;
 
@@ -20,4 +21,5 @@ internal interface IConfigControl
 
 internal interface IMouseWheelAdjustableConfigControl : IConfigControl
 {
+    Rectangle MouseWheelBounds { get; }
 }

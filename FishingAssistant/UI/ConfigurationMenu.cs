@@ -185,7 +185,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
         IMouseWheelAdjustableConfigControl? selector = this.options
             .OfType<IMouseWheelAdjustableConfigControl>()
-            .FirstOrDefault(option => option.Component.bounds.Contains(mouse));
+            .FirstOrDefault(option => MouseWheelAdjustment.IsPointerOver(option.MouseWheelBounds, mouse));
         if (selector is not null)
         {
             if (this.TryUseOption(selector))

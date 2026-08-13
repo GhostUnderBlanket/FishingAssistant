@@ -22,7 +22,7 @@ public sealed class ItemPickerLayoutTests
         Assert.True(layout.CardWidth >= 1);
         Assert.True(layout.CardHeight >= 1);
         Assert.True(layout.HeaderHeight >= 52);
-        Assert.True(layout.SearchHeight >= 52);
+        Assert.True(layout.SearchHeight >= 60);
         Assert.True(layout.ContentTop > layout.Y + layout.HeaderHeight + 48);
     }
 }

@@ -10,8 +10,9 @@ namespace FishingAssistant.UI;
 
 internal sealed class JunkListMenu : IClickableMenu
 {
-    private const float CardStateScale = 0.68f;
-    private const int HeaderPanelPadding = 14;
+    private const float CardStateScale = 0.62f;
+    private const int HeaderPanelHorizontalPadding = 20;
+    private const int HeaderPanelVerticalPadding = 12;
     private const int FirstItemId = 1000;
     private const int ScrollUpId = 2000;
     private const int ScrollDownId = 2001;
@@ -300,7 +301,7 @@ internal sealed class JunkListMenu : IClickableMenu
             Game1.textColor)
         {
             X = this.layout.ContentX,
-            Y = this.layout.Y + this.layout.HeaderHeight + 8,
+            Y = this.layout.Y + this.layout.HeaderHeight + 16,
             Width = searchWidth,
             Height = 48,
             Text = this.searchText
@@ -418,16 +419,17 @@ internal sealed class JunkListMenu : IClickableMenu
         Vector2 countSize = Game1.smallFont.MeasureString(count);
         Vector2 countPosition = new(
             this.layout.X + this.layout.Width - this.layout.Padding - countSize.X,
-            this.layout.Y + 24);
+            this.layout.Y + 32);
         this.DrawHeaderPanel(batch, countPosition, countSize, Game1.smallFont.LineSpacing);
         Utility.drawTextWithShadow(batch, count, Game1.smallFont, countPosition, Game1.textColor);
 
-        float titleWidth = Math.Max(1f, countPosition.X - this.layout.ContentX - HeaderPanelPadding * 2);
+        float titleWidth = Math.Max(1f,
+            countPosition.X - this.layout.ContentX - HeaderPanelHorizontalPadding * 2);
         string title = MenuText.Fit(this.translate(this.treasureIgnoreOnly
                 ? "config.treasure_ignore_picker.title"
                 : "config.junk_picker.title"), Game1.dialogueFont, titleWidth);
         Vector2 titleSize = Game1.dialogueFont.MeasureString(title);
-        Vector2 titlePosition = new(this.layout.ContentX, this.layout.Y + 16);
+        Vector2 titlePosition = new(this.layout.ContentX, this.layout.Y + 28);
         this.DrawHeaderPanel(batch, titlePosition, titleSize, Game1.dialogueFont.LineSpacing);
         Utility.drawTextWithShadow(batch, title, Game1.dialogueFont, titlePosition, Game1.textColor);
     }
@@ -435,10 +437,10 @@ internal sealed class JunkListMenu : IClickableMenu
     private void DrawHeaderPanel(SpriteBatch batch, Vector2 position, Vector2 textSize, int lineSpacing)
     {
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
-            (int)position.X - HeaderPanelPadding,
-            (int)position.Y - 6,
-            (int)Math.Ceiling(textSize.X) + HeaderPanelPadding * 2,
-            lineSpacing + 12,
+            (int)position.X - HeaderPanelHorizontalPadding,
+            (int)position.Y - HeaderPanelVerticalPadding,
+            (int)Math.Ceiling(textSize.X) + HeaderPanelHorizontalPadding * 2,
+            lineSpacing + HeaderPanelVerticalPadding * 2,
             Color.White);
     }
 
@@ -473,7 +475,7 @@ internal sealed class JunkListMenu : IClickableMenu
         Vector2 size = Game1.smallFont.MeasureString(name);
         float nameY = state == JunkItemState.Normal
             ? bounds.Center.Y - size.Y / 2f
-            : bounds.Center.Y - size.Y;
+            : bounds.Center.Y - size.Y / 2f - 10f;
         Utility.drawTextWithShadow(batch, name, Game1.smallFont,
             new Vector2(textLeft, nameY), Game1.textColor);
 
@@ -485,7 +487,7 @@ internal sealed class JunkListMenu : IClickableMenu
             float availableWidth = Math.Max(1f, bounds.Right - textLeft - 8);
             stateLabel = MenuText.Fit(stateLabel, Game1.smallFont, availableWidth / CardStateScale);
             this.DrawScaledTextWithShadow(batch, stateLabel,
-                new Vector2(textLeft, bounds.Center.Y + 2),
+                new Vector2(textLeft, bounds.Center.Y + 7),
                 state == JunkItemState.Junk ? Color.DarkRed : Color.DarkGreen,
                 CardStateScale);
             batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
