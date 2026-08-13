@@ -473,7 +473,7 @@ internal sealed class JunkListMenu : IClickableMenu
         Vector2 size = Game1.smallFont.MeasureString(name);
         float nameY = state == JunkItemState.Normal
             ? bounds.Center.Y - size.Y / 2f
-            : bounds.Center.Y - size.Y / 2f - 10f;
+            : bounds.Center.Y - size.Y / 2f - 7f;
         Utility.drawTextWithShadow(batch, name, Game1.smallFont,
             new Vector2(textLeft, nameY), Game1.textColor);
 
@@ -485,7 +485,7 @@ internal sealed class JunkListMenu : IClickableMenu
             float availableWidth = Math.Max(1f, bounds.Right - textLeft - 8);
             stateLabel = MenuText.Fit(stateLabel, Game1.smallFont, availableWidth / CardStateScale);
             this.DrawScaledTextWithShadow(batch, stateLabel,
-                new Vector2(textLeft, bounds.Center.Y + 7),
+                new Vector2(textLeft, bounds.Center.Y + 1),
                 state == JunkItemState.Junk ? Color.DarkRed : Color.DarkGreen,
                 CardStateScale);
             batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
