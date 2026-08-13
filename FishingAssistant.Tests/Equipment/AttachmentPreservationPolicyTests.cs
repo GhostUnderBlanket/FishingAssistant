@@ -42,6 +42,19 @@ public sealed class AttachmentPreservationPolicyTests
             AttachmentPreservationPolicy.Decide(conditions));
     }
 
+    [Fact]
+    public void Decide_RestoresImmediatelyWhenInfiniteOptionsAreDisabledDuringUse()
+    {
+        AttachmentPreservationConditions conditions = new(
+            HasSnapshot: true,
+            IsSameRod: true,
+            IsRodInUse: true,
+            HasPreservableAttachment: false);
+
+        Assert.Equal(AttachmentPreservationAction.Restore,
+            AttachmentPreservationPolicy.Decide(conditions));
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]

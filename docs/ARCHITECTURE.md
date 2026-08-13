@@ -129,6 +129,13 @@ Automatic eating is a local-screen action over the owning player's inventory. A 
 policy selects food deterministically, while the game adapter starts the vanilla eat
 animation and decrements the selected stack only after the game accepts consumption.
 
+Infinite bait and tackle capture a per-screen snapshot only while the owning local
+player's rod is in use. The snapshot is restored when use ends, the rod changes, either
+infinite option is disabled, the player warps, the game saves, a peer disconnects, or
+the session returns to title. Save loading restores any surviving snapshot and removes
+tracked temporary enchantments before discarding runtime tracking, so assistant-owned
+state cannot be silently orphaned on a rod.
+
 Automatic junk disposal consumes SMAPI's local-player `InventoryChanged` delta instead
 of rescanning or removing matching inventory stacks. A pure policy requires automation,
 the opt-in setting, explicit junk membership, vanilla trashability, and the fish safety

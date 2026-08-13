@@ -25,6 +25,8 @@ Status recorded on 2026-08-12:
 - Late-night warnings and safe automation pausing have not been tested in-game yet.
 - Low-energy cast protection has not been tested in-game yet.
 - Temporary rod enchantments have not been tested in-game yet.
+- Infinite bait/tackle restoration on option disable, warp, save/load, disconnect, and
+  return to title has not been tested in-game yet.
 - Fish difficulty multiplier and additive adjustment have not been tested in-game yet.
 - Perfect catch, preferred base quality, maximum fish size, and preferred fish count
   modifiers have not been tested in-game yet.

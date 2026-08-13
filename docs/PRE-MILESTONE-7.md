@@ -111,6 +111,9 @@ not complete a compatibility case.
   inventory, including both Advanced Iridium Rod tackle slots.
 - [ ] Verify infinite attachments restore correctly after consumption, option disable,
   unequip, warp, day end, save/reload, disconnect, and return to title.
+  Automated policy coverage confirms disabling either infinite option restores an
+  in-use snapshot immediately; lifecycle handlers now restore all active-screen
+  snapshots on save load and peer removal. In-game verification remains pending.
 - [ ] Verify spawned bait/tackle remains opt-in and is never added to another player's
   inventory.
 - [ ] Verify automatic eating respects exclusions and never consumes another player's
@@ -120,6 +123,9 @@ not complete a compatibility case.
 - [ ] Verify temporary enchantments are removed before persistence and recover
   predictably after save, reconnect, remote-peer disconnect, unequip, and option
   disable.
+  Save load now removes managed enchantments before resetting tracking, and peer removal
+  removes managed enchantments from every active local screen. In-game verification
+  remains pending.
 - [ ] Add missing lifecycle and ownership tests discovered by those scenarios.
 
 Milestone 5 is cleared when save files contain no temporary attachment/enchantment

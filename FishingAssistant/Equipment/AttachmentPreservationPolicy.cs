@@ -21,7 +21,9 @@ internal static class AttachmentPreservationPolicy
 
         if (conditions.HasSnapshot)
         {
-            return !conditions.IsSameRod || !conditions.IsRodInUse
+            return !conditions.IsSameRod
+                || !conditions.IsRodInUse
+                || !conditions.HasPreservableAttachment
                 ? AttachmentPreservationAction.Restore
                 : AttachmentPreservationAction.None;
         }

@@ -153,7 +153,8 @@ internal sealed class ModEntry : Mod
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
-        this.rodEnchantments!.ResetAll();
+        this.rodEnchantments!.RemoveAllAndReset();
+        this.infiniteAttachment!.RestoreAll();
         this.infiniteAttachment!.ResetAll();
         this.automationRuntime!.ResetCurrent(AutomationTransitionReason.SaveLoaded);
         this.EnsureConfiguredStarterRod();
@@ -216,6 +217,8 @@ internal sealed class ModEntry : Mod
 
     private void OnPeerDisconnected(object? sender, PeerDisconnectedEventArgs e)
     {
+        this.infiniteAttachment!.RestoreAll();
+        this.rodEnchantments!.RemoveAllForRemoteConnection();
         this.automationRuntime!.ResetActiveScreens(AutomationTransitionReason.PeerDisconnected);
     }
 
