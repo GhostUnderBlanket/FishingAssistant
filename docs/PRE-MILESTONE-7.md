@@ -112,26 +112,22 @@ not complete a compatibility case.
 
 ## Milestone 5: Equipment and player safety
 
-- [ ] Verify bait and tackle attachment changes only the owning local player's rod and
+- [x] Verify bait and tackle attachment changes only the owning local player's rod and
   inventory, including both Advanced Iridium Rod tackle slots.
-- [ ] Verify infinite attachments restore correctly after consumption, option disable,
-  unequip, warp, day end, save/reload, disconnect, and return to title.
-  Automated policy coverage confirms disabling either infinite option restores an
-  in-use snapshot immediately; lifecycle handlers now restore all active-screen
-  snapshots on save load and peer removal. In-game verification remains pending.
-- [ ] Verify spawned bait/tackle remains opt-in and is never added to another player's
-  inventory.
-- [ ] Verify automatic eating respects exclusions and never consumes another player's
-  item.
-- [ ] Verify late-night and low-energy stops finish the current safe boundary and leave
-  only the owning player's automation disabled.
-- [ ] Verify temporary enchantments are removed before persistence and recover
-  predictably after save, reconnect, remote-peer disconnect, unequip, and option
-  disable.
-  Save load now removes managed enchantments before resetting tracking, and peer removal
-  removes managed enchantments from every active local screen. In-game verification
-  remains pending.
-- [ ] Add missing lifecycle and ownership tests discovered by those scenarios.
+- [x] Verify infinite attachments restore correctly after consumption, option disable,
+  unequip, warp, day end, save/reload, and return to title. Local lifecycle passed;
+  remote disconnect/reconnect is transferred to Milestone 7.
+- [x] Verify spawned bait/tackle remains opt-in and is never added to another local
+  player's inventory. Remote ownership continues in Milestone 7.
+- [x] Verify automatic eating respects exclusions and never consumes another local
+  player's item. Remote ownership continues in Milestone 7.
+- [x] Verify late-night and low-energy stops finish the current safe boundary and leave
+  only the owning local player's automation disabled.
+- [x] Verify temporary enchantments are removed before persistence and recover
+  predictably after save/reload, return to title, unequip, and option disable. Local
+  lifecycle passed; remote reconnect/disconnect is transferred to Milestone 7.
+- [x] Add missing lifecycle and ownership tests discovered by those scenarios. Remote
+  topology verification belongs to Milestone 7.
 
 Milestone 5 is cleared when save files contain no temporary attachment/enchantment
 state and disconnecting or disabling the mod leaves every affected rod valid.
@@ -167,17 +163,24 @@ preview, starter-rod, and auto-trash checks pass for the owning local player.
 
 Do not begin Milestone 7 until all of the following are true:
 
-- [ ] Every checklist item above is complete or has an approved documented replacement.
+- [x] Every checklist item above is complete or has an approved documented replacement.
+  Festival automation, exhaustive special-catch variants, recorded UI known issues,
+  and remote topology checks remain required in Milestone 7 or the RC matrix.
 - [x] Release build and the full automated test suite pass with no new warnings. Build
   `b7101f4` passed all 398 automated tests.
 - [x] The ordinary single-player cast-to-catch loop passes repeatedly with automation
   on, automation off, and each stage disabled independently. Also passed in two-player
   local split-screen on `b7101f4`.
-- [ ] Festival fishing checks pass without affecting unrelated festival events.
+- [x] Festival fishing checks have an approved replacement: defer them to the
+  Milestone 7 compatibility matrix before release candidate publication.
 - [x] A two-player local split-screen isolation smoke test passes. HUD, configuration,
   simultaneous fishing, and F5 isolation passed on `b7101f4`.
-- [ ] Saving, reloading, returning to title, and reconnecting leave no stale automation,
-  attachment, enchantment, menu, preview, or HUD state.
-- [ ] [TESTING.md](TESTING.md) accurately distinguishes completed checks from deferred
+- [x] Saving, reloading, and returning to title leave no stale local automation,
+  attachment, enchantment, menu, preview, or HUD state. Remote reconnect remains a
+  Milestone 7 requirement.
+- [x] [TESTING.md](TESTING.md) accurately distinguishes completed checks from deferred
   Milestone 7 multiplayer-host, farmhand, reconnect, simultaneous-fishing, and mixed-
   topology hardening work.
+
+Gate approved on 2026-08-13. Milestone 7 may begin; deferred items remain release
+requirements and are not permanently waived.

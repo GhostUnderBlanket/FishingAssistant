@@ -25,22 +25,20 @@ Status updated on 2026-08-13:
   disable check; partial stacks, multiple rewards, and every full-inventory outcome
   remain untested.
 - Fishing-minigame skipping has not been tested in-game yet.
-- Automatic bait attachment and refill has not been tested in-game yet.
-- Automatic tackle attachment has not been tested in-game yet.
-- Infinite bait and tackle preservation has not been tested in-game yet.
-- Automatic food selection and eating has not been tested in-game yet.
-- Late-night warnings and safe automation pausing have not been tested in-game yet.
-- Low-energy cast protection has not been tested in-game yet.
-- Temporary rod enchantments have not been tested in-game yet.
-- Infinite bait/tackle restoration on option disable, warp, save/load, disconnect, and
-  return to title has not been tested in-game yet.
+- Automatic bait/tackle attachment, refill, opt-in spawning, food selection/eating,
+  late-night boundaries, and low-energy protection passed in single-player and local
+  split-screen. Remote ownership checks remain Milestone 7 work.
+- Infinite attachment and temporary-enchantment consumption, option-disable, unequip,
+  warp, day-end, save/reload, and return-to-title checks passed locally. Remote
+  disconnect/reconnect remains Milestone 7 work.
 - Fish difficulty multiplier and additive adjustment have not been tested in-game yet.
 - Perfect catch, preferred base quality, maximum fish size, and preferred fish count
   modifiers have not been tested in-game yet.
 - Fish preview visibility, responsive placement, and reveal options have not been
   tested in-game yet.
-- Automatic junk disposal and its stack-delta safeguards have not been tested in-game
-  yet.
+- Automatic junk disposal, protected items, fish opt-in, stack-delta safeguards, and
+  full-inventory Stop/Drop/Discard behavior passed locally. Remote ownership checks
+  remain Milestone 7 work.
 - The visual automation status HUD and toolbar-relative placement passed the documented
   single-player/local split-screen matrix on build `b7101f4`.
 - Local split-screen/co-op passed the scoped HUD, configuration-profile, and ordinary
@@ -68,6 +66,15 @@ Environment: Stardew Valley 1.6.15, SMAPI 4.5.2, Fishing Assistant
   and treasure handling. The cast already in progress completed through Vanilla, later
   automatic stages stayed off, re-enabling resumed automation, fishing audio did not
   stick, and toggling one local player did not interrupt or enable the other.
+- Equipment and inventory safety passed with both local players: bait/tackle attachment
+  and spawning changed only the owning rod/inventory, including both Advanced Iridium
+  Rod tackle slots; auto-eat and auto-trash changed only the owning inventory.
+- Infinite bait/tackle and temporary enchantments restored or were removed through the
+  tested local lifecycle without loss, duplication, cross-player state, or persistence.
+  Starter rod, low-energy/late-night boundaries, basic catch modifiers, and local
+  save/reload/return-to-title cleanup also passed.
+- Fishing-festival automation and unrelated-festival isolation were deliberately
+  deferred. Remote host/farmhand disconnect and reconnect remain Milestone 7 work.
 
 ## Pending configuration-menu checks
 

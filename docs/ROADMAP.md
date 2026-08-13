@@ -203,6 +203,11 @@ Before beginning this milestone, complete the
 recovery, UI, documentation, and baseline in-game verification gaps found during the
 Milestones 1 through 6 audit.
 
+The gate was approved on 2026-08-13 after the local safety baseline passed. Fishing
+festival compatibility, exhaustive special-catch variants, remote reconnect behavior,
+and the two recorded UI known issues were deliberately transferred into Milestone 7 or
+the release-candidate matrix; they remain required before publication.
+
 Goal: validate every retained feature in all supported play modes rather than treating
 multiplayer as a late compatibility patch.
 
