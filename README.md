@@ -3,8 +3,9 @@
 Fishing Assistant 3 is a complete rewrite of Fishing Assistant 2, a configurable
 fishing automation and assistance mod for Stardew Valley.
 
-The project is currently in early alpha development. It isn't ready for normal gameplay
-or migration from Fishing Assistant 2 yet.
+The project is currently in beta. Its core single-player and local split-screen
+behavior is usable, but remote multiplayer compatibility, deferred festival cases, and
+the remaining known issues still need verification before the release candidate.
 
 ## Goals
 
@@ -15,23 +16,16 @@ or migration from Fishing Assistant 2 yet.
 - Preserve existing configuration where practical while fixing unsafe legacy behavior.
 - Add new assistance options without taking control away from the player.
 
-See the [development roadmap](docs/ROADMAP.md) for the planned milestones, the
-[Pre-Milestone 7 remediation checklist](docs/PRE-MILESTONE-7.md) for the current audit
-gate, and [testing status](docs/TESTING.md) for scenarios which have actually been
-verified in-game.
+See the [development roadmap](docs/ROADMAP.md), [testing status](docs/TESTING.md), and
+[known issues](docs/KNOWN-ISSUES.md) for the remaining beta work.
 
 ## Current status
 
-The mod currently contains the SMAPI project scaffold, a typed and validated
-configuration layer, a complete first pass of its custom configuration menu, and the
-first runtime automation slices. The menu can edit every setting through a safe draft.
-Per-screen runtime sessions can be toggled independently, observe the current fishing
-phase, display automation through a compact visual HUD,
-automatically cast toward validated fishing water
-after a configurable delay, hook a fish when a real nibble occurs, and steer the vanilla
-fishing bar toward the fish. Other gameplay automation stages are not connected yet.
-The assistant also closes each normal catch popup after a short viewing delay when
-that automation stage is enabled.
+The beta contains the complete core cast-to-catch automation loop, a custom in-game
+configuration menu, per-player configuration and runtime state, a compact visual HUD,
+and independently configurable casting, hooking, minigame, catch-popup, and treasure
+handling. Automation Profiles provide Relaxed, Training, Manual+, and Custom starting
+points.
 Treasure targeting is a saved configuration option and defaults to off.
 Normal and golden treasure chance overrides are functional outside festival minigames.
 The optional instant-treasure rule captures a fishing chest as soon as it has fully
@@ -77,6 +71,11 @@ Automatic junk disposal now uses the visual junk and protected-item lists while 
 player's automation is enabled. It removes only the quantity received by the latest
 inventory change, never an older matching stack, and refuses to discard fish unless
 the separate fish safeguard is enabled.
+Automatic treasure collection supports a visual Treasure Chest Ignore List and a
+configurable action when only ignored rewards remain. Manual and automatic casts can
+steer toward a reachable fishing bubble without moving the player or extending the
+cast; automatic casts can reuse cast power selected manually during the current
+session.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

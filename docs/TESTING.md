@@ -7,6 +7,10 @@ tests and successful builds do not count as in-game verification.
 
 Status updated on 2026-08-13:
 
+- The project has entered `3.0.0-beta.1`. Beta status means the planned core and
+  approved Milestone 8 feature set is implemented; it does not mark the pending remote
+  multiplayer, festival, special-catch, or known-issue checks as passed.
+
 - Single-player and two-player local split-screen testing has now been completed for
   the HUD matrix, player-scoped configuration, and ordinary cast-to-catch automation.
   Multiplayer host/farmhand and mixed split-screen multiplayer remain untested.

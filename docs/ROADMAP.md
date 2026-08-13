@@ -30,6 +30,10 @@ Planned version stages:
 | `3.0.0-rc.*` | Release candidate; bug fixes, translations, packaging, and documentation only. |
 | `3.0.0` | Public release. |
 
+The project entered `3.0.0-beta.1` on 2026-08-13 after the core loop, local safety
+baseline, and the three approved Milestone 8 features were implemented. Remote
+multiplayer hardening and the full release matrix remain beta requirements.
+
 ## Milestone 0: Project foundation
 
 Goal: establish a predictable build, architecture, and release baseline before adding
@@ -233,7 +237,7 @@ Exit criteria:
 
 Goal: add new value only after parity behavior is stable.
 
-Candidate features, subject to separate design approval:
+Implemented for the first beta:
 
 - Treasure Chest Ignore List: visually select rewards that automatic treasure looting
   leaves behind, then choose whether an ignored-only chest stays open, drops its
@@ -245,6 +249,8 @@ Candidate features, subject to separate design approval:
   minigame to the player, Manual+ enables preview and quality-of-life assistance, and
   Custom preserves individually edited values. This follows bubble steering so the
   new automation option can be included in the profile mapping once.
+
+Deferred candidates for a later version:
 - Context-aware pause rules for stamina, time, inventory capacity, weather, festivals,
   player movement, and nearby hazards.
 - Session statistics: casts, catches, perfect catches, treasure, time spent, and stop

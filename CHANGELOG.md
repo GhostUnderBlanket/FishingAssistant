@@ -7,6 +7,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.0-beta.1] - 2026-08-13
+
 ### Added
 
 - Controller Back can open the configuration menu from the world as a fallback for
@@ -103,6 +105,13 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   contents, requires explicit permission for fish, and honors vanilla trashability.
 - Instant fishing-treasure capture once a chest has fully appeared, including skipped
   minigames while preserving festival treasure rules.
+- A visual Treasure Chest Ignore List with configurable keep-open, drop, and discard
+  behavior when only ignored rewards remain.
+- Automatic Bubble Steering for reachable fishing bubbles during manual and automatic
+  casts, without moving the player or extending cast range.
+- Relaxed, Training, Manual+, and Custom Automation Profiles.
+- Session cast-power learning for subsequent automatic casts and a debug command for
+  creating a reachable fishing bubble.
 
 ### Changed
 
@@ -142,3 +151,5 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   share one consistent visual scale.
 - Automatic casting now recognizes that the Efficient enchantment and event-controlled
   fishing casts do not consume player stamina.
+- Bubble steering now targets the nearest point inside the bubble tile, matching the
+  full reach available through Vanilla sideways steering.
