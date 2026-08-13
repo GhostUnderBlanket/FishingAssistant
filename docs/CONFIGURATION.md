@@ -62,6 +62,15 @@ inventory, food, equipment, or keybind settings.
 Schema version 10 extends bubble steering to automatic casts. Relaxed and Training
 profiles enable it; Custom profiles retain the player's explicit choice.
 
+`UnlockCastPowerTime` retains its Fishing Assistant 2 behavior for manual casts while
+using a fresh state-scoped implementation. At `0`, manual casts use vanilla power
+control immediately. From `0.1` through `2.9` seconds, the cast stays at
+`DefaultCastPower` until the hold time elapses, then the vanilla oscillating power bar
+resumes. At `3`, the configured power remains locked for the entire manual cast.
+Automatic casts always use `DefaultCastPower` and don't consume this timer. The timer
+is isolated per local screen and resets between casts, tool changes, warps, saves, and
+other automation lifecycle resets.
+
 The migration test fixture contains every public Fishing Assistant 2 configuration
 property. It verifies that every still-supported non-default choice survives and that
 both retired choices are reported deliberately.

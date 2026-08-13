@@ -43,6 +43,7 @@ internal sealed class AutomationRuntime(
             return;
         this.Log(this.lateNight.UpdateCurrent(getConfig(), screen.Session));
         this.autoEat.UpdateCurrent(getConfig(), screen.Session);
+        this.UpdateManualCastPower(screen);
         this.UpdateLowEnergyStop(screen);
         this.UpdateBubbleSteering(screen);
         this.UpdateInstantBite();
@@ -205,6 +206,30 @@ internal sealed class AutomationRuntime(
                 screen.Pending.AutomaticCastInProgress = true;
                 rod.BeginAutomaticCast(config.DefaultCastPower);
                 monitor.Log($"Started an automatic cast for local screen {Context.ScreenId}.", LogLevel.Trace);
+                break;
+        }
+    }
+
+    private void UpdateManualCastPower(AutomationScreenState screen)
+    {
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        ModConfig config = getConfig();
+        ManualCastPowerDecision decision = ManualCastPowerPolicy.Decide(
+            rod?.IsTimingCast == true,
+            screen.Pending.AutomaticCastInProgress,
+            screen.Pending.ManualCastPowerTicks,
+            config.UnlockCastPowerTime);
+
+        switch (decision)
+        {
+            case ManualCastPowerDecision.Reset:
+            case ManualCastPowerDecision.UseVanilla:
+                if (decision == ManualCastPowerDecision.Reset)
+                    screen.Pending.ManualCastPowerTicks = 0;
+                break;
+            case ManualCastPowerDecision.HoldConfiguredPower:
+                rod!.SetCastPower(config.DefaultCastPower);
+                screen.Pending.ManualCastPowerTicks++;
                 break;
         }
     }

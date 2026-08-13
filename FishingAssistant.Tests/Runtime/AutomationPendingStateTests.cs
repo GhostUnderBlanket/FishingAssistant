@@ -11,6 +11,7 @@ public sealed class AutomationPendingStateTests
         {
             ReadyTicks = 42,
             AutomaticCastInProgress = true,
+            ManualCastPowerTicks = 45,
             HookAttemptedForNibble = true,
             IsPursuingTreasure = true,
             ConfiguredBobberBar = new object(),
@@ -24,6 +25,7 @@ public sealed class AutomationPendingStateTests
 
         Assert.Equal(0, state.ReadyTicks);
         Assert.False(state.AutomaticCastInProgress);
+        Assert.Equal(0, state.ManualCastPowerTicks);
         Assert.False(state.HookAttemptedForNibble);
         Assert.False(state.IsPursuingTreasure);
         Assert.Null(state.ConfiguredBobberBar);

@@ -1,4 +1,5 @@
 using FishingAssistant.Configuration;
+using FishingAssistant.Fishing;
 using FishingAssistant.UI.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -665,7 +666,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => $"{value:0.##}s");
                 this.AddNumberDefinition("unlock_cast_time", () => this.session.Draft.UnlockCastPowerTime,
                     value => this.session.Draft.UnlockCastPowerTime = (float)value, 0, 3, 0.1,
-                    value => $"{value:0.0}s");
+                    value => value switch
+                    {
+                        <= 0 => this.translate("config.value.instant_unlock"),
+                        >= ManualCastPowerPolicy.NeverUnlockSeconds => this.translate("config.value.never_unlock"),
+                        _ => string.Format(this.translate("config.value.seconds"), value)
+                    });
                 this.AddItemDefinition("starter_rod", ConfigItemKind.FishingRod, "None",
                     () => this.session.Draft.StartWithFishingRod,
                     value => this.session.Draft.StartWithFishingRod = value,
