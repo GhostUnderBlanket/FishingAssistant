@@ -175,6 +175,10 @@ release-matrix scenarios are completed.
   only that screen's session and remains inside its viewport.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
   both players fishing simultaneously.
+- During an automatic cast, interrupt with a menu, tool swap, warp, save, return to
+  title, and local-player removal. Confirm the rod returns to Vanilla control, the next
+  session starts cleanly, and removing either split-screen player leaves no stale HUD or
+  automated input on the remaining screen.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.
 - Inspect the SMAPI log after each scenario for errors, recoveries, duplicated input,
   or cross-player state leakage.

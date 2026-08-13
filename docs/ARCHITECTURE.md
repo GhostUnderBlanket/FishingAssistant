@@ -63,6 +63,15 @@ pure policy and a narrow rod adapter; it does not send multiplayer messages or m
 shared-world state directly. Automatic hooking uses the same boundary and a per-screen
 latch so one nibble can trigger at most one automated hook attempt.
 
+All transient automation data for a local screen lives in one `AutomationScreenState`:
+the session, observed tool, automatic-action latches, configured minigame identity, and
+treasure-loot progress. Lifecycle cancellation clears that entire bundle before resetting
+or disabling the session. Tool replacement, warp, day start, save load, saving, menu
+interruption, timeout, return to title, and peer removal use this common path. A peer
+disconnect resets every active screen while preserving each session's enabled/disabled
+choice because a removed split-screen peer may no longer be addressable as the current
+`PerScreen` value.
+
 The status HUD is local-screen visual state rather than localized prose. Its compact,
 background-free footprint uses the current fishing rod's Vanilla item sprite, falling
 back to the Advanced Iridium Rod, with a dark drop shadow for contrast. The rod keeps

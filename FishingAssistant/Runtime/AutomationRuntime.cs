@@ -13,7 +13,7 @@ internal sealed class AutomationRuntime(
     Func<ModConfig> getConfig,
     Func<string, string> translate)
 {
-    private readonly PerScreen<ScreenContext> screens = new(() => new ScreenContext());
+    private readonly PerScreen<AutomationScreenState> screens = new(() => new AutomationScreenState());
     private readonly AutoEatService autoEat = new(monitor, translate);
     private readonly LateNightService lateNight = new(monitor, translate);
 
@@ -24,7 +24,7 @@ internal sealed class AutomationRuntime(
         if (!Context.IsWorldReady)
             return;
 
-        ScreenContext screen = this.screens.Value;
+        AutomationScreenState screen = this.screens.Value;
         Tool? currentTool = Game1.player.CurrentTool;
         if (screen.HasObservedTool && !ReferenceEquals(screen.LastTool, currentTool))
             this.CancelPendingActions(screen, AutomationTransitionReason.ToolChanged, disable: false);
@@ -54,9 +54,9 @@ internal sealed class AutomationRuntime(
 
     public void ToggleCurrent()
     {
-        ScreenContext screen = this.screens.Value;
+        AutomationScreenState screen = this.screens.Value;
         if (screen.Session.IsEnabled)
-            this.ClearPendingActions(screen, cancelAutomaticCast: true);
+            this.CancelPendingActions(screen, AutomationTransitionReason.Disabled, disable: false);
         AutomationTransition transition = screen.Session.Toggle();
         this.autoEat.ResetCurrent();
         monitor.Log(
@@ -72,10 +72,9 @@ internal sealed class AutomationRuntime(
 
     public void ResetCurrent(AutomationTransitionReason reason)
     {
-        ScreenContext screen = this.screens.Value;
+        AutomationScreenState screen = this.screens.Value;
         this.CancelPendingActions(screen, reason, disable: false);
-        screen.HasObservedTool = false;
-        screen.LastTool = null;
+        screen.ResetObservedTool();
         this.autoEat.ResetCurrent();
         if (reason is AutomationTransitionReason.DayStarted or AutomationTransitionReason.SaveLoaded)
             this.lateNight.ResetCurrent();
@@ -83,14 +82,19 @@ internal sealed class AutomationRuntime(
 
     public void ResetAll(AutomationTransitionReason reason)
     {
-        foreach (ScreenContext screen in this.screens.GetActiveValues().Select(pair => pair.Value))
+        this.ResetActiveScreens(reason);
+        this.screens.ResetAllScreens();
+    }
+
+    public void ResetActiveScreens(AutomationTransitionReason reason)
+    {
+        foreach (AutomationScreenState screen in this.screens.GetActiveValues().Select(pair => pair.Value))
         {
-            this.ClearPendingActions(screen, cancelAutomaticCast: false);
-            screen.Session.Reset(reason);
+            this.Log(screen.Cancel(reason, disable: false));
+            screen.ResetObservedTool();
         }
         this.autoEat.ResetAll();
         this.lateNight.ResetAll();
-        this.screens.ResetAllScreens();
     }
 
     private void Log(AutomationTransition? transition)
@@ -104,7 +108,7 @@ internal sealed class AutomationRuntime(
             transition.WasRecovery ? LogLevel.Debug : LogLevel.Trace);
     }
 
-    private bool UpdateRecoveryTimeout(ScreenContext screen)
+    private bool UpdateRecoveryTimeout(AutomationScreenState screen)
     {
         PendingAutomationAction action = AutomationRecoveryPolicy.GetPendingAction(
             this.GetRecoveryConditions(screen));
@@ -135,7 +139,7 @@ internal sealed class AutomationRuntime(
         return true;
     }
 
-    private AutomationRecoveryConditions GetRecoveryConditions(ScreenContext screen)
+    private AutomationRecoveryConditions GetRecoveryConditions(AutomationScreenState screen)
     {
         return new AutomationRecoveryConditions(
             screen.Session.State,
@@ -145,31 +149,17 @@ internal sealed class AutomationRuntime(
     }
 
     private void CancelPendingActions(
-        ScreenContext screen,
+        AutomationScreenState screen,
         AutomationTransitionReason reason,
         bool disable)
     {
-        if (!AutomationLifecyclePolicy.CancelsPendingWork(reason))
-            throw new ArgumentOutOfRangeException(nameof(reason), reason, "Reason doesn't cancel pending work.");
-
-        this.ClearPendingActions(screen, cancelAutomaticCast: true);
-        this.autoEat.ResetCurrent();
-        AutomationTransition? transition = disable
-            ? screen.Session.Disable(reason)
-            : screen.Session.Reset(reason);
-        this.Log(transition);
-    }
-
-    private void ClearPendingActions(ScreenContext screen, bool cancelAutomaticCast)
-    {
-        if (cancelAutomaticCast && screen.Pending.AutomaticCastInProgress)
+        if (screen.Pending.AutomaticCastInProgress)
             FishingRodAdapter.ForCurrentPlayer()?.CancelAutomaticCast();
-
-        screen.Pending.Clear();
-        this.ResetTreasureLoot(screen);
+        this.autoEat.ResetCurrent();
+        this.Log(screen.Cancel(reason, disable));
     }
 
-    private void UpdateAutomaticCast(ScreenContext screen)
+    private void UpdateAutomaticCast(AutomationScreenState screen)
     {
         ModConfig config = getConfig();
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
@@ -220,7 +210,7 @@ internal sealed class AutomationRuntime(
         }
     }
 
-    private void UpdateLowEnergyStop(ScreenContext screen)
+    private void UpdateLowEnergyStop(AutomationScreenState screen)
     {
         ModConfig config = getConfig();
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
@@ -247,7 +237,7 @@ internal sealed class AutomationRuntime(
         this.Log(screen.Session.Disable(AutomationTransitionReason.LowEnergy));
     }
 
-    private void UpdateAutomaticHook(ScreenContext screen)
+    private void UpdateAutomaticHook(AutomationScreenState screen)
     {
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         if (rod is null)
@@ -293,7 +283,7 @@ internal sealed class AutomationRuntime(
         monitor.Log($"Triggered an instant fish bite for local screen {Context.ScreenId}.", LogLevel.Trace);
     }
 
-    private void UpdateAutomaticCatchPopup(ScreenContext screen)
+    private void UpdateAutomaticCatchPopup(AutomationScreenState screen)
     {
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         if (rod is null)
@@ -329,7 +319,7 @@ internal sealed class AutomationRuntime(
         }
     }
 
-    private void UpdateAutomaticMinigame(ScreenContext screen)
+    private void UpdateAutomaticMinigame(AutomationScreenState screen)
     {
         BobberBarAdapter? bar = BobberBarAdapter.ForCurrentScreen();
         if (bar is null)
@@ -386,7 +376,7 @@ internal sealed class AutomationRuntime(
             bar.SetBarSpeed(decision.BarSpeed);
     }
 
-    private bool TrySkipMinigame(ScreenContext screen, BobberBarAdapter bar, ModConfig config)
+    private bool TrySkipMinigame(AutomationScreenState screen, BobberBarAdapter bar, ModConfig config)
     {
         SkipMinigameDecision decision = SkipMinigamePolicy.Decide(
             bar.ReadSkipMinigameConditions(config.SkipFishingMiniGame));
@@ -403,7 +393,7 @@ internal sealed class AutomationRuntime(
         return true;
     }
 
-    private void UpdateAutomaticTreasureLoot(ScreenContext screen)
+    private void UpdateAutomaticTreasureLoot(AutomationScreenState screen)
     {
         FishingTreasureMenuAdapter? menu = FishingTreasureMenuAdapter.ForCurrentScreen();
         if (menu is null)
@@ -464,7 +454,7 @@ internal sealed class AutomationRuntime(
         }
     }
 
-    private void CollectNextTreasureItem(ScreenContext screen, FishingTreasureMenuAdapter menu)
+    private void CollectNextTreasureItem(AutomationScreenState screen, FishingTreasureMenuAdapter menu)
     {
         TreasureCollectResult result = menu.TryCollectNext(screen.BlockedTreasureItems);
         screen.TreasureLootElapsedTicks = 0;
@@ -476,7 +466,7 @@ internal sealed class AutomationRuntime(
         }
     }
 
-    private void StopForFullInventory(ScreenContext screen, string messageKey)
+    private void StopForFullInventory(AutomationScreenState screen, string messageKey)
     {
         screen.TreasureCollectionStopped = true;
         Game1.addHUDMessage(new HUDMessage(translate(messageKey), HUDMessage.error_type));
@@ -490,33 +480,8 @@ internal sealed class AutomationRuntime(
                     "couldn't accept the remaining treasure.", LogLevel.Warn);
     }
 
-    private void ResetTreasureLoot(ScreenContext screen)
+    private void ResetTreasureLoot(AutomationScreenState screen)
     {
-        screen.TreasureMenuIdentity = null;
-        screen.TreasureLootElapsedTicks = 0;
-        screen.TreasureLootRequiredTicks = TreasureLootPolicy.InitialDelayTicks;
-        screen.TreasureCollectionStopped = false;
-        screen.BlockedTreasureItems.Clear();
-    }
-
-    private sealed class ScreenContext
-    {
-        public AutomationSession Session { get; } = new();
-
-        public Tool? LastTool { get; set; }
-
-        public bool HasObservedTool { get; set; }
-
-        public AutomationPendingState Pending { get; } = new();
-
-        public object? TreasureMenuIdentity { get; set; }
-
-        public int TreasureLootElapsedTicks { get; set; }
-
-        public int TreasureLootRequiredTicks { get; set; } = TreasureLootPolicy.InitialDelayTicks;
-
-        public bool TreasureCollectionStopped { get; set; }
-
-        public HashSet<Item> BlockedTreasureItems { get; } = new(ReferenceEqualityComparer.Instance);
+        screen.ResetTreasureLoot();
     }
 }

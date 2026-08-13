@@ -71,13 +71,16 @@ All 55 user-editable configuration properties are already represented in the men
   unexpected game transition.
 - [x] Add an explicit cancellation path which stops pending automatic actions and
   returns the rod/player input state to vanilla control.
-- [ ] Reset or safely transfer per-screen state on menu interruption, save unload,
+- [x] Reset or safely transfer per-screen state on menu interruption, save unload,
   peer disconnect, local-player removal, and every existing warp/day/title/tool-change
-  path.
+  path. Peer disconnect resets all active screen bundles so removed split-screen state
+  cannot remain orphaned.
 - [x] Add event routing for lifecycle cases not currently observed, including remote
   peer disconnection where service behavior depends on remote-player presence.
-- [ ] Add recovery tests for cancellation during cast timing, unexpected menus, timeout,
+- [x] Add recovery tests for cancellation during cast timing, unexpected menus, timeout,
   tool replacement, warp, save/load, return to title, disconnect, and screen removal.
+  Focused state-bundle tests verify every reason clears cast, hook, popup, minigame, and
+  treasure state; timeout additionally disables only the affected session.
 - [ ] Verify two local split-screen players can enable, disable, interrupt, and resume
   independent automation sessions without sharing state or input.
 
@@ -123,7 +126,7 @@ state and disconnecting or disabling the mod leaves every affected rod valid.
 ## Milestone 6: Catch rules, preview, and HUD
 
 - [x] Make the visual HUD communicate the pause reason and exceptional runtime state.
-  The renderer now maps each local session's `LastReason` to a compact pixel badge.
+  The renderer now maps each local session's `LastReason` to an animated Vanilla emote.
 - [x] Ensure low-energy and late-night pauses have a distinct visual result instead of
   becoming indistinguishable from ordinary disabled/idle state.
 - [ ] Define and test HUD behavior while menus are open and at non-default UI scales,

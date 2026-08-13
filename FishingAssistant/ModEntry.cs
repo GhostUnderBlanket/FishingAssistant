@@ -216,8 +216,7 @@ internal sealed class ModEntry : Mod
 
     private void OnPeerDisconnected(object? sender, PeerDisconnectedEventArgs e)
     {
-        if (!e.Peer.IsSplitScreen)
-            this.automationRuntime!.ResetCurrent(AutomationTransitionReason.PeerDisconnected);
+        this.automationRuntime!.ResetActiveScreens(AutomationTransitionReason.PeerDisconnected);
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
