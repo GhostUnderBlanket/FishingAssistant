@@ -1,6 +1,6 @@
 # Fishing Assistant 3 Release-Candidate Gate
 
-This checklist defines the work required to promote `3.0.0-beta.1` to
+This checklist defines the work required to promote `3.0.0-beta.2` to
 `3.0.0-rc.1`. Version 3.0 is feature-frozen: new gameplay ideas move to 3.1 unless a
 change is required to prevent crashes, item loss or duplication, cross-player state
 leaks, stuck automation, or a misleading release experience.
