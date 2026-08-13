@@ -6,19 +6,67 @@ namespace FishingAssistant.Tests.UI;
 public sealed class InlineConfigValidationTests
 {
     [Fact]
-    public void Evaluate_ReturnsNoMessagesForCompatibleSettings()
+    public void Evaluate_ReturnsNoMessagesForSafeDefaults()
     {
-        ModConfig config = new()
-        {
-            AutoAttachBait = true,
-            SpawnBaitIfDontHave = true,
-            AutoAttachTackles = true,
-            SpawnTackleIfDontHave = true,
-            AutoPlayMiniGame = true,
-            SkipFishingMiniGame = SkipMinigameBehavior.Off
-        };
+        ModConfig config = new();
 
         Assert.Empty(InlineConfigValidation.Evaluate(config));
+    }
+
+    [Theory]
+    [InlineData((int)InventoryFullAction.Discard, "inventory_full_action", "config.warning.inventory_discard")]
+    public void Evaluate_AttachesDestructiveInventoryActionMessage(
+        int action,
+        string optionKey,
+        string translationKey)
+    {
+        ModConfig config = new() { ActionIfInventoryFull = (InventoryFullAction)action };
+
+        InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
+
+        Assert.Equal(optionKey, message.OptionKey);
+        Assert.Equal(translationKey, message.TranslationKey);
+    }
+
+    [Theory]
+    [InlineData("auto_trash", "config.warning.auto_trash")]
+    [InlineData("trash_fish", "config.warning.trash_fish")]
+    [InlineData("auto_eat", "config.warning.auto_eat")]
+    [InlineData("eat_fish", "config.warning.eat_fish")]
+    public void Evaluate_AttachesOptInConsumptionMessage(string optionKey, string translationKey)
+    {
+        ModConfig config = new();
+        switch (optionKey)
+        {
+            case "auto_trash":
+                config.AutoTrashJunk = true;
+                break;
+            case "trash_fish":
+                config.AllowTrashFish = true;
+                break;
+            case "auto_eat":
+                config.AutoEatFood = true;
+                break;
+            case "eat_fish":
+                config.AllowEatingFish = true;
+                break;
+        }
+
+        InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
+
+        Assert.Equal(optionKey, message.OptionKey);
+        Assert.Equal(translationKey, message.TranslationKey);
+    }
+
+    [Fact]
+    public void Evaluate_AttachesFreeItemMessageToSelectedStarterRod()
+    {
+        ModConfig config = new() { StartWithFishingRod = "(T)IridiumRod" };
+
+        InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
+
+        Assert.Equal("starter_rod", message.OptionKey);
+        Assert.Equal("config.warning.starter_rod_free", message.TranslationKey);
     }
 
     [Fact]
@@ -37,6 +85,21 @@ public sealed class InlineConfigValidationTests
     }
 
     [Fact]
+    public void Evaluate_AttachesBaitCheatMessageWhenDependencyIsEnabled()
+    {
+        ModConfig config = new()
+        {
+            AutoAttachBait = true,
+            SpawnBaitIfDontHave = true
+        };
+
+        InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
+
+        Assert.Equal("spawn_bait", message.OptionKey);
+        Assert.Equal("config.warning.spawn_bait_cheat", message.TranslationKey);
+    }
+
+    [Fact]
     public void Evaluate_AttachesTackleDependencyMessageToSpawnOption()
     {
         ModConfig config = new()
@@ -49,6 +112,21 @@ public sealed class InlineConfigValidationTests
 
         Assert.Equal("spawn_tackle", message.OptionKey);
         Assert.Equal("config.warning.spawn_tackle_requires_attach", message.TranslationKey);
+    }
+
+    [Fact]
+    public void Evaluate_AttachesTackleCheatMessageWhenDependencyIsEnabled()
+    {
+        ModConfig config = new()
+        {
+            AutoAttachTackles = true,
+            SpawnTackleIfDontHave = true
+        };
+
+        InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
+
+        Assert.Equal("spawn_tackle", message.OptionKey);
+        Assert.Equal("config.warning.spawn_tackle_cheat", message.TranslationKey);
     }
 
     [Fact]

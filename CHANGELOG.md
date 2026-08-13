@@ -18,6 +18,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   temporary rod enchantment controls are disabled while remote players are connected.
 - Small colored validation descriptions beneath settings whose dependencies make them
   ineffective or overridden, updated immediately while editing the configuration draft.
+- Inline safety notices for active item-discard, automatic consumption, starter-rod,
+  and bait/tackle spawn choices, with automated coverage for their opt-in defaults.
 - Initial SMAPI project scaffold for Fishing Assistant 3.
 - Startup log confirming that the mod loaded.
 - Development roadmap and project documentation.

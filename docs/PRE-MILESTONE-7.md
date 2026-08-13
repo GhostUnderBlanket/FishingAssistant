@@ -146,8 +146,10 @@ state and disconnecting or disabling the mod leaves every affected rod valid.
 - [ ] Verify difficulty, bite timing, treasure chances, perfect catch, quality, size,
   multi-catch, fish preview, starter rod, and auto-trash behavior in Stardew Valley
   1.6.15.
-- [ ] Verify potentially destructive behavior remains opt-in and clearly explained in
-  the configuration menu.
+- [x] Verify potentially destructive behavior remains opt-in and clearly explained in
+  the configuration menu. Safe defaults are covered by automated tests, and active
+  discard, junk removal, food/fish consumption, starter-rod, and bait/tackle spawn
+  choices now show field-level notices without blocking edits.
 
 Milestone 6 is cleared when catch modifiers match documented 1.6.15 behavior and HUD,
 preview, starter-rod, and auto-trash checks pass for the owning local player.

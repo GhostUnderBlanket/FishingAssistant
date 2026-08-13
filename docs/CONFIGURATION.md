@@ -86,6 +86,12 @@ omitted: option descriptions are available as hover/controller tooltips, while w
 and unavailable reasons appear inline beneath only the controls they affect. This keeps
 the editable control visible in small and split-screen viewports.
 
+Destructive and free-item choices also receive an immediate inline notice whenever they
+are selected. This covers permanently discarding full-inventory treasure, automatic junk
+removal, automatic food/fish consumption, starter rods, and bait/tackle spawning. Their
+safe defaults remain `Stop`, disabled, or `No starter rod`, so each behavior requires an
+explicit player choice.
+
 Each open menu draft carries the configuration revision it was created from. If a
 second local split-screen player applies a newer draft first, the stale menu is asked to
 close and reopen instead of silently overwriting the other player's changes.
