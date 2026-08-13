@@ -124,6 +124,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Clear Vanilla's residual in-flight bobber flag when F5 cancels an automatic cast, so
+  re-enabling Automation returns to `Ready` and starts a new cast without requiring a
+  manual cast to recover.
 - Prevented snappy controller navigation from processing a directional press twice and
   skipping an option.
 - Positioned Fish Preview against the active local game's viewport, matching the

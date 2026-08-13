@@ -92,6 +92,20 @@ public sealed class AutomationScreenStateTests
         AssertTransientStateCleared(state);
     }
 
+    [Fact]
+    public void Toggle_ReenabledSessionCanObserveReadyWithoutRecovery()
+    {
+        AutomationScreenState state = CreatePopulatedState();
+        state.Toggle();
+        state.Toggle();
+
+        AutomationTransition transition = state.Session.Observe(new(true, true, true))!;
+
+        Assert.Equal(AutomationState.Ready, transition.Current);
+        Assert.Equal(AutomationTransitionReason.Observation, transition.Reason);
+        Assert.False(transition.WasRecovery);
+    }
+
     private static AutomationScreenState CreatePopulatedState()
     {
         AutomationScreenState state = new()

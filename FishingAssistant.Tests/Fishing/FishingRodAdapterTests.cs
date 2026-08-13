@@ -6,6 +6,23 @@ namespace FishingAssistant.Tests.Fishing;
 
 public sealed class FishingRodAdapterTests
 {
+    [Fact]
+    public void ResetCancelledCastState_ClearsEveryCastingPhaseIncludingBobberFlight()
+    {
+        StardewValley.Tools.FishingRod rod = new()
+        {
+            isTimingCast = true,
+            isCasting = true,
+            castedButBobberStillInAir = true
+        };
+
+        FishingRodAdapter.ResetCancelledCastState(rod);
+
+        Assert.False(rod.isTimingCast);
+        Assert.False(rod.isCasting);
+        Assert.False(rod.castedButBobberStillInAir);
+    }
+
     [Theory]
     [InlineData(Game1.up, 10, 7)]
     [InlineData(Game1.right, 13, 10)]

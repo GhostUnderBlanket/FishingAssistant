@@ -144,6 +144,18 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             return;
 
         player.completelyStopAnimatingOrDoingAction();
+        ResetCancelledCastState(rod);
+    }
+
+    internal static void ResetCancelledCastState(FishingRod rod)
+    {
+        ArgumentNullException.ThrowIfNull(rod);
+
+        // Vanilla resetState clears the charge and casting flags, but can leave the
+        // in-flight flag set when a cast is cancelled before the bobber lands. That
+        // stale flag classifies the next enabled observation as Casting forever.
+        rod.resetState();
+        rod.castedButBobberStillInAir = false;
     }
 
     private float GetCastStaminaCost()

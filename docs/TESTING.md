@@ -188,6 +188,10 @@ release-matrix scenarios are completed.
 - Toggle Automation off once during each visible stage: cast delay, casting, waiting for
   a bite, hooking, minigame, catch popup, and treasure menu. Confirm no later automatic
   stage runs until Automation is explicitly enabled again.
+- Specifically toggle F5 while the automatic cast is charging and again while its
+  bobber is in flight. Re-enable F5 after each cancellation and confirm the state returns
+  to Ready and automatically starts a fresh cast without showing recovery indefinitely
+  or requiring a manual cast.
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.
 - Inspect the SMAPI log after each scenario for errors, recoveries, duplicated input,
   or cross-player state leakage.
