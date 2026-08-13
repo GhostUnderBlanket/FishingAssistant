@@ -332,24 +332,43 @@ internal sealed class JunkListMenu : IClickableMenu
     {
         this.visibleCards.Clear();
         this.visibleSeparatorYs.Clear();
+        (ItemRow Row, int VisibleRow)[] visibleRows = this.itemRows
+            .Skip(this.topRow)
+            .Take(this.layout.Rows)
+            .Select((row, index) => (row, index))
+            .ToArray();
+        int separatorRow = Array.FindIndex(visibleRows,
+            entry => entry.VisibleRow > 0 && entry.Row.StartsNormalGroup);
+        int separatorGap = MenuVisualMetrics.ItemGroupSeparatorThickness
+            + MenuVisualMetrics.ItemGroupSeparatorVerticalPadding * 2;
+        int separatorExtraGap = separatorRow >= 0
+            ? Math.Max(0, separatorGap - this.layout.Gap)
+            : 0;
+        int visibleCardHeight = visibleRows.Length == 0
+            ? this.layout.CardHeight
+            : Math.Min(this.layout.CardHeight, Math.Max(1,
+                (this.layout.ContentBottom - this.layout.ContentTop
+                    - this.layout.Gap * Math.Max(0, visibleRows.Length - 1)
+                    - separatorExtraGap) / visibleRows.Length));
         int componentIndex = 0;
-        foreach ((ItemRow row, int visibleRow) in this.itemRows
-                     .Skip(this.topRow)
-                     .Take(this.layout.Rows)
-                     .Select((row, index) => (row, index)))
+        int rowY = this.layout.ContentTop;
+        foreach ((ItemRow row, int visibleRow) in visibleRows)
         {
-            if (row.StartsNormalGroup)
-                this.visibleSeparatorYs.Add(this.layout.ContentTop + visibleRow *
-                    (this.layout.CardHeight + this.layout.Gap) - this.layout.Gap / 2);
+            if (visibleRow == separatorRow)
+            {
+                int previousRowBottom = rowY - this.layout.Gap;
+                this.visibleSeparatorYs.Add(previousRowBottom + separatorGap / 2);
+                rowY += separatorExtraGap;
+            }
 
             for (int column = 0; column < row.Items.Count; column++)
             {
                 ConfigItem item = row.Items[column];
                 Rectangle bounds = new(
                     this.layout.ContentX + column * (this.layout.CardWidth + this.layout.Gap),
-                    this.layout.ContentTop + visibleRow * (this.layout.CardHeight + this.layout.Gap),
+                    rowY,
                     this.layout.CardWidth,
-                    this.layout.CardHeight);
+                    visibleCardHeight);
                 this.visibleCards.Add(new ItemCard(
                     item,
                     new ClickableComponent(bounds, item.DisplayName) { myID = FirstItemId + componentIndex },
@@ -357,6 +376,8 @@ internal sealed class JunkListMenu : IClickableMenu
                     column));
                 componentIndex++;
             }
+
+            rowY += visibleCardHeight + this.layout.Gap;
         }
     }
 
