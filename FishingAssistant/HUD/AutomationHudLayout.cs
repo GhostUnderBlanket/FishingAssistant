@@ -16,8 +16,11 @@ internal sealed record AutomationHudLayoutConditions(
 internal static class AutomationHudLayout
 {
     public const int BoxSize = 96;
-    public const int IconSize = 64;
-    public const int BadgeSize = 32;
+    public const int IconSize = 56;
+    public const int BadgeSize = 28;
+    public const int BadgeLeftInset = 4;
+    public const int BadgeTopInset = 12;
+    public const int IconShadowOffset = 4;
     public const int ScreenMargin = 8;
     public const int ToolbarGap = 2;
     public const float IconScale = 2f;
@@ -50,10 +53,11 @@ internal static class AutomationHudLayout
     public static Rectangle PlaceBadge(Rectangle panelBounds)
     {
         int size = Math.Min(BadgeSize, Math.Min(panelBounds.Width, panelBounds.Height));
-        int x = Math.Min(panelBounds.Center.X, panelBounds.Right - size);
+        int x = Math.Min(panelBounds.Left + BadgeLeftInset, panelBounds.Right - size);
+        int y = Math.Min(panelBounds.Top + BadgeTopInset, panelBounds.Bottom - size);
         return new Rectangle(
             x,
-            panelBounds.Top,
+            y,
             size,
             size);
     }
@@ -61,9 +65,10 @@ internal static class AutomationHudLayout
     public static Rectangle PlaceIcon(Rectangle panelBounds)
     {
         int size = Math.Min(IconSize, Math.Min(panelBounds.Width, panelBounds.Height));
+        int shadowOffset = Math.Min(IconShadowOffset, Math.Max(0, panelBounds.Height - size));
         return new Rectangle(
             panelBounds.Center.X - size / 2,
-            panelBounds.Bottom - size,
+            panelBounds.Bottom - shadowOffset - size,
             size,
             size);
     }

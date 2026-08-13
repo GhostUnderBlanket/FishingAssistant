@@ -63,7 +63,11 @@ internal sealed class AutomationHudRenderer
         ParsedItemData rodData = ItemRegistry.GetDataOrErrorItem(rodId);
         Texture2D texture = rodData.GetTexture();
         Rectangle source = rodData.GetSourceRect();
-        Rectangle shadowBounds = new(bounds.X + 4, bounds.Y + 4, bounds.Width, bounds.Height);
+        Rectangle shadowBounds = new(
+            bounds.X + AutomationHudLayout.IconShadowOffset,
+            bounds.Y + AutomationHudLayout.IconShadowOffset,
+            bounds.Width,
+            bounds.Height);
 
         batch.Draw(
             texture,

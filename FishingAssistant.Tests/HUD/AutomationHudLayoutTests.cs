@@ -79,7 +79,7 @@ public sealed class AutomationHudLayoutTests
     {
         Rectangle result = AutomationHudLayout.PlaceBadge(new Rectangle(100, 200, 96, 96));
 
-        Assert.Equal(new Rectangle(148, 200, 32, 32), result);
+        Assert.Equal(new Rectangle(104, 212, 28, 28), result);
     }
 
     [Fact]
@@ -97,6 +97,7 @@ public sealed class AutomationHudLayoutTests
     {
         Rectangle result = AutomationHudLayout.PlaceIcon(new Rectangle(100, 200, 96, 96));
 
-        Assert.Equal(new Rectangle(116, 232, 64, 64), result);
+        Assert.Equal(new Rectangle(120, 236, 56, 56), result);
+        Assert.Equal(296, result.Bottom + AutomationHudLayout.IconShadowOffset);
     }
 }
