@@ -3,6 +3,7 @@ using FishingAssistant.Runtime;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
+using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using StardewValley.Minigames;
 
@@ -10,7 +11,7 @@ namespace FishingAssistant.HUD;
 
 internal sealed class AutomationHudRenderer
 {
-    private static readonly Rectangle FishingIconSource = new(20, 428, 10, 10);
+    private const string FallbackRodId = "(T)AdvancedIridiumRod";
 
     public void Draw(SpriteBatch batch, AutomationSession session, ModConfig config)
     {
@@ -37,23 +38,7 @@ internal sealed class AutomationHudRenderer
             session.State,
             session.LastReason);
 
-        IClickableMenu.drawTextureBox(
-            batch,
-            Game1.menuTexture,
-            new Rectangle(0, 256, 60, 60),
-            bounds.X,
-            bounds.Y,
-            bounds.Width,
-            bounds.Height,
-            Color.White * opacity,
-            drawShadow: false);
-
-        DrawIcon(
-            batch,
-            FishingIconSource,
-            new Vector2(bounds.Center.X - AutomationHudLayout.IconSize / 2,
-                bounds.Center.Y - AutomationHudLayout.IconSize / 2),
-            visual.IconTint * opacity);
+        DrawRod(batch, AutomationHudLayout.PlaceIcon(bounds), visual.IconTint, opacity);
 
         if (visual.Badge != AutomationHudBadge.None)
             DrawBadge(batch, AutomationHudLayout.PlaceBadge(bounds), visual, opacity);
@@ -70,16 +55,32 @@ internal sealed class AutomationHudRenderer
         }
     }
 
-    private static void DrawIcon(SpriteBatch batch, Rectangle source, Vector2 position, Color tint)
+    private static void DrawRod(SpriteBatch batch, Rectangle bounds, Color tint, float opacity)
     {
+        string rodId = Game1.player.CurrentTool is StardewValley.Tools.FishingRod rod
+            ? rod.QualifiedItemId
+            : FallbackRodId;
+        ParsedItemData rodData = ItemRegistry.GetDataOrErrorItem(rodId);
+        Texture2D texture = rodData.GetTexture();
+        Rectangle source = rodData.GetSourceRect();
+        Rectangle shadowBounds = new(bounds.X + 4, bounds.Y + 4, bounds.Width, bounds.Height);
+
         batch.Draw(
-            Game1.mouseCursors,
-            position,
+            texture,
+            shadowBounds,
             source,
-            tint,
+            Color.Black * (0.55f * opacity),
             0f,
             Vector2.Zero,
-            AutomationHudLayout.IconScale,
+            SpriteEffects.None,
+            1f);
+        batch.Draw(
+            texture,
+            bounds,
+            source,
+            tint * opacity,
+            0f,
+            Vector2.Zero,
             SpriteEffects.None,
             1f);
     }
@@ -93,7 +94,7 @@ internal sealed class AutomationHudRenderer
         if (bounds.Width < 16 || bounds.Height < 16)
             return;
 
-        int emoteIndex = visual.Badge switch
+        int baseEmoteIndex = visual.Badge switch
         {
             AutomationHudBadge.Disabled => Character.xEmote,
             AutomationHudBadge.Paused => Character.pauseEmote,
@@ -103,10 +104,13 @@ internal sealed class AutomationHudRenderer
             AutomationHudBadge.Recovered => Character.happyEmote,
             _ => -1
         };
-        if (emoteIndex < 0)
+        if (baseEmoteIndex < 0)
             return;
 
         const int sourceSize = 16;
+        int emoteIndex = AutomationHudAnimation.GetEmoteFrame(
+            baseEmoteIndex,
+            Game1.currentGameTime.TotalGameTime.TotalMilliseconds);
         Rectangle source = new(
             emoteIndex * sourceSize % Game1.emoteSpriteSheet.Width,
             emoteIndex * sourceSize / Game1.emoteSpriteSheet.Width * sourceSize,
