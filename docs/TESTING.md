@@ -32,7 +32,7 @@ Status recorded on 2026-08-12:
   tested in-game yet.
 - Automatic junk disposal and its stack-delta safeguards have not been tested in-game
   yet.
-- The visual automation/treasure status HUD and toolbar-relative placement have not
+- The visual automation status HUD and toolbar-relative placement have not
   been tested in-game yet.
 - Local split-screen/co-op has not been tested yet.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
@@ -164,8 +164,10 @@ release-matrix scenarios are completed.
   and trash-can reclamation money matches vanilla. Repeat for both split-screen players
   and as multiplayer host/farmhand, confirming only the event's owning inventory is
   changed.
-- Verify the visual status HUD with F5 on/off, every automation state, paused/fault
-  warning colors, toolbar pinned and automatic top/bottom movement,
+- Verify the visual status HUD with F5 on/off, every automation state, and each badge:
+  ordinary disabled, menu pause, late night, low energy, action timeout, and recovery.
+  Verify badge colors and pixel glyphs remain readable. Test toolbar pinned and
+  automatic top/bottom movement,
   configured left/right placement, UI scale and zoom settings, menus, festivals, and
   small window sizes. Repeat for both split-screen players and confirm each panel uses
   only that screen's session and remains inside its viewport.

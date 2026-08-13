@@ -73,4 +73,22 @@ public sealed class AutomationHudLayoutTests
 
         Assert.Equal(new Rectangle(20, 0, 60, 60), result);
     }
+
+    [Fact]
+    public void PlaceBadge_KeepsBadgeInsidePanel()
+    {
+        Rectangle result = AutomationHudLayout.PlaceBadge(new Rectangle(100, 200, 96, 96));
+
+        Assert.Equal(new Rectangle(165, 265, 24, 24), result);
+    }
+
+    [Fact]
+    public void PlaceBadge_ShrinksForTinyPanel()
+    {
+        Rectangle panel = new(10, 20, 12, 12);
+
+        Rectangle result = AutomationHudLayout.PlaceBadge(panel);
+
+        Assert.Equal(panel, result);
+    }
 }

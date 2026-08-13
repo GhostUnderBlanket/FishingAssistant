@@ -11,6 +11,7 @@ namespace FishingAssistant.HUD;
 internal sealed class AutomationHudRenderer
 {
     private static readonly Rectangle FishingIconSource = new(20, 428, 10, 10);
+
     public void Draw(SpriteBatch batch, AutomationSession session, ModConfig config)
     {
         if (!Game1.displayHUD
@@ -31,6 +32,10 @@ internal sealed class AutomationHudRenderer
             IsFestival: Game1.isFestival(),
             IsToolbarAtTop: IsToolbarAtTop()));
         float opacity = toolbar is null ? 1f : Math.Clamp(toolbar.transparency, 0.33f, 1f);
+        AutomationHudVisual visual = AutomationHudVisualPolicy.GetVisual(
+            session.IsEnabled,
+            session.State,
+            session.LastReason);
 
         IClickableMenu.drawTextureBox(
             batch,
@@ -47,8 +52,11 @@ internal sealed class AutomationHudRenderer
             batch,
             FishingIconSource,
             new Vector2(bounds.Center.X - AutomationHudLayout.IconSize / 2,
-                bounds.Y + AutomationHudLayout.IconY),
-            AutomationHudVisualPolicy.GetAutomationTint(session.IsEnabled, session.State) * opacity);
+                bounds.Center.Y - AutomationHudLayout.IconSize / 2),
+            visual.IconTint * opacity);
+
+        if (visual.Badge != AutomationHudBadge.None)
+            DrawBadge(batch, AutomationHudLayout.PlaceBadge(bounds), visual, opacity);
 
         return;
 
@@ -74,5 +82,75 @@ internal sealed class AutomationHudRenderer
             AutomationHudLayout.IconScale,
             SpriteEffects.None,
             1f);
+    }
+
+    private static void DrawBadge(
+        SpriteBatch batch,
+        Rectangle bounds,
+        AutomationHudVisual visual,
+        float opacity)
+    {
+        if (bounds.Width < 8 || bounds.Height < 8)
+            return;
+
+        DrawRectangle(batch, bounds, Color.Black * (0.8f * opacity));
+        Rectangle inner = new(bounds.X + 2, bounds.Y + 2, bounds.Width - 4, bounds.Height - 4);
+        DrawRectangle(batch, inner, visual.BadgeColor * opacity);
+
+        int pixel = Math.Max(1, inner.Width / 7);
+        int glyphSize = pixel * 5;
+        int x = inner.Center.X - glyphSize / 2;
+        int y = inner.Center.Y - glyphSize / 2;
+        Color glyphColor = (visual.Badge == AutomationHudBadge.LateNight
+            ? Color.LightYellow
+            : Color.White) * opacity;
+
+        switch (visual.Badge)
+        {
+            case AutomationHudBadge.Disabled:
+                DrawCross(batch, x, y, pixel, glyphColor);
+                break;
+            case AutomationHudBadge.Paused:
+                DrawRectangle(batch, new Rectangle(x, y, pixel, glyphSize), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel * 4, y, pixel, glyphSize), glyphColor);
+                break;
+            case AutomationHudBadge.LateNight:
+                DrawRectangle(batch, new Rectangle(x, y, pixel * 4, pixel), glyphColor);
+                DrawRectangle(batch, new Rectangle(x, y, pixel, glyphSize), glyphColor);
+                DrawRectangle(batch, new Rectangle(x, y + pixel * 4, pixel * 4, pixel), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel * 3, y + pixel, pixel, pixel), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel * 3, y + pixel * 3, pixel, pixel), glyphColor);
+                break;
+            case AutomationHudBadge.LowEnergy:
+                DrawRectangle(batch, new Rectangle(x + pixel * 2, y, pixel * 2, pixel * 2), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel, y + pixel * 2, pixel * 3, pixel), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel, y + pixel * 3, pixel * 2, pixel * 2), glyphColor);
+                break;
+            case AutomationHudBadge.Warning:
+                DrawRectangle(batch, new Rectangle(x + pixel * 2, y, pixel, pixel * 3), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel * 2, y + pixel * 4, pixel, pixel), glyphColor);
+                break;
+            case AutomationHudBadge.Recovered:
+                DrawRectangle(batch, new Rectangle(x, y + pixel * 2, pixel * 2, pixel), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel, y + pixel * 3, pixel, pixel), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel * 2, y + pixel * 2, pixel, pixel), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel * 3, y + pixel, pixel, pixel), glyphColor);
+                DrawRectangle(batch, new Rectangle(x + pixel * 4, y, pixel, pixel), glyphColor);
+                break;
+        }
+    }
+
+    private static void DrawCross(SpriteBatch batch, int x, int y, int pixel, Color color)
+    {
+        for (int index = 0; index < 5; index++)
+        {
+            DrawRectangle(batch, new Rectangle(x + index * pixel, y + index * pixel, pixel, pixel), color);
+            DrawRectangle(batch, new Rectangle(x + (4 - index) * pixel, y + index * pixel, pixel, pixel), color);
+        }
+    }
+
+    private static void DrawRectangle(SpriteBatch batch, Rectangle bounds, Color color)
+    {
+        batch.Draw(Game1.staminaRect, bounds, color);
     }
 }

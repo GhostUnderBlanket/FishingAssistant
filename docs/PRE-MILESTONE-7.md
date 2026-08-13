@@ -122,15 +122,15 @@ state and disconnecting or disabling the mod leaves every affected rod valid.
 
 ## Milestone 6: Catch rules, preview, and HUD
 
-- [ ] Make the visual HUD communicate the pause reason and exceptional runtime state.
-  `AutomationSession.LastReason` currently exists but is not consumed by the renderer.
-- [ ] Ensure low-energy and late-night pauses have a distinct visual result instead of
+- [x] Make the visual HUD communicate the pause reason and exceptional runtime state.
+  The renderer now maps each local session's `LastReason` to a compact pixel badge.
+- [x] Ensure low-energy and late-night pauses have a distinct visual result instead of
   becoming indistinguishable from ordinary disabled/idle state.
 - [ ] Define and test HUD behavior while menus are open and at non-default UI scales,
   zoom levels, festivals, small windows, and each split-screen viewport.
 - [ ] Add Fiberglass Rod and Iridium Rod to the starter-rod picker, or document why only
   Training Rod, Bamboo Pole, and Advanced Iridium Rod are supported.
-- [ ] Correct stale testing text which still calls the visual panel an
+- [x] Correct stale testing text which still calls the visual panel an
   "automation/treasure status HUD" after the treasure icon was retired.
 - [ ] Verify difficulty, bite timing, treasure chances, perfect catch, quality, size,
   multi-catch, fish preview, starter rod, and auto-trash behavior in Stardew Valley

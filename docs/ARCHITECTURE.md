@@ -64,12 +64,14 @@ shared-world state directly. Automatic hooking uses the same boundary and a per-
 latch so one nibble can trigger at most one automated hook attempt.
 
 The status HUD is local-screen visual state rather than localized prose. Its compact
-panel follows the Fishing Assistant 2 vocabulary with one fishing icon for automation,
-using opacity for on/off and warning tints for exceptional states. Treasure targeting
-is intentionally config-only and has no runtime hotkey or HUD icon. A pure layout
-policy places the panel beside the current toolbar, mirrors the configured side,
-follows the toolbar between screen edges, and clamps it inside the local `uiViewport`;
-no reflection or shared HUD state is used.
+panel follows the Fishing Assistant 2 vocabulary with one fishing icon for automation.
+Opacity communicates on/off, while a small colored pixel badge distinguishes ordinary
+disable, menu pause, late-night stop, low-energy stop, action timeout, and state-machine
+recovery. The badge decision consumes the owning session's state and `LastReason` through
+a pure policy. Treasure targeting is intentionally config-only and has no runtime hotkey
+or HUD icon. A pure layout policy places the panel beside the current toolbar, mirrors
+the configured side, follows the toolbar between screen edges, and clamps both panel and
+badge inside the local `uiViewport`; no reflection or shared HUD state is used.
 
 Festival automation is denied by default. The current exception is the game's active
 `FishingGame` minigame while it is still running; casting applies an additional startup
