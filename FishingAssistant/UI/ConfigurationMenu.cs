@@ -552,16 +552,18 @@ internal sealed class ConfigurationMenu : IClickableMenu
         switch (this.category)
         {
             case ConfigCategory.Automation:
+                this.AddEnumDefinition("automation_profile", () => this.session.Draft.AutomationProfile,
+                    value => AutomationProfiles.Apply(this.session.Draft, value));
                 this.AddDefinition("auto_cast", () => this.session.Draft.AutoCastFishingRod,
-                    value => this.session.Draft.AutoCastFishingRod = value);
+                    value => this.SetProfileOption(() => this.session.Draft.AutoCastFishingRod = value));
                 this.AddDefinition("auto_hook", () => this.session.Draft.AutoHookFish,
-                    value => this.session.Draft.AutoHookFish = value);
+                    value => this.SetProfileOption(() => this.session.Draft.AutoHookFish = value));
                 this.AddDefinition("auto_minigame", () => this.session.Draft.AutoPlayMiniGame,
-                    value => this.session.Draft.AutoPlayMiniGame = value);
+                    value => this.SetProfileOption(() => this.session.Draft.AutoPlayMiniGame = value));
                 this.AddDefinition("auto_close", () => this.session.Draft.AutoClosePopup,
-                    value => this.session.Draft.AutoClosePopup = value);
+                    value => this.SetProfileOption(() => this.session.Draft.AutoClosePopup = value));
                 this.AddDefinition("auto_treasure", () => this.session.Draft.AutoLootTreasure,
-                    value => this.session.Draft.AutoLootTreasure = value);
+                    value => this.SetProfileOption(() => this.session.Draft.AutoLootTreasure = value));
                 this.AddEnumDefinition("auto_pause", () => this.session.Draft.AutoPauseFishing,
                     value => this.session.Draft.AutoPauseFishing = value);
                 this.AddNumberDefinition("pause_time", () => this.session.Draft.TimeToPause,
@@ -632,7 +634,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddDefinition("instant_bite", () => this.session.Draft.InstantFishBite,
                     value => this.session.Draft.InstantFishBite = value);
                 this.AddDefinition("bubble_steering", () => this.session.Draft.AutomaticBubbleSteering,
-                    value => this.session.Draft.AutomaticBubbleSteering = value);
+                    value => this.SetProfileOption(() => this.session.Draft.AutomaticBubbleSteering = value));
                 this.AddNumberDefinition("fish_amount", () => this.session.Draft.PreferFishAmount,
                     value => this.session.Draft.PreferFishAmount = Convert.ToInt32(value), 1, 3, 1);
                 this.AddEnumDefinition("fish_quality", () => this.session.Draft.PreferFishQuality,
@@ -673,7 +675,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddEnumDefinition("hud_position", () => this.session.Draft.ModStatusPosition,
                     value => this.session.Draft.ModStatusPosition = value);
                 this.AddDefinition("fish_preview", () => this.session.Draft.DisplayFishPreview,
-                    value => this.session.Draft.DisplayFishPreview = value);
+                    value => this.SetProfileOption(() => this.session.Draft.DisplayFishPreview = value));
                 this.AddDefinition("fish_name", () => this.session.Draft.ShowFishName,
                     value => this.session.Draft.ShowFishName = value);
                 this.AddDefinition("show_treasure", () => this.session.Draft.ShowTreasure,
@@ -725,6 +727,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
             getValue,
             setValue
         ), getState ?? (() => ConfigControlState.Enabled)));
+    }
+
+    private void SetProfileOption(Action setValue)
+    {
+        setValue();
+        AutomationProfiles.MarkCustom(this.session.Draft);
     }
 
     private void AddEnumDefinition<TEnum>(string key, Func<TEnum> getValue, Action<TEnum> setValue)

@@ -25,6 +25,15 @@ internal enum IgnoredTreasureAction
     Discard
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<AutomationProfile>))]
+internal enum AutomationProfile
+{
+    Relaxed,
+    Training,
+    ManualPlus,
+    Custom
+}
+
 [JsonConverter(typeof(SafeStringEnumConverter<PauseFishingBehavior>))]
 internal enum PauseFishingBehavior
 {

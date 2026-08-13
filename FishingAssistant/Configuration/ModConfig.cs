@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 8;
+    internal const int CurrentVersion = 9;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -24,6 +24,8 @@ internal sealed class ModConfig
     public KeybindList OpenConfigMenuButton { get; set; } = new(SButton.F6);
 
     public HudPosition ModStatusPosition { get; set; } = HudPosition.Left;
+
+    public AutomationProfile AutomationProfile { get; set; } = AutomationProfile.Relaxed;
 
     public bool AutoCastFishingRod { get; set; } = true;
 

@@ -12,6 +12,7 @@ public sealed class ConfigDefaultsTests
         Assert.Equal(ModConfig.CurrentVersion, config.ConfigVersion);
         Assert.Equal("F5", config.EnableAutomationButton.ToString());
         Assert.Equal("F6", config.OpenConfigMenuButton.ToString());
+        Assert.Equal(AutomationProfile.Relaxed, config.AutomationProfile);
         Assert.True(config.AutoCastFishingRod);
         Assert.True(config.AutoHookFish);
         Assert.True(config.AutoPlayMiniGame);

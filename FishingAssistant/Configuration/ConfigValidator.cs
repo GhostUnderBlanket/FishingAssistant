@@ -14,7 +14,14 @@ internal static class ConfigValidator
 
         ConfigValidationReport report = new();
 
+        int originalVersion = config.ConfigVersion;
         NormalizeVersion(config, report);
+        if (originalVersion < 9)
+        {
+            config.AutomationProfile = AutomationProfile.Custom;
+            report.Add(nameof(config.AutomationProfile), null, config.AutomationProfile,
+                "Existing individually configured automation settings were preserved as Custom.");
+        }
         NormalizeKeybind(report, nameof(config.EnableAutomationButton),
             () => config.EnableAutomationButton, value => config.EnableAutomationButton = value, SButton.F5);
         NormalizeKeybind(report, nameof(config.OpenConfigMenuButton),
@@ -22,6 +29,8 @@ internal static class ConfigValidator
 
         NormalizeEnum(report, nameof(config.ModStatusPosition),
             () => config.ModStatusPosition, value => config.ModStatusPosition = value, HudPosition.Left);
+        NormalizeEnum(report, nameof(config.AutomationProfile),
+            () => config.AutomationProfile, value => config.AutomationProfile = value, AutomationProfile.Custom);
         NormalizeEnum(report, nameof(config.ActionIfInventoryFull),
             () => config.ActionIfInventoryFull, value => config.ActionIfInventoryFull = value, InventoryFullAction.Stop);
         NormalizeEnum(report, nameof(config.ActionIfOnlyIgnoredTreasureRemains),
