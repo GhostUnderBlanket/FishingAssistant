@@ -24,8 +24,10 @@ internal sealed class JunkListMenu : IClickableMenu
     private readonly Func<string, string> translate;
     private readonly bool treasureIgnoreOnly;
     private readonly List<ItemCard> visibleCards = [];
+    private readonly List<int> visibleSeparatorYs = [];
     private readonly List<ClickableComponent> buttons = [];
     private IReadOnlyList<ConfigItem> filteredItems = [];
+    private IReadOnlyList<ItemRow> itemRows = [];
     private ItemPickerLayout layout = null!;
     private TextBox searchBox = null!;
     private Rectangle searchBounds;
@@ -60,8 +62,7 @@ internal sealed class JunkListMenu : IClickableMenu
         this.RebuildComponents();
     }
 
-    private int MaximumTopRow => Math.Max(0,
-        (int)Math.Ceiling(this.filteredItems.Count / (double)this.layout.Columns) - this.layout.Rows);
+    private int MaximumTopRow => Math.Max(0, this.itemRows.Count - this.layout.Rows);
 
     public override bool areGamePadControlsImplemented() => true;
 
@@ -109,6 +110,10 @@ internal sealed class JunkListMenu : IClickableMenu
                 card.Item.QualifiedItemId,
                 this.mode);
             Game1.playSound(state == JunkItemState.Normal ? "trashcan" : "coin");
+            this.RebuildItemRows();
+            this.topRow = Math.Clamp(this.topRow, 0, this.MaximumTopRow);
+            this.RebuildVisibleCards();
+            this.BuildNavigation();
             return;
         }
 
@@ -226,6 +231,7 @@ internal sealed class JunkListMenu : IClickableMenu
             this.searchText = this.searchBox.Text;
             this.filteredItems = JunkListSelection.Filter(this.allItems, this.searchText);
             this.topRow = 0;
+            this.RebuildItemRows();
             this.RebuildVisibleCards();
             this.BuildNavigation();
         }
@@ -248,6 +254,8 @@ internal sealed class JunkListMenu : IClickableMenu
         }
 
         Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
+        foreach (int separatorY in this.visibleSeparatorYs)
+            this.drawHorizontalPartition(batch, separatorY, small: true);
         foreach (ItemCard card in this.visibleCards)
             this.DrawCard(batch, card, card.Component.bounds.Contains(mouse) || this.currentlySnappedComponent == card.Component);
 
@@ -260,7 +268,7 @@ internal sealed class JunkListMenu : IClickableMenu
             this.DrawButton(batch, button, highlighted);
         }
 
-        if (this.filteredItems.Count == 0)
+        if (this.itemRows.Count == 0)
         {
             string empty = this.translate("config.junk_picker.empty");
             Vector2 size = Game1.smallFont.MeasureString(empty);
@@ -305,6 +313,7 @@ internal sealed class JunkListMenu : IClickableMenu
             Text = this.searchText
         };
         this.searchBounds = new Rectangle(this.searchBox.X, this.searchBox.Y, this.searchBox.Width, this.searchBox.Height);
+        this.RebuildItemRows();
         this.topRow = Math.Clamp(this.topRow, 0, this.MaximumTopRow);
         this.RebuildVisibleCards();
         this.BuildButtons();
@@ -314,27 +323,52 @@ internal sealed class JunkListMenu : IClickableMenu
     private void RebuildVisibleCards()
     {
         this.visibleCards.Clear();
-        int start = this.topRow * this.layout.Columns;
-        IEnumerable<(ConfigItem Item, int Index)> items = this.filteredItems
-            .Select((item, index) => (item, index))
-            .Skip(start)
-            .Take(this.layout.PageSize);
-
-        foreach ((ConfigItem item, int index) in items)
+        this.visibleSeparatorYs.Clear();
+        int componentIndex = 0;
+        foreach ((ItemRow row, int visibleRow) in this.itemRows
+                     .Skip(this.topRow)
+                     .Take(this.layout.Rows)
+                     .Select((row, index) => (row, index)))
         {
-            int visibleIndex = index - start;
-            int column = visibleIndex % this.layout.Columns;
-            int row = visibleIndex / this.layout.Columns;
-            Rectangle bounds = new(
-                this.layout.ContentX + column * (this.layout.CardWidth + this.layout.Gap),
-                this.layout.ContentTop + row * (this.layout.CardHeight + this.layout.Gap),
-                this.layout.CardWidth,
-                this.layout.CardHeight
-            );
-            this.visibleCards.Add(new ItemCard(
-                item,
-                new ClickableComponent(bounds, item.DisplayName) { myID = FirstItemId + visibleIndex }
-            ));
+            if (row.StartsNormalGroup)
+                this.visibleSeparatorYs.Add(this.layout.ContentTop + visibleRow *
+                    (this.layout.CardHeight + this.layout.Gap) - this.layout.Gap / 2);
+
+            for (int column = 0; column < row.Items.Count; column++)
+            {
+                ConfigItem item = row.Items[column];
+                Rectangle bounds = new(
+                    this.layout.ContentX + column * (this.layout.CardWidth + this.layout.Gap),
+                    this.layout.ContentTop + visibleRow * (this.layout.CardHeight + this.layout.Gap),
+                    this.layout.CardWidth,
+                    this.layout.CardHeight);
+                this.visibleCards.Add(new ItemCard(
+                    item,
+                    new ClickableComponent(bounds, item.DisplayName) { myID = FirstItemId + componentIndex },
+                    visibleRow,
+                    column));
+                componentIndex++;
+            }
+        }
+    }
+
+    private void RebuildItemRows()
+    {
+        JunkListGroups groups = JunkListSelection.GroupForMode(
+            this.filteredItems, this.junkIds, this.ignoreIds, this.mode);
+        List<ItemRow> rows = [];
+        this.AddRows(rows, groups.Selected, startsNormalGroup: false);
+        this.AddRows(rows, groups.Normal, startsNormalGroup: groups.Selected.Count > 0);
+        this.itemRows = rows;
+    }
+
+    private void AddRows(List<ItemRow> rows, IReadOnlyList<ConfigItem> items, bool startsNormalGroup)
+    {
+        for (int index = 0; index < items.Count; index += this.layout.Columns)
+        {
+            rows.Add(new ItemRow(
+                items.Skip(index).Take(this.layout.Columns).ToArray(),
+                startsNormalGroup && index == 0));
         }
     }
 
@@ -385,18 +419,28 @@ internal sealed class JunkListMenu : IClickableMenu
         }
         for (int index = 0; index < this.visibleCards.Count; index++)
         {
-            ClickableComponent card = this.visibleCards[index].Component;
-            int column = index % this.layout.Columns;
-            card.leftNeighborID = column == 0 ? -1 : this.visibleCards[index - 1].Component.myID;
-            card.rightNeighborID = column == this.layout.Columns - 1 || index == this.visibleCards.Count - 1
-                ? -1
-                : this.visibleCards[index + 1].Component.myID;
-            card.upNeighborID = index < this.layout.Columns
-                ? (this.treasureIgnoreOnly ? -1 : index < Math.Ceiling(this.layout.Columns / 2d) ? EditJunkId : EditIgnoreId)
-                : this.visibleCards[index - this.layout.Columns].Component.myID;
-            card.downNeighborID = index + this.layout.Columns < this.visibleCards.Count
-                ? this.visibleCards[index + this.layout.Columns].Component.myID
-                : DoneId;
+            ItemCard itemCard = this.visibleCards[index];
+            ClickableComponent card = itemCard.Component;
+            card.leftNeighborID = this.visibleCards
+                .FirstOrDefault(other => other.GridRow == itemCard.GridRow && other.GridColumn == itemCard.GridColumn - 1)?
+                .Component.myID ?? -1;
+            card.rightNeighborID = this.visibleCards
+                .FirstOrDefault(other => other.GridRow == itemCard.GridRow && other.GridColumn == itemCard.GridColumn + 1)?
+                .Component.myID ?? -1;
+            ItemCard? above = this.visibleCards
+                .Where(other => other.GridRow < itemCard.GridRow)
+                .OrderByDescending(other => other.GridRow)
+                .ThenBy(other => Math.Abs(other.GridColumn - itemCard.GridColumn))
+                .FirstOrDefault();
+            ItemCard? below = this.visibleCards
+                .Where(other => other.GridRow > itemCard.GridRow)
+                .OrderBy(other => other.GridRow)
+                .ThenBy(other => Math.Abs(other.GridColumn - itemCard.GridColumn))
+                .FirstOrDefault();
+            card.upNeighborID = above?.Component.myID
+                ?? (this.treasureIgnoreOnly ? -1
+                    : itemCard.GridColumn < Math.Ceiling(this.layout.Columns / 2d) ? EditJunkId : EditIgnoreId);
+            card.downNeighborID = below?.Component.myID ?? DoneId;
         }
 
         done.upNeighborID = this.visibleCards.LastOrDefault()?.Component.myID ?? -1;
@@ -547,24 +591,33 @@ internal sealed class JunkListMenu : IClickableMenu
 
     private void MoveVertical(int direction)
     {
-        int selectedIndex = this.visibleCards.FindIndex(card => card.Component == this.currentlySnappedComponent);
-        if (selectedIndex >= 0 && selectedIndex < this.layout.Columns
-            && direction < 0 && this.topRow > 0)
+        ItemCard? selected = this.visibleCards
+            .FirstOrDefault(card => card.Component == this.currentlySnappedComponent);
+        if (selected is not null && selected.GridRow == 0 && direction < 0 && this.topRow > 0)
         {
-            int currentColumn = selectedIndex % this.layout.Columns;
+            int currentColumn = selected.GridColumn;
             this.Scroll(-1);
-            int targetIndex = Math.Min(currentColumn, this.visibleCards.Count - 1);
-            this.currentlySnappedComponent = this.visibleCards[targetIndex].Component;
+            this.currentlySnappedComponent = this.visibleCards
+                .Where(card => card.GridRow == 0)
+                .OrderBy(card => Math.Abs(card.GridColumn - currentColumn))
+                .First().Component;
             this.snapCursorToCurrentSnappedComponent();
             return;
         }
 
-        if (selectedIndex >= Math.Max(0, this.visibleCards.Count - this.layout.Columns)
+        int lastVisibleRow = this.visibleCards.Count == 0
+            ? -1
+            : this.visibleCards.Max(card => card.GridRow);
+        if (selected is not null && selected.GridRow == lastVisibleRow
             && direction > 0 && this.topRow < this.MaximumTopRow)
         {
-            int currentColumn = selectedIndex % this.layout.Columns;
+            int currentColumn = selected.GridColumn;
             this.Scroll(1);
-            this.currentlySnappedComponent = this.visibleCards[Math.Min(currentColumn, this.visibleCards.Count - 1)].Component;
+            int newLastVisibleRow = this.visibleCards.Max(card => card.GridRow);
+            this.currentlySnappedComponent = this.visibleCards
+                .Where(card => card.GridRow == newLastVisibleRow)
+                .OrderBy(card => Math.Abs(card.GridColumn - currentColumn))
+                .First().Component;
             this.snapCursorToCurrentSnappedComponent();
             return;
         }
@@ -590,6 +643,10 @@ internal sealed class JunkListMenu : IClickableMenu
             return;
 
         this.mode = mode;
+        this.topRow = 0;
+        this.RebuildItemRows();
+        this.RebuildVisibleCards();
+        this.BuildNavigation();
         Game1.playSound("smallSelect");
     }
 
@@ -600,5 +657,11 @@ internal sealed class JunkListMenu : IClickableMenu
         Game1.closeTextEntry();
     }
 
-    private sealed record ItemCard(ConfigItem Item, ClickableComponent Component);
+    private sealed record ItemRow(IReadOnlyList<ConfigItem> Items, bool StartsNormalGroup);
+
+    private sealed record ItemCard(
+        ConfigItem Item,
+        ClickableComponent Component,
+        int GridRow,
+        int GridColumn);
 }

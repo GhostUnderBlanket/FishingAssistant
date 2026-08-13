@@ -40,4 +40,32 @@ public sealed class JunkListSelectionTests
         Assert.Equal([items[0]], JunkListSelection.Filter(items, "168"));
         Assert.Equal(items, JunkListSelection.Filter(items, "  "));
     }
+
+    [Fact]
+    public void GroupForMode_PutsCurrentStateFirstAndExcludesOtherState()
+    {
+        ConfigItem junk = new("(O)168", ConfigItemKind.Other, "Trash");
+        ConfigItem ignored = new("(O)169", ConfigItemKind.Other, "Driftwood");
+        ConfigItem normal = new("(O)170", ConfigItemKind.Other, "Glasses");
+
+        JunkListGroups groups = JunkListSelection.GroupForMode(
+            [junk, ignored, normal], [junk.QualifiedItemId], [ignored.QualifiedItemId], JunkListMode.Junk);
+
+        Assert.Equal([junk], groups.Selected);
+        Assert.Equal([normal], groups.Normal);
+    }
+
+    [Fact]
+    public void GroupForMode_UsesIgnoredItemsForTreasureIgnoreEditor()
+    {
+        ConfigItem junk = new("(O)168", ConfigItemKind.Other, "Trash");
+        ConfigItem ignored = new("(O)169", ConfigItemKind.Other, "Driftwood");
+        ConfigItem normal = new("(O)170", ConfigItemKind.Other, "Glasses");
+
+        JunkListGroups groups = JunkListSelection.GroupForMode(
+            [junk, ignored, normal], [junk.QualifiedItemId], [ignored.QualifiedItemId], JunkListMode.Ignore);
+
+        Assert.Equal([ignored], groups.Selected);
+        Assert.Equal([normal], groups.Normal);
+    }
 }

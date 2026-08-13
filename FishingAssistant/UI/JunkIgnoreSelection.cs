@@ -17,6 +17,27 @@ internal enum JunkItemState
 
 internal static class JunkListSelection
 {
+    public static JunkListGroups GroupForMode(
+        IEnumerable<ConfigItem> items,
+        IReadOnlyCollection<string> junkIds,
+        IReadOnlyCollection<string> ignoreIds,
+        JunkListMode mode)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(junkIds);
+        ArgumentNullException.ThrowIfNull(ignoreIds);
+
+        JunkItemState selectedState = mode == JunkListMode.Junk
+            ? JunkItemState.Junk
+            : JunkItemState.Ignore;
+        ConfigItem[] source = items.ToArray();
+        return new JunkListGroups(
+            source.Where(item => GetState(junkIds, ignoreIds, item.QualifiedItemId) == selectedState)
+                .ToArray(),
+            source.Where(item => GetState(junkIds, ignoreIds, item.QualifiedItemId) == JunkItemState.Normal)
+                .ToArray());
+    }
+
     public static JunkItemState Toggle(
         List<string> junkIds,
         List<string> ignoreIds,
@@ -68,3 +89,7 @@ internal static class JunkListSelection
             .ToArray();
     }
 }
+
+internal sealed record JunkListGroups(
+    IReadOnlyList<ConfigItem> Selected,
+    IReadOnlyList<ConfigItem> Normal);
