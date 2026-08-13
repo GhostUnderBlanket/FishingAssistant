@@ -1,5 +1,4 @@
 using FishingAssistant.UI.Controls;
-using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 
 namespace FishingAssistant.Tests.UI;
@@ -38,9 +37,4 @@ public sealed class KeybindCaptureTests
         Assert.Equal([SButton.LeftControl, SButton.F7], result.Buttons);
     }
 
-    [Fact]
-    public void FromGamePadButton_MapsControllerA()
-    {
-        Assert.Equal(SButton.ControllerA, KeybindCapture.FromGamePadButton(Buttons.A));
-    }
 }

@@ -133,6 +133,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Keybind capture now waits for the mouse, keyboard, or controller activation input to
+  be released before accepting the next input, preventing an immediate return to the
+  previous binding.
 - Added Vanilla-style backing panels to the Junk List Editor title and selection
   counts, separated its search and mode controls from the upper frame, and replaced
   tiny-font item states with scaled small-font labels.

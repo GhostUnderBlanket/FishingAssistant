@@ -43,8 +43,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private int scrollOffset;
     private string hoverText = "";
     private string statusText = "";
-    private Keys? ignoredGamePadKeyPress;
-    private bool ignoreNextControllerClick;
 
     public ConfigurationMenu(
         ConfigEditSession session,
@@ -73,9 +71,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public bool IsListeningForKeybind => this.options.OfType<ConfigKeybind>().Any(control => control.IsListening);
 
-    public void ReceiveKeybindInput(IReadOnlyList<SButton> buttons)
+    public IReadOnlyList<SButton> ReceiveKeybindInput(
+        IReadOnlyList<SButton> pressed,
+        IReadOnlyList<SButton> held)
     {
-        this.options.OfType<ConfigKeybind>().FirstOrDefault(control => control.IsListening)?.Capture(buttons);
+        return this.options.OfType<ConfigKeybind>()
+            .FirstOrDefault(control => control.IsListening)?
+            .ObserveInput(pressed, held) ?? [];
     }
 
     public override bool areGamePadControlsImplemented() => false;
@@ -124,12 +126,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
-        if (this.ignoreNextControllerClick)
-        {
-            this.ignoreNextControllerClick = false;
-            return;
-        }
-
         base.receiveLeftClick(x, y, playSound);
         if (Game1.activeClickableMenu != this)
             return;
@@ -186,12 +182,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveKeyPress(Keys key)
     {
-        if (this.ignoredGamePadKeyPress == key)
-        {
-            this.ignoredGamePadKeyPress = null;
-            return;
-        }
-
         if (this.IsListeningForKeybind)
             return;
 
@@ -220,17 +210,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     public override void receiveGamePadButton(Buttons button)
     {
         if (this.IsListeningForKeybind)
-        {
-            ConfigKeybind? keybind = this.options.OfType<ConfigKeybind>()
-                .FirstOrDefault(control => control.IsListening);
-            if (keybind?.ReceiveGamePadButton(button) == true)
-            {
-                this.ignoredGamePadKeyPress = Utility.mapGamePadButtonToKey(button);
-                if (button == Buttons.A)
-                    this.ignoreNextControllerClick = true;
-            }
             return;
-        }
 
         int? categoryDirection = CategoryNavigationInput.GetDirection(button);
         if (categoryDirection is not null)

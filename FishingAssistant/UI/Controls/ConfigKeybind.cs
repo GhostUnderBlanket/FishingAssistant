@@ -1,6 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -13,6 +12,7 @@ internal sealed class ConfigKeybind : IConfigControl
     private readonly Func<KeybindList> getValue;
     private readonly Action<KeybindList> setValue;
     private readonly string listeningText;
+    private KeybindCaptureGate? captureGate;
 
     public ConfigKeybind(
         int id,
@@ -51,36 +51,30 @@ internal sealed class ConfigKeybind : IConfigControl
             return;
 
         this.IsListening = true;
+        this.captureGate = new KeybindCaptureGate();
         GameMenu.forcePreventClose = true;
         Game1.playSound("breathin");
     }
 
     public bool Adjust(int direction) => false;
 
-    public bool ReceiveGamePadButton(Buttons button)
+    public IReadOnlyList<SButton> ObserveInput(
+        IReadOnlyList<SButton> pressed,
+        IReadOnlyList<SButton> held)
     {
-        if (!this.IsListening)
-            return false;
+        if (!this.IsListening || this.captureGate is null)
+            return [];
 
-        SButton? input = KeybindCapture.FromGamePadButton(button);
-        if (input is null)
-            return false;
-
-        this.Capture([input.Value]);
-        return true;
-    }
-
-    public void Capture(IReadOnlyList<SButton> buttons)
-    {
-        if (!this.IsListening || buttons.Count == 0)
-            return;
+        IReadOnlyList<SButton> buttons = this.captureGate.Observe(pressed, held);
+        if (buttons.Count == 0)
+            return [];
 
         KeybindCaptureResult result = KeybindCapture.Resolve(buttons);
         if (result.Action == KeybindCaptureAction.Cancel)
         {
             this.StopListening();
             Game1.playSound("bigDeSelect");
-            return;
+            return buttons;
         }
 
         if (result.Action == KeybindCaptureAction.Clear)
@@ -90,6 +84,7 @@ internal sealed class ConfigKeybind : IConfigControl
 
         this.StopListening();
         Game1.playSound("coin");
+        return buttons;
     }
 
     public void CancelListening()
@@ -127,6 +122,7 @@ internal sealed class ConfigKeybind : IConfigControl
     private void StopListening()
     {
         this.IsListening = false;
+        this.captureGate = null;
         GameMenu.forcePreventClose = false;
     }
 }
