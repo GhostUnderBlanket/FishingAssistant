@@ -631,6 +631,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.SkipFishingMiniGame = value);
                 this.AddDefinition("instant_bite", () => this.session.Draft.InstantFishBite,
                     value => this.session.Draft.InstantFishBite = value);
+                this.AddDefinition("bubble_steering", () => this.session.Draft.AutomaticBubbleSteering,
+                    value => this.session.Draft.AutomaticBubbleSteering = value);
                 this.AddNumberDefinition("fish_amount", () => this.session.Draft.PreferFishAmount,
                     value => this.session.Draft.PreferFishAmount = Convert.ToInt32(value), 1, 3, 1);
                 this.AddEnumDefinition("fish_quality", () => this.session.Draft.PreferFishQuality,

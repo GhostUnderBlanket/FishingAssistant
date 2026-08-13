@@ -20,6 +20,12 @@ internal sealed class AutomationPendingState
 
     public int ActionTicks { get; set; }
 
+    public object? BubbleSteeringRod { get; set; }
+
+    public Microsoft.Xna.Framework.Vector2 BubbleSteeringTarget { get; set; }
+
+    public Microsoft.Xna.Framework.Vector2 BubbleSteeringExpectedPosition { get; set; }
+
     public void Clear()
     {
         this.ReadyTicks = 0;
@@ -31,5 +37,8 @@ internal sealed class AutomationPendingState
         this.FishPopupCloseAttempted = false;
         this.Action = PendingAutomationAction.None;
         this.ActionTicks = 0;
+        this.BubbleSteeringRod = null;
+        this.BubbleSteeringTarget = Microsoft.Xna.Framework.Vector2.Zero;
+        this.BubbleSteeringExpectedPosition = Microsoft.Xna.Framework.Vector2.Zero;
     }
 }

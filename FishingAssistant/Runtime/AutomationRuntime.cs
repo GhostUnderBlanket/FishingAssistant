@@ -44,6 +44,7 @@ internal sealed class AutomationRuntime(
         this.Log(this.lateNight.UpdateCurrent(getConfig(), screen.Session));
         this.autoEat.UpdateCurrent(getConfig(), screen.Session);
         this.UpdateLowEnergyStop(screen);
+        this.UpdateBubbleSteering(screen);
         this.UpdateInstantBite();
         this.UpdateAutomaticMinigame(screen);
         this.UpdateAutomaticCatchPopup(screen);
@@ -206,6 +207,43 @@ internal sealed class AutomationRuntime(
                 monitor.Log($"Started an automatic cast for local screen {Context.ScreenId}.", LogLevel.Trace);
                 break;
         }
+    }
+
+    private void UpdateBubbleSteering(AutomationScreenState screen)
+    {
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod is null || !rod.IsBobberInAir)
+        {
+            screen.Pending.BubbleSteeringRod = null;
+            screen.Pending.BubbleSteeringTarget = Microsoft.Xna.Framework.Vector2.Zero;
+            screen.Pending.BubbleSteeringExpectedPosition = Microsoft.Xna.Framework.Vector2.Zero;
+            return;
+        }
+
+        if (screen.Pending.BubbleSteeringRod is null)
+        {
+            if (!rod.TryGetBubbleSteeringTarget(
+                    getConfig().AutomaticBubbleSteering,
+                    isManualCast: !screen.Pending.AutomaticCastInProgress,
+                    out Microsoft.Xna.Framework.Vector2 target))
+                return;
+
+            screen.Pending.BubbleSteeringRod = rod.Identity;
+            screen.Pending.BubbleSteeringTarget = target;
+            screen.Pending.BubbleSteeringExpectedPosition = rod.BobberPosition;
+            monitor.Log($"Started steering a manual cast toward a fishing bubble for local screen {Context.ScreenId}.",
+                LogLevel.Trace);
+        }
+
+        if (!ReferenceEquals(screen.Pending.BubbleSteeringRod, rod.Identity))
+        {
+            screen.Pending.BubbleSteeringRod = null;
+            return;
+        }
+
+        Microsoft.Xna.Framework.Vector2 expectedPosition = screen.Pending.BubbleSteeringExpectedPosition;
+        rod.SteerToward(screen.Pending.BubbleSteeringTarget, ref expectedPosition);
+        screen.Pending.BubbleSteeringExpectedPosition = expectedPosition;
     }
 
     private void UpdateLowEnergyStop(AutomationScreenState screen)

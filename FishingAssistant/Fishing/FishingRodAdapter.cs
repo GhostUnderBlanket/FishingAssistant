@@ -19,6 +19,12 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
 
     public bool IsTimingCast => rod.isTimingCast;
 
+    public bool IsBobberInAir => rod.castedButBobberStillInAir;
+
+    public object Identity => rod;
+
+    public Vector2 BobberPosition => rod.bobber.Value;
+
     public bool IsSupportedFishingMinigame => Game1.currentMinigame is FishingGame { gameDone: false };
 
     public AutoHookConditions ReadAutoHookConditions(
@@ -193,6 +199,41 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
     {
         if (rod.timeUntilFishingBite > 0f)
             rod.timeUntilFishingBite = 0f;
+    }
+
+    public bool TryGetBubbleSteeringTarget(bool enabled, bool isManualCast, out Vector2 target)
+    {
+        Point bubble = player.currentLocation.fishSplashPoint.Value;
+        float flightMilliseconds = rod.animations.Count > 0 ? rod.animations[0].interval : 0f;
+        return BubbleSteeringPolicy.TryGetTarget(new BubbleSteeringConditions(
+            enabled,
+            isManualCast,
+            rod.castedButBobberStillInAir,
+            player.currentLocation.canFishHere(),
+            bubble != Point.Zero && player.currentLocation.isTileFishable(bubble.X, bubble.Y),
+            player.FacingDirection,
+            player.StandingPixel.ToVector2(),
+            rod.bobber.Value,
+            bubble,
+            flightMilliseconds), out target);
+    }
+
+    public bool SteerToward(Vector2 target, ref Vector2 expectedPosition)
+    {
+        if (!rod.castedButBobberStillInAir)
+            return false;
+
+        Vector2 step = BubbleSteeringPolicy.GetSteeringStep(expectedPosition, target, player.FacingDirection);
+        if (step == Vector2.Zero)
+            return true;
+
+        Vector2 nextPosition = expectedPosition + step;
+        Vector2 correction = nextPosition - rod.bobber.Value;
+        rod.bobber.Set(nextPosition);
+        if (rod.animations.Count > 0)
+            rod.animations[0].position += correction;
+        expectedPosition = nextPosition;
+        return false;
     }
 
     private bool IsCastTargetFishable(int castPower)

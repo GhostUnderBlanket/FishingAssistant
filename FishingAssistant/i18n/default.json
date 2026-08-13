@@ -65,6 +65,8 @@
   "config.option.infinite_tackle.description": "Prevent the assistant's fishing workflow from consuming tackle durability.",
   "config.option.instant_bite": "Fish bite instantly",
   "config.option.instant_bite.description": "Remove the normal wait before a fish bites after casting.",
+  "config.option.bubble_steering": "Automatically steer casts toward fishing bubbles",
+  "config.option.bubble_steering.description": "During a manual cast, steer the bobber sideways toward a reachable fishing bubble without changing cast power or moving the player.",
   "config.option.skip_minigame": "Skip the fishing minigame",
   "config.option.skip_minigame.description": "Choose whether eligible fishing minigames are completed instantly.",
   "config.option.fish_amount": "Preferred fish count",
