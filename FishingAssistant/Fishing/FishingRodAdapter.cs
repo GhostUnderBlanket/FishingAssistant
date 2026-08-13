@@ -138,6 +138,14 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
         this.SetCastPower(castPower);
     }
 
+    public void CancelAutomaticCast()
+    {
+        if (rod is { isTimingCast: false, isCasting: false, castedButBobberStillInAir: false })
+            return;
+
+        player.completelyStopAnimatingOrDoingAction();
+    }
+
     private float GetCastStaminaCost()
     {
         return Math.Max(0f, 8f - player.FishingLevel * 0.1f);

@@ -23,8 +23,12 @@ internal enum AutomationTransitionReason
     DayStarted,
     SaveLoaded,
     ReturnedToTitle,
+    Saving,
+    PeerDisconnected,
+    MenuInterrupted,
     LateNight,
     LowEnergy,
+    TimedOut,
     Recovered
 }
 

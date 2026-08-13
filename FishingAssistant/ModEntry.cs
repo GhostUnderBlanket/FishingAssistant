@@ -68,6 +68,7 @@ internal sealed class ModEntry : Mod
         helper.Events.Player.Warped += this.OnWarped;
         helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
         helper.Events.Multiplayer.PeerConnected += this.OnPeerConnected;
+        helper.Events.Multiplayer.PeerDisconnected += this.OnPeerDisconnected;
         helper.Events.Display.RenderedHud += this.OnRenderedHud;
         helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
@@ -192,6 +193,7 @@ internal sealed class ModEntry : Mod
 
     private void OnSaving(object? sender, SavingEventArgs e)
     {
+        this.automationRuntime!.ResetCurrent(AutomationTransitionReason.Saving);
         this.infiniteAttachment!.RestoreAll();
         this.rodEnchantments!.SuspendAllForSave();
     }
@@ -210,6 +212,12 @@ internal sealed class ModEntry : Mod
     {
         if (!e.Peer.IsSplitScreen)
             this.rodEnchantments!.RemoveAllForRemoteConnection();
+    }
+
+    private void OnPeerDisconnected(object? sender, PeerDisconnectedEventArgs e)
+    {
+        if (!e.Peer.IsSplitScreen)
+            this.automationRuntime!.ResetCurrent(AutomationTransitionReason.PeerDisconnected);
     }
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)

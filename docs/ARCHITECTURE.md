@@ -161,6 +161,17 @@ Observed game state may occasionally skip an expected phase between update ticks
 state machine records those jumps as recoveries and adopts the observed safe state;
 future automation actions must still require a legal state before mutating the game.
 
+Only work initiated by the assistant receives a bounded timeout: automatic casting has
+10 seconds to leave its cast phase, while an automatic hook or catch-popup close has 5
+seconds to advance. A timeout cancels the owned action, clears all per-screen pending
+flags, and disables automation for that screen. Manual waiting, manual minigames, and
+manually opened menus are not timed out.
+
+A blocking menu cancels pending assistant-owned casts, hooks, or popup-close attempts
+immediately. The same cancellation path runs when automation is disabled, the equipped
+tool changes, the player warps, saving begins, a remote peer disconnects, or the session
+returns to title. It does not reset a manually started fishing action.
+
 ## Configuration
 
 Saved configuration, validated runtime configuration, and the menu's editable draft are

@@ -67,14 +67,14 @@ All 55 user-editable configuration properties are already represented in the men
 - [x] Make every retained automation state meaningful and reachable. In particular,
   implement `Cooldown` and `Faulted` transitions or remove them and update the roadmap
   and HUD contract.
-- [ ] Define bounded timeouts for states that can otherwise remain stuck after an
+- [x] Define bounded timeouts for states that can otherwise remain stuck after an
   unexpected game transition.
-- [ ] Add an explicit cancellation path which stops pending automatic actions and
+- [x] Add an explicit cancellation path which stops pending automatic actions and
   returns the rod/player input state to vanilla control.
 - [ ] Reset or safely transfer per-screen state on menu interruption, save unload,
   peer disconnect, local-player removal, and every existing warp/day/title/tool-change
   path.
-- [ ] Add event routing for lifecycle cases not currently observed, including remote
+- [x] Add event routing for lifecycle cases not currently observed, including remote
   peer disconnection where service behavior depends on remote-player presence.
 - [ ] Add recovery tests for cancellation during cast timing, unexpected menus, timeout,
   tool replacement, warp, save/load, return to title, disconnect, and screen removal.

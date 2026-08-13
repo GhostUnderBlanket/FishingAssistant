@@ -72,6 +72,19 @@ release-matrix scenarios are completed.
 
 ## Deferred manual checks
 
+### Automation cancellation and timeout recovery
+
+- Disable automation while an assistant-started cast is charging or in flight. Confirm
+  the cast is cancelled, the player can move, and no later hook/recast occurs.
+- Open a blocking menu during an assistant-owned cast, hook attempt, or catch-popup
+  close attempt. Confirm pending assistant work is cleared without cancelling a fishing
+  action that was started manually.
+- Leave an assistant-owned cast, hook, or catch-popup close in an unexpectedly stuck
+  state. Confirm automation disables after its bounded timeout and vanilla input remains
+  available.
+- During automatic fishing, test tool replacement, warp, saving, return to title, and a
+  remote peer disconnect. Confirm pending work does not resume from stale per-screen
+  flags afterward.
 - Verify automatic casting and hooking in each Stardew Valley fishing festival
   minigame, including countdown, active play, timeout, results, and exit behavior.
 - Confirm unrelated festival events never start fishing automation.

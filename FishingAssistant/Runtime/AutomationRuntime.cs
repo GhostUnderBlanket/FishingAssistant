@@ -27,11 +27,20 @@ internal sealed class AutomationRuntime(
         ScreenContext screen = this.screens.Value;
         Tool? currentTool = Game1.player.CurrentTool;
         if (screen.HasObservedTool && !ReferenceEquals(screen.LastTool, currentTool))
-            this.Log(screen.Session.Reset(AutomationTransitionReason.ToolChanged));
+            this.CancelPendingActions(screen, AutomationTransitionReason.ToolChanged, disable: false);
 
         screen.LastTool = currentTool;
         screen.HasObservedTool = true;
-        this.Log(screen.Session.Observe(FishingContextReader.Read(screen.Session.IsEnabled)));
+        FishingObservation observation = FishingContextReader.Read(screen.Session.IsEnabled);
+        this.Log(screen.Session.Observe(observation));
+        AutomationRecoveryConditions recovery = this.GetRecoveryConditions(screen);
+        if (AutomationRecoveryPolicy.ShouldCancelForBlockingMenu(recovery, observation.HasBlockingMenu))
+        {
+            this.CancelPendingActions(screen, AutomationTransitionReason.MenuInterrupted, disable: false);
+            return;
+        }
+        if (this.UpdateRecoveryTimeout(screen))
+            return;
         this.Log(this.lateNight.UpdateCurrent(getConfig(), screen.Session));
         this.autoEat.UpdateCurrent(getConfig(), screen.Session);
         this.UpdateLowEnergyStop(screen);
@@ -45,7 +54,10 @@ internal sealed class AutomationRuntime(
 
     public void ToggleCurrent()
     {
-        AutomationTransition transition = this.screens.Value.Session.Toggle();
+        ScreenContext screen = this.screens.Value;
+        if (screen.Session.IsEnabled)
+            this.ClearPendingActions(screen, cancelAutomaticCast: true);
+        AutomationTransition transition = screen.Session.Toggle();
         this.autoEat.ResetCurrent();
         monitor.Log(
             $"Automation {(this.Current.IsEnabled ? "enabled" : "disabled")} for local screen {Context.ScreenId}.",
@@ -61,26 +73,21 @@ internal sealed class AutomationRuntime(
     public void ResetCurrent(AutomationTransitionReason reason)
     {
         ScreenContext screen = this.screens.Value;
+        this.CancelPendingActions(screen, reason, disable: false);
         screen.HasObservedTool = false;
         screen.LastTool = null;
-        screen.ReadyTicks = 0;
-        screen.AutomaticCastInProgress = false;
-        screen.HookAttemptedForNibble = false;
-        screen.IsPursuingTreasure = false;
-        screen.ConfiguredBobberBar = null;
-        screen.FishPopupVisibleTicks = 0;
-        screen.FishPopupCloseAttempted = false;
         this.autoEat.ResetCurrent();
         if (reason is AutomationTransitionReason.DayStarted or AutomationTransitionReason.SaveLoaded)
             this.lateNight.ResetCurrent();
-        this.ResetTreasureLoot(screen);
-        this.Log(screen.Session.Reset(reason));
     }
 
     public void ResetAll(AutomationTransitionReason reason)
     {
-        foreach (AutomationSession session in this.screens.GetActiveValues().Select(pair => pair.Value.Session))
-            session.Reset(reason);
+        foreach (ScreenContext screen in this.screens.GetActiveValues().Select(pair => pair.Value))
+        {
+            this.ClearPendingActions(screen, cancelAutomaticCast: false);
+            screen.Session.Reset(reason);
+        }
         this.autoEat.ResetAll();
         this.lateNight.ResetAll();
         this.screens.ResetAllScreens();
@@ -95,6 +102,76 @@ internal sealed class AutomationRuntime(
             $"Automation state for local screen {Context.ScreenId}: {transition.Previous} -> " +
             $"{transition.Current} ({transition.Reason}{(transition.WasRecovery ? ", recovered" : "")}).",
             transition.WasRecovery ? LogLevel.Debug : LogLevel.Trace);
+    }
+
+    private bool UpdateRecoveryTimeout(ScreenContext screen)
+    {
+        PendingAutomationAction action = AutomationRecoveryPolicy.GetPendingAction(
+            this.GetRecoveryConditions(screen));
+        if (action == PendingAutomationAction.None)
+        {
+            screen.PendingAction = PendingAutomationAction.None;
+            screen.PendingActionTicks = 0;
+            return false;
+        }
+
+        if (screen.PendingAction != action)
+        {
+            screen.PendingAction = action;
+            screen.PendingActionTicks = 1;
+        }
+        else
+        {
+            screen.PendingActionTicks++;
+        }
+
+        if (!AutomationRecoveryPolicy.HasTimedOut(action, screen.PendingActionTicks))
+            return false;
+
+        monitor.Log(
+            $"Disabled fishing automation for local screen {Context.ScreenId} after {action} timed out.",
+            LogLevel.Warn);
+        this.CancelPendingActions(screen, AutomationTransitionReason.TimedOut, disable: true);
+        return true;
+    }
+
+    private AutomationRecoveryConditions GetRecoveryConditions(ScreenContext screen)
+    {
+        return new AutomationRecoveryConditions(
+            screen.Session.State,
+            screen.AutomaticCastInProgress,
+            screen.HookAttemptedForNibble,
+            screen.FishPopupCloseAttempted);
+    }
+
+    private void CancelPendingActions(
+        ScreenContext screen,
+        AutomationTransitionReason reason,
+        bool disable)
+    {
+        this.ClearPendingActions(screen, cancelAutomaticCast: true);
+        this.autoEat.ResetCurrent();
+        AutomationTransition? transition = disable
+            ? screen.Session.Disable(reason)
+            : screen.Session.Reset(reason);
+        this.Log(transition);
+    }
+
+    private void ClearPendingActions(ScreenContext screen, bool cancelAutomaticCast)
+    {
+        if (cancelAutomaticCast && screen.AutomaticCastInProgress)
+            FishingRodAdapter.ForCurrentPlayer()?.CancelAutomaticCast();
+
+        screen.ReadyTicks = 0;
+        screen.AutomaticCastInProgress = false;
+        screen.HookAttemptedForNibble = false;
+        screen.IsPursuingTreasure = false;
+        screen.ConfiguredBobberBar = null;
+        screen.FishPopupVisibleTicks = 0;
+        screen.FishPopupCloseAttempted = false;
+        screen.PendingAction = PendingAutomationAction.None;
+        screen.PendingActionTicks = 0;
+        this.ResetTreasureLoot(screen);
     }
 
     private void UpdateAutomaticCast(ScreenContext screen)
@@ -448,6 +525,10 @@ internal sealed class AutomationRuntime(
         public int FishPopupVisibleTicks { get; set; }
 
         public bool FishPopupCloseAttempted { get; set; }
+
+        public PendingAutomationAction PendingAction { get; set; }
+
+        public int PendingActionTicks { get; set; }
 
         public object? TreasureMenuIdentity { get; set; }
 
