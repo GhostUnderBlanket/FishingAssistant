@@ -5,18 +5,25 @@ tests and successful builds do not count as in-game verification.
 
 ## Current manual-test baseline
 
-Status recorded on 2026-08-12:
+Status updated on 2026-08-13:
 
-- All in-game testing completed so far has been single-player only.
-- Fishing behavior inside festivals and festival fishing minigames has not been tested
-  in-game yet.
+- Single-player and two-player local split-screen testing has now been completed for
+  the HUD matrix, player-scoped configuration, and ordinary cast-to-catch automation.
+  Multiplayer host/farmhand and mixed split-screen multiplayer remain untested.
+- HUD visibility and placement passed during a supported fishing festival. Complete
+  festival automation behavior and unrelated festival-event compatibility remain
+  untested.
 - Treasure targeting and the treasure chance overrides have not been tested in-game
   yet. `TreasureChance` is now connected to gameplay, so the deferred repeatable test
   can use `Always` to produce a treasure target.
 - Instant fishing-treasure capture has not been tested in-game yet.
-- Automatic catch-popup closing has not been tested in-game yet.
+- Automatic catch-popup closing passed the ordinary cast-to-catch loop; special popup
+  cases such as first catches, records, fish ponds, secret notes, and full inventory
+  remain untested.
 - Instant fish bites have not been tested in-game yet.
-- Automatic fishing-treasure collection has not been tested in-game yet.
+- Automatic fishing-treasure collection passed the ordinary loop and independent-stage
+  disable check; partial stacks, multiple rewards, and every full-inventory outcome
+  remain untested.
 - Fishing-minigame skipping has not been tested in-game yet.
 - Automatic bait attachment and refill has not been tested in-game yet.
 - Automatic tackle attachment has not been tested in-game yet.
@@ -34,12 +41,33 @@ Status recorded on 2026-08-12:
   tested in-game yet.
 - Automatic junk disposal and its stack-delta safeguards have not been tested in-game
   yet.
-- The visual automation status HUD and toolbar-relative placement have not
-  been tested in-game yet.
-- Local split-screen/co-op has not been tested yet.
+- The visual automation status HUD and toolbar-relative placement passed the documented
+  single-player/local split-screen matrix on build `b7101f4`.
+- Local split-screen/co-op passed the scoped HUD, configuration-profile, and ordinary
+  cast-to-catch isolation checks described below. Other feature matrices remain pending.
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
 - Mixed split-screen multiplayer has not been tested yet.
+
+## Passed manual session: 2026-08-13
+
+Environment: Stardew Valley 1.6.15, SMAPI 4.5.2, Fishing Assistant
+`3.0.0-alpha.1` at commit `b7101f4`, single-player and two-player local split-screen.
+
+- HUD passed in small and large windows, non-default UI scale/zoom, toolbar top/bottom,
+  configured left/right placement, ordinary menus, active fishing, a supported fishing
+  festival, and both local viewports. Ordinary menus hide it; fishing contexts show it;
+  each screen stays within its own viewport and uses its own state.
+- Player-scoped config passed with visibly different settings on both local players,
+  Apply in both orders, runtime isolation, return to title, and reload persistence. Each
+  player retained only their own profile and one Apply did not change the other screen.
+- The ordinary cast-to-catch loop passed repeatedly with Automation on and off and with
+  Auto Cast, Auto Hook, Auto Minigame, Auto Close Popup, and Auto Collect Treasure each
+  disabled independently. Manual fishing remained under Vanilla control while disabled.
+- F5 passed during cast charging, bobber flight, waiting, hooking, minigame, catch popup,
+  and treasure handling. The cast already in progress completed through Vanilla, later
+  automatic stages stayed off, re-enabling resumed automation, fishing audio did not
+  stick, and toggling one local player did not interrupt or enable the other.
 
 ## Pending configuration-menu checks
 
@@ -71,6 +99,7 @@ checks still need to be observed in-game before Milestone 2 can be marked comple
   preview, and equipment settings. Apply each menu in either order, return to title,
   reload, and confirm each player keeps only their own profile. Confirm the files under
   `config.players` use stable player IDs and no Apply changes the other screen at runtime.
+  **Passed on `b7101f4`.**
 
 The festival support and multiplayer-safe architecture currently present in the code
 must therefore be treated as implemented but manually unverified until the matching
@@ -80,8 +109,6 @@ release-matrix scenarios are completed.
 
 ### Automation cancellation and timeout recovery
 
-- Disable automation while an assistant-started cast is charging or in flight. Confirm
-  the cast is cancelled, the player can move, and no later hook/recast occurs.
 - Open a blocking menu during an assistant-owned cast, hook attempt, or catch-popup
   close attempt. Confirm pending assistant work is cleared without cancelling a fishing
   action that was started manually.
@@ -180,19 +207,20 @@ release-matrix scenarios are completed.
   small window sizes. Repeat for both split-screen players and confirm each panel uses
   only that screen's session and remains inside its viewport.
 - Repeat the normal cast-and-hook loop in local split-screen with each player alone and
-  both players fishing simultaneously.
+  both players fishing simultaneously. **Passed on `b7101f4`.**
 - During an automatic cast, interrupt with a menu, tool swap, warp, save, return to
   title, and local-player removal. Confirm the rod returns to Vanilla control, the next
   session starts cleanly, and removing either split-screen player leaves no stale HUD or
   automated input on the remaining screen.
 - Toggle Automation off once during each visible stage: cast delay, casting, waiting for
   a bite, hooking, minigame, catch popup, and treasure menu. Confirm no later automatic
-  stage runs until Automation is explicitly enabled again.
+  stage runs until Automation is explicitly enabled again. **Passed on `b7101f4`.**
 - Specifically toggle F5 while the automatic cast is charging and again while its
   bobber is in flight. Confirm Vanilla finishes the cast and its sound normally, while
   the assistant performs no hook, minigame, popup, treasure, or recast action until F5
   is enabled again. Repeat with both local co-op players casting simultaneously and
   confirm toggling one screen doesn't interrupt the other player's rod or audio.
+  **Passed on `b7101f4`.**
 - Repeat the normal and festival fishing checks as multiplayer host and farmhand.
 - Inspect the SMAPI log after each scenario for errors, recoveries, duplicated input,
   or cross-player state leakage.

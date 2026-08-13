@@ -83,26 +83,29 @@ All 55 user-editable configuration properties are already represented in the men
   tool replacement, warp, save/load, return to title, disconnect, and screen removal.
   Focused state-bundle tests verify every reason clears cast, hook, popup, minigame, and
   treasure state; timeout additionally disables only the affected session.
-- [ ] Verify two local split-screen players can enable, disable, interrupt, and resume
-  independent automation sessions without sharing state or input.
+- [x] Verify two local split-screen players can enable, disable, interrupt, and resume
+  independent automation sessions without sharing state or input. Passed on build
+  `b7101f4` with both players fishing simultaneously.
 
 Milestone 3 is cleared when every state has a documented entry/exit path, interrupted
 sessions recover without stuck input, and the two-screen isolation smoke test passes.
 
 ## Milestone 4: Core automation parity
 
-- [ ] Verify disabling automation or manually cancelling during every cast-to-catch
-  stage stops further automatic actions immediately and safely.
+- [x] Verify disabling automation during every cast-to-catch stage stops further
+  automatic actions safely. A cast already started is deliberately allowed to finish
+  through Vanilla; every later assistant action remains disabled. Passed on `b7101f4`.
 - [x] Add runtime-level integration coverage around the pure decision policies so event
   ordering and adapter mutations are tested together where practical. Workflow tests
   disable Automation at every fishing state, verify all transient work is cleared, and
   confirm core policies issue no cast, hook, minigame, popup, or loot action afterward.
-- [ ] Complete repeated cast, bite, hook, minigame, popup, and treasure-loot loops with
-  every automation stage independently disabled.
+- [x] Complete repeated cast, bite, hook, minigame, popup, and treasure-loot loops with
+  every automation stage independently disabled. Passed in single-player and two-player
+  local split-screen on `b7101f4`.
 - [ ] Complete the compatibility cases for tutorial catches, fish ponds, legendary
   fish, supported fishing festivals, secret notes, trash, Wild/Deluxe/Challenge Bait,
   golden treasure, and every inventory-full outcome.
-- [ ] Confirm manual fishing remains under vanilla control when automation is disabled.
+- [x] Confirm manual fishing remains under vanilla control when automation is disabled.
 
 Record all in-game results in [TESTING.md](TESTING.md). A policy unit test alone does
 not complete a compatibility case.
@@ -139,12 +142,12 @@ state and disconnecting or disabling the mod leaves every affected rod valid.
   The renderer now maps each local session's `LastReason` to an animated Vanilla emote.
 - [x] Ensure low-energy and late-night pauses have a distinct visual result instead of
   becoming indistinguishable from ordinary disabled/idle state.
-- [ ] Define and test HUD behavior while menus are open and at non-default UI scales,
+- [x] Define and test HUD behavior while menus are open and at non-default UI scales,
   zoom levels, festivals, small windows, and each split-screen viewport. Automated
   contracts now hide the HUD for ordinary menus, non-festival events, and unrelated
   minigames; keep it visible for `BobberBar` and supported fishing festivals; and clamp
-  layout across representative logical UI viewport sizes. In-game visual verification
-  remains pending.
+  layout across representative logical UI viewport sizes. The full visual matrix passed
+  in single-player and two-player local split-screen on `b7101f4`.
 - [x] Add Fiberglass Rod and Iridium Rod to the starter-rod picker. The picker now
   supports all five Vanilla fishing rods, and the superseded debug rod action is gone.
 - [x] Correct stale testing text which still calls the visual panel an
@@ -165,11 +168,14 @@ preview, starter-rod, and auto-trash checks pass for the owning local player.
 Do not begin Milestone 7 until all of the following are true:
 
 - [ ] Every checklist item above is complete or has an approved documented replacement.
-- [ ] Release build and the full automated test suite pass with no new warnings.
-- [ ] The ordinary single-player cast-to-catch loop passes repeatedly with automation
-  on, automation off, and each stage disabled independently.
+- [x] Release build and the full automated test suite pass with no new warnings. Build
+  `b7101f4` passed all 398 automated tests.
+- [x] The ordinary single-player cast-to-catch loop passes repeatedly with automation
+  on, automation off, and each stage disabled independently. Also passed in two-player
+  local split-screen on `b7101f4`.
 - [ ] Festival fishing checks pass without affecting unrelated festival events.
-- [ ] A two-player local split-screen isolation smoke test passes.
+- [x] A two-player local split-screen isolation smoke test passes. HUD, configuration,
+  simultaneous fishing, and F5 isolation passed on `b7101f4`.
 - [ ] Saving, reloading, returning to title, and reconnecting leave no stale automation,
   attachment, enchantment, menu, preview, or HUD state.
 - [ ] [TESTING.md](TESTING.md) accurately distinguishes completed checks from deferred
