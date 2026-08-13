@@ -38,7 +38,7 @@ internal sealed class ModEntry : Mod
             key => helper.Translation.Get(key));
         this.automationHud = new AutomationHudRenderer();
         this.fishPreview = new FishPreviewRenderer();
-        this.starterFishingRod = new StarterFishingRodService(this.Monitor, key => helper.Translation.Get(key));
+        this.starterFishingRod = new StarterFishingRodService(this.Monitor);
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
         this.baitAttachment = new BaitAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.tackleAttachment = new TackleAttachmentService(this.Monitor, key => helper.Translation.Get(key));
@@ -262,7 +262,6 @@ internal sealed class ModEntry : Mod
             ConfigManager.CreateDefaultDraft,
             this.itemCatalog!,
             this.Helper.Translation,
-            this.starterFishingRod!.AddTestRodFromMenu,
             this.debugWarp!.WarpToBeachFishingSpot
         );
         return true;

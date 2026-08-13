@@ -117,8 +117,6 @@
   "config.option.toggle_automation.description": "The keybind used to enable or disable fishing automation for this local player.",
   "config.option.open_config": "Open configuration menu",
   "config.option.open_config.description": "The keybind used to open this custom configuration menu. Controller Back also opens it while no menu is active.",
-  "config.option.add_test_rod": "Add test fishing rod",
-  "config.option.add_test_rod.description": "Add an Advanced Iridium Rod when this local player has no fishing rod.",
   "config.option.warp_beach": "Warp to beach fishing spot",
   "config.option.warp_beach.description": "Warp this local player near Willy's Fish Shop for quick ocean-fishing tests.",
   "config.keybind.listening": "Press a key or button...",
@@ -191,8 +189,5 @@
   "hud.energy.no_food": "Fishing automation paused: energy reached the eating threshold, but no suitable food was consumed.",
   "hud.energy.exhaustion": "Fishing automation paused to prevent the next cast from exhausting this player.",
   "hud.enchantment.remote_unsupported": "Temporary rod enchantments are disabled while remote players are connected.",
-  "debug.test_rod.already_owned": "This player already has a fishing rod.",
-  "debug.test_rod.inventory_full": "The inventory is full. Free a slot and try again.",
-  "debug.test_rod.failed": "The test fishing rod could not be added. Check the SMAPI log.",
   "debug.warp_beach.unavailable": "The beach warp is unavailable during an event or minigame."
 }

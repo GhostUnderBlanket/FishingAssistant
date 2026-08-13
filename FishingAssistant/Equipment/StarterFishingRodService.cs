@@ -14,10 +14,8 @@ internal enum FishingRodGrantResult
     WorldNotReady
 }
 
-internal sealed class StarterFishingRodService(IMonitor monitor, Func<string, string> translate)
+internal sealed class StarterFishingRodService(IMonitor monitor)
 {
-    internal const string TestRodItemId = ModConfig.DefaultStarterRod;
-
     public FishingRodGrantResult EnsureRod(string itemId)
     {
         if (!Context.IsWorldReady)
@@ -37,14 +35,14 @@ internal sealed class StarterFishingRodService(IMonitor monitor, Func<string, st
         if (!player.couldInventoryAcceptThisItem(rod))
         {
             monitor.Log(
-                $"Couldn't add a test fishing rod for local screen {Context.ScreenId} because the inventory is full.",
+                $"Couldn't add the configured starter fishing rod for local screen {Context.ScreenId} because the inventory is full.",
                 LogLevel.Warn);
             return FishingRodGrantResult.InventoryFull;
         }
 
         if (!player.addItemToInventoryBool(rod))
         {
-            monitor.Log($"Couldn't add a test fishing rod for local screen {Context.ScreenId}.", LogLevel.Warn);
+            monitor.Log($"Couldn't add the configured starter fishing rod for local screen {Context.ScreenId}.", LogLevel.Warn);
             return FishingRodGrantResult.InventoryFull;
         }
 
@@ -53,16 +51,5 @@ internal sealed class StarterFishingRodService(IMonitor monitor, Func<string, st
             $"Added {rod.DisplayName} for local screen {Context.ScreenId} because the player had no fishing rod.",
             LogLevel.Info);
         return FishingRodGrantResult.Granted;
-    }
-
-    public void AddTestRodFromMenu()
-    {
-        FishingRodGrantResult result = this.EnsureRod(TestRodItemId);
-        if (result == FishingRodGrantResult.AlreadyOwned)
-            Game1.addHUDMessage(new HUDMessage(translate("debug.test_rod.already_owned")));
-        else if (result == FishingRodGrantResult.InventoryFull)
-            Game1.addHUDMessage(new HUDMessage(translate("debug.test_rod.inventory_full"), HUDMessage.error_type));
-        else if (result is FishingRodGrantResult.InvalidItem or FishingRodGrantResult.WorldNotReady)
-            Game1.addHUDMessage(new HUDMessage(translate("debug.test_rod.failed"), HUDMessage.error_type));
     }
 }

@@ -25,7 +25,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly Func<ConfigEditSession, ConfigValidationReport> apply;
     private readonly Func<string, string> translate;
     private readonly IConfigItemSource itemSource;
-    private readonly Action addTestFishingRod;
     private readonly Action warpToBeachFishingSpot;
     private readonly ConfigResetWorkflow resetWorkflow;
     private readonly List<ControlDefinition> definitions = [];
@@ -51,14 +50,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<ModConfig> createDefaults,
         IConfigItemSource itemSource,
         ITranslationHelper translations,
-        Action addTestFishingRod,
         Action warpToBeachFishingSpot)
     {
         this.session = session;
         this.apply = apply;
         this.itemSource = itemSource;
         this.translate = key => translations.Get(key);
-        this.addTestFishingRod = addTestFishingRod;
         this.warpToBeachFishingSpot = warpToBeachFishingSpot;
         this.resetWorkflow = new ConfigResetWorkflow(createDefaults);
 
@@ -695,9 +692,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.OpenConfigMenuButton = value);
                 break;
             case ConfigCategory.Debug:
-                this.AddActionDefinition("add_test_rod",
-                    () => this.translate("config.action.add"),
-                    this.addTestFishingRod);
                 this.AddActionDefinition("warp_beach",
                     () => this.translate("config.action.warp"),
                     this.warpToBeachFishingSpot);

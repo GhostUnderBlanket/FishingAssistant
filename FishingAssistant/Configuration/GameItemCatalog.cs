@@ -5,12 +5,14 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class GameItemCatalog : IItemCatalog, IConfigItemSource
 {
-    private static readonly HashSet<string> SupportedStarterRods =
-    [
+    internal static readonly IReadOnlySet<string> SupportedStarterRods = new HashSet<string>
+    {
         "(T)TrainingRod",
         "(T)BambooPole",
+        "(T)FiberglassRod",
+        "(T)IridiumRod",
         "(T)AdvancedIridiumRod"
-    ];
+    };
 
     public ConfigItem? Find(string itemId)
     {

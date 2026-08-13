@@ -128,8 +128,8 @@ state and disconnecting or disabling the mod leaves every affected rod valid.
   becoming indistinguishable from ordinary disabled/idle state.
 - [ ] Define and test HUD behavior while menus are open and at non-default UI scales,
   zoom levels, festivals, small windows, and each split-screen viewport.
-- [ ] Add Fiberglass Rod and Iridium Rod to the starter-rod picker, or document why only
-  Training Rod, Bamboo Pole, and Advanced Iridium Rod are supported.
+- [x] Add Fiberglass Rod and Iridium Rod to the starter-rod picker. The picker now
+  supports all five Vanilla fishing rods, and the superseded debug rod action is gone.
 - [x] Correct stale testing text which still calls the visual panel an
   "automation/treasure status HUD" after the treasure icon was retired.
 - [ ] Verify difficulty, bite timing, treasure chances, perfect catch, quality, size,
