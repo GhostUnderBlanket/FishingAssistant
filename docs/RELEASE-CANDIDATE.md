@@ -7,8 +7,9 @@ leaks, stuck automation, or a misleading release experience.
 
 ## 1. Resolve release-blocking known issues
 
-- [ ] Fix controller keybind capture so the activation press is ignored and the next
-  keyboard, mouse, or controller input persists for the correct local player.
+- [ ] Fix mouse and controller keybind capture so the activation input is ignored until
+  released and the next keyboard, mouse, or controller input persists for the correct
+  local player.
 - [ ] Fix Fish Preview placement in horizontal and vertical local split-screen across
   representative UI-scale and zoom settings.
 - [ ] Re-test both fixes with keyboard/mouse and controller and update
@@ -76,4 +77,3 @@ coverage, but only these risk-based checks block the first RC:
   artifact, and publish it for opt-in testing.
 - [ ] Record the exact game, SMAPI, mod version, commit, topology, and test results in
   [TESTING.md](TESTING.md).
-
