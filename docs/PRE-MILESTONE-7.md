@@ -48,7 +48,7 @@ Completed on 2026-08-13. Release verification passed with 265 automated tests.
   visual controls constrain values so Apply-time corrections aren't normally needed.
 - [x] Add a reusable disabled state and unavailable-reason presentation for controls
   whose behavior is unsafe or unsupported in the current context.
-- [ ] Support gamepad trigger category navigation in addition to shoulder buttons.
+- [x] Support gamepad trigger category navigation in addition to shoulder buttons.
 - [ ] Rebuild layout, clickable bounds, and snappy-navigation links after locale,
   effective UI scale, and option-visibility changes.
 - [ ] Add reusable section-header and description-block controls, or document the

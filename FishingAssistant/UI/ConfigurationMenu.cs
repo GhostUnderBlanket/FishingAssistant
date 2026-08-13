@@ -193,6 +193,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
         if (this.IsListeningForKeybind)
             return;
 
+        int? categoryDirection = CategoryNavigationInput.GetDirection(button);
+        if (categoryDirection is not null)
+        {
+            this.ChangeCategory(categoryDirection.Value);
+            return;
+        }
+
         switch (button)
         {
             case Buttons.A:
@@ -200,12 +207,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 break;
             case Buttons.B:
                 this.exitThisMenu();
-                break;
-            case Buttons.LeftShoulder:
-                this.ChangeCategory(-1);
-                break;
-            case Buttons.RightShoulder:
-                this.ChangeCategory(1);
                 break;
             case Buttons.DPadUp:
             case Buttons.LeftThumbstickUp:
