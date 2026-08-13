@@ -90,67 +90,36 @@ internal sealed class AutomationHudRenderer
         AutomationHudVisual visual,
         float opacity)
     {
-        if (bounds.Width < 8 || bounds.Height < 8)
+        if (bounds.Width < 16 || bounds.Height < 16)
             return;
 
-        DrawRectangle(batch, bounds, Color.Black * (0.8f * opacity));
-        Rectangle inner = new(bounds.X + 2, bounds.Y + 2, bounds.Width - 4, bounds.Height - 4);
-        DrawRectangle(batch, inner, visual.BadgeColor * opacity);
-
-        int pixel = Math.Max(1, inner.Width / 7);
-        int glyphSize = pixel * 5;
-        int x = inner.Center.X - glyphSize / 2;
-        int y = inner.Center.Y - glyphSize / 2;
-        Color glyphColor = (visual.Badge == AutomationHudBadge.LateNight
-            ? Color.LightYellow
-            : Color.White) * opacity;
-
-        switch (visual.Badge)
+        int emoteIndex = visual.Badge switch
         {
-            case AutomationHudBadge.Disabled:
-                DrawCross(batch, x, y, pixel, glyphColor);
-                break;
-            case AutomationHudBadge.Paused:
-                DrawRectangle(batch, new Rectangle(x, y, pixel, glyphSize), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel * 4, y, pixel, glyphSize), glyphColor);
-                break;
-            case AutomationHudBadge.LateNight:
-                DrawRectangle(batch, new Rectangle(x, y, pixel * 4, pixel), glyphColor);
-                DrawRectangle(batch, new Rectangle(x, y, pixel, glyphSize), glyphColor);
-                DrawRectangle(batch, new Rectangle(x, y + pixel * 4, pixel * 4, pixel), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel * 3, y + pixel, pixel, pixel), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel * 3, y + pixel * 3, pixel, pixel), glyphColor);
-                break;
-            case AutomationHudBadge.LowEnergy:
-                DrawRectangle(batch, new Rectangle(x + pixel * 2, y, pixel * 2, pixel * 2), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel, y + pixel * 2, pixel * 3, pixel), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel, y + pixel * 3, pixel * 2, pixel * 2), glyphColor);
-                break;
-            case AutomationHudBadge.Warning:
-                DrawRectangle(batch, new Rectangle(x + pixel * 2, y, pixel, pixel * 3), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel * 2, y + pixel * 4, pixel, pixel), glyphColor);
-                break;
-            case AutomationHudBadge.Recovered:
-                DrawRectangle(batch, new Rectangle(x, y + pixel * 2, pixel * 2, pixel), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel, y + pixel * 3, pixel, pixel), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel * 2, y + pixel * 2, pixel, pixel), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel * 3, y + pixel, pixel, pixel), glyphColor);
-                DrawRectangle(batch, new Rectangle(x + pixel * 4, y, pixel, pixel), glyphColor);
-                break;
-        }
-    }
+            AutomationHudBadge.Disabled => Character.xEmote,
+            AutomationHudBadge.Paused => Character.pauseEmote,
+            AutomationHudBadge.LateNight => Character.sleepEmote,
+            AutomationHudBadge.LowEnergy => Character.sadEmote,
+            AutomationHudBadge.Warning => Character.exclamationEmote,
+            AutomationHudBadge.Recovered => Character.happyEmote,
+            _ => -1
+        };
+        if (emoteIndex < 0)
+            return;
 
-    private static void DrawCross(SpriteBatch batch, int x, int y, int pixel, Color color)
-    {
-        for (int index = 0; index < 5; index++)
-        {
-            DrawRectangle(batch, new Rectangle(x + index * pixel, y + index * pixel, pixel, pixel), color);
-            DrawRectangle(batch, new Rectangle(x + (4 - index) * pixel, y + index * pixel, pixel, pixel), color);
-        }
-    }
-
-    private static void DrawRectangle(SpriteBatch batch, Rectangle bounds, Color color)
-    {
-        batch.Draw(Game1.staminaRect, bounds, color);
+        const int sourceSize = 16;
+        Rectangle source = new(
+            emoteIndex * sourceSize % Game1.emoteSpriteSheet.Width,
+            emoteIndex * sourceSize / Game1.emoteSpriteSheet.Width * sourceSize,
+            sourceSize,
+            sourceSize);
+        batch.Draw(
+            Game1.emoteSpriteSheet,
+            bounds,
+            source,
+            Color.White * opacity,
+            0f,
+            Vector2.Zero,
+            SpriteEffects.None,
+            1f);
     }
 }

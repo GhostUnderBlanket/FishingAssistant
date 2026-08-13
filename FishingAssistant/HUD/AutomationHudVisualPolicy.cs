@@ -11,31 +11,30 @@ internal static class AutomationHudVisualPolicy
         AutomationTransitionReason reason)
     {
         if (reason == AutomationTransitionReason.LateNight)
-            return new(Color.White * 0.2f, AutomationHudBadge.LateNight, Color.MidnightBlue);
+            return new(Color.White * 0.2f, AutomationHudBadge.LateNight);
 
         if (reason == AutomationTransitionReason.LowEnergy)
-            return new(Color.White * 0.2f, AutomationHudBadge.LowEnergy, Color.DarkOrange);
+            return new(Color.White * 0.2f, AutomationHudBadge.LowEnergy);
 
         if (reason == AutomationTransitionReason.TimedOut)
-            return new(Color.White * 0.2f, AutomationHudBadge.Warning, Color.IndianRed);
+            return new(Color.White * 0.2f, AutomationHudBadge.Warning);
 
         if (!enabled)
-            return new(Color.White * 0.2f, AutomationHudBadge.Disabled, Color.DarkRed);
+            return new(Color.White * 0.2f, AutomationHudBadge.Disabled);
 
         if (state == AutomationState.Paused || reason == AutomationTransitionReason.MenuInterrupted)
-            return new(Color.Gold, AutomationHudBadge.Paused, Color.Goldenrod);
+            return new(Color.Gold, AutomationHudBadge.Paused);
 
         if (reason == AutomationTransitionReason.Recovered)
-            return new(Color.LightGreen, AutomationHudBadge.Recovered, Color.SeaGreen);
+            return new(Color.LightGreen, AutomationHudBadge.Recovered);
 
-        return new(Color.White, AutomationHudBadge.None, Color.Transparent);
+        return new(Color.White, AutomationHudBadge.None);
     }
 }
 
 internal sealed record AutomationHudVisual(
     Color IconTint,
-    AutomationHudBadge Badge,
-    Color BadgeColor);
+    AutomationHudBadge Badge);
 
 internal enum AutomationHudBadge
 {

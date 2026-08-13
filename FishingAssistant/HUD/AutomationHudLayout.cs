@@ -17,8 +17,8 @@ internal static class AutomationHudLayout
 {
     public const int BoxSize = 96;
     public const int IconSize = 20;
-    public const int BadgeSize = 24;
-    public const int BadgeInset = 7;
+    public const int BadgeSize = 32;
+    public const int BadgeInset = 4;
     public const int ScreenMargin = 8;
     public const int ToolbarGap = 2;
     public const float IconScale = 2f;

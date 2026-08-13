@@ -166,7 +166,7 @@ release-matrix scenarios are completed.
   changed.
 - Verify the visual status HUD with F5 on/off, every automation state, and each badge:
   ordinary disabled, menu pause, late night, low energy, action timeout, and recovery.
-  Verify badge colors and pixel glyphs remain readable. Test toolbar pinned and
+  Verify the Vanilla emotes remain readable. Test toolbar pinned and
   automatic top/bottom movement,
   configured left/right placement, UI scale and zoom settings, menus, festivals, and
   small window sizes. Repeat for both split-screen players and confirm each panel uses

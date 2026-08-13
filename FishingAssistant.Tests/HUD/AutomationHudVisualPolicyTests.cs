@@ -42,7 +42,6 @@ public sealed class AutomationHudVisualPolicyTests
             (AutomationTransitionReason)reason);
 
         Assert.Equal((AutomationHudBadge)expectedBadge, result.Badge);
-        Assert.NotEqual(Color.Transparent, result.BadgeColor);
     }
 
     [Fact]
