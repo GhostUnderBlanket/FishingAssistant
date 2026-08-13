@@ -72,6 +72,10 @@ the selected vanilla power and uses it for later automatic casts in that session
 threshold keep the existing session value. Disabling automation, changing tools,
 warping, saving/loading, returning to title, and other lifecycle resets clear the
 learned value; manual casts while automation is disabled remain entirely vanilla.
+Automatic recasting also waits until every cast/use-tool input from the previous catch
+has been released, then restarts its configured recast delay. Holding the input through
+the catch cycle therefore cannot leave a new automatic cast stuck on the power bar or
+send it into recovery timeout; a new press after release is treated as manual input.
 
 In Catch Assistance, treasure controls are ordered as Target Fishing Treasure,
 Collect Treasure During the Minigame Instantly, Treasure Chest Ignore List, then When

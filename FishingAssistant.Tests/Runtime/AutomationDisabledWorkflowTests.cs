@@ -15,7 +15,7 @@ public sealed class AutomationDisabledWorkflowTests
 
         Assert.Equal(AutoCastDecision.Reset, AutoCastPolicy.Decide(new(
             screen.Session.IsEnabled, true, AutomationState.Ready, true, true, false, true,
-            false, false, true), readyTicks: 60, requiredReadyTicks: 60));
+            false, false, true, true), readyTicks: 60, requiredReadyTicks: 60));
         Assert.Equal(AutoHookDecision.Wait, AutoHookPolicy.Decide(new(
             screen.Session.IsEnabled, true, AutomationState.Hooking, true, false, false,
             false, false, false, true)));

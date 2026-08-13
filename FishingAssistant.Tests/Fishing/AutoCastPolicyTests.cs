@@ -6,7 +6,7 @@ namespace FishingAssistant.Tests.Fishing;
 public sealed class AutoCastPolicyTests
 {
     private static AutoCastConditions SafeConditions => new(
-        true, true, AutomationState.Ready, true, true, false, true, false, false, true);
+        true, true, AutomationState.Ready, true, true, false, true, false, false, true, true);
 
     [Fact]
     public void Decide_WaitsUntilConfiguredDelayHasElapsed()
@@ -44,6 +44,14 @@ public sealed class AutoCastPolicyTests
     public void Decide_CastsImmediatelyWhenDelayIsZero()
     {
         Assert.Equal(AutoCastDecision.Cast, AutoCastPolicy.Decide(SafeConditions, 0, 0));
+    }
+
+    [Fact]
+    public void Decide_WaitsForCastInputFromPreviousCatchToBeReleased()
+    {
+        AutoCastConditions conditions = SafeConditions with { IsCastInputReleased = false };
+
+        Assert.Equal(AutoCastDecision.Reset, AutoCastPolicy.Decide(conditions, 59, 60));
     }
 
     [Fact]

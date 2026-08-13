@@ -1,5 +1,6 @@
 using FishingAssistant.Runtime;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Enchantments;
@@ -73,8 +74,17 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             !this.DoesCastConsumeStamina() || player.Stamina > staminaCost,
             Game1.isFestival(),
             this.IsSupportedFishingMinigame,
+            IsCastInputReleased(),
             this.IsCastTargetFishable(castPower)
         );
+    }
+
+    internal static bool IsCastInputReleased()
+    {
+        return Game1.areAllOfTheseKeysUp(Game1.GetKeyboardState(), Game1.options.useToolButton)
+            && Game1.input.GetMouseState().LeftButton == ButtonState.Released
+            && (!Game1.options.gamepadControls
+                || Game1.input.GetGamePadState().IsButtonUp(Buttons.X));
     }
 
     public LowEnergyStopConditions ReadLowEnergyStopConditions(
