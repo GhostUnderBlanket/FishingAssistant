@@ -10,57 +10,61 @@ namespace FishingAssistant.UI;
 
 internal sealed class JunkListMenu : IClickableMenu
 {
+    private const float CardStateScale = 0.62f;
     private const int FirstItemId = 1000;
     private const int ScrollUpId = 2000;
     private const int ScrollDownId = 2001;
     private const int DoneId = 2002;
-    private const int EditJunkId = 2010;
-    private const int EditIgnoreId = 2011;
 
     private readonly IReadOnlyList<ConfigItem> allItems;
-    private readonly List<string> junkIds;
-    private readonly List<string> ignoreIds;
+    private readonly List<string> selectedIds;
     private readonly Func<string, string> translate;
     private readonly bool treasureIgnoreOnly;
     private readonly List<ItemCard> visibleCards = [];
+    private readonly List<int> visibleSeparatorYs = [];
     private readonly List<ClickableComponent> buttons = [];
     private IReadOnlyList<ConfigItem> filteredItems = [];
+    private IReadOnlyList<ItemRow> itemRows = [];
     private ItemPickerLayout layout = null!;
     private TextBox searchBox = null!;
     private Rectangle searchBounds;
     private string searchText = "";
     private string hoverText = "";
     private int topRow;
-    private JunkListMode mode = JunkListMode.Junk;
+    private JunkItemState SelectedState => this.treasureIgnoreOnly ? JunkItemState.Ignore : JunkItemState.Junk;
 
     public JunkListMenu(
         List<string> junkIds,
-        List<string> ignoreIds,
         IConfigItemSource itemSource,
         Func<string, string> translate)
+        : this(junkIds, itemSource, translate, treasureIgnoreOnly: false)
     {
-        this.junkIds = junkIds;
-        this.ignoreIds = ignoreIds;
+    }
+
+    private JunkListMenu(
+        List<string> selectedIds,
+        IConfigItemSource itemSource,
+        Func<string, string> translate,
+        bool treasureIgnoreOnly)
+    {
+        this.selectedIds = selectedIds;
         this.translate = translate;
+        this.treasureIgnoreOnly = treasureIgnoreOnly;
         this.allItems = itemSource.GetAllObjects();
         this.filteredItems = this.allItems;
         this.RebuildComponents();
         Game1.playSound("bigSelect");
     }
 
-    public JunkListMenu(
+    public static JunkListMenu CreateTreasureIgnoreMenu(
         List<string> treasureIgnoreIds,
         IConfigItemSource itemSource,
         Func<string, string> translate)
-        : this([], treasureIgnoreIds, itemSource, translate)
     {
-        this.treasureIgnoreOnly = true;
-        this.mode = JunkListMode.Ignore;
-        this.RebuildComponents();
+        return new JunkListMenu(treasureIgnoreIds, itemSource, translate, treasureIgnoreOnly: true);
     }
 
-    private int MaximumTopRow => Math.Max(0,
-        (int)Math.Ceiling(this.filteredItems.Count / (double)this.layout.Columns) - this.layout.Rows);
+    private int MaximumTopRow => Math.Max(0, this.itemRows.Count - this.layout.Rows);
 
     public override bool areGamePadControlsImplemented() => true;
 
@@ -103,11 +107,14 @@ internal sealed class JunkListMenu : IClickableMenu
         if (card is not null)
         {
             JunkItemState state = JunkListSelection.Toggle(
-                this.junkIds,
-                this.ignoreIds,
+                this.selectedIds,
                 card.Item.QualifiedItemId,
-                this.mode);
+                this.SelectedState);
             Game1.playSound(state == JunkItemState.Normal ? "trashcan" : "coin");
+            this.RebuildItemRows();
+            this.topRow = Math.Clamp(this.topRow, 0, this.MaximumTopRow);
+            this.RebuildVisibleCards();
+            this.BuildNavigation();
             return;
         }
 
@@ -122,14 +129,6 @@ internal sealed class JunkListMenu : IClickableMenu
                 break;
             case DoneId:
                 this.exitThisMenu();
-                break;
-            case EditJunkId:
-                if (this.treasureIgnoreOnly)
-                    break;
-                this.SetMode(JunkListMode.Junk);
-                break;
-            case EditIgnoreId:
-                this.SetMode(JunkListMode.Ignore);
                 break;
         }
     }
@@ -201,13 +200,6 @@ internal sealed class JunkListMenu : IClickableMenu
             case Buttons.B:
                 this.exitThisMenu();
                 break;
-            case Buttons.LeftShoulder:
-                if (!this.treasureIgnoreOnly)
-                    this.SetMode(JunkListMode.Junk);
-                break;
-            case Buttons.RightShoulder:
-                this.SetMode(JunkListMode.Ignore);
-                break;
         }
     }
 
@@ -225,6 +217,7 @@ internal sealed class JunkListMenu : IClickableMenu
             this.searchText = this.searchBox.Text;
             this.filteredItems = JunkListSelection.Filter(this.allItems, this.searchText);
             this.topRow = 0;
+            this.RebuildItemRows();
             this.RebuildVisibleCards();
             this.BuildNavigation();
         }
@@ -247,19 +240,27 @@ internal sealed class JunkListMenu : IClickableMenu
         }
 
         Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
+        foreach (int separatorY in this.visibleSeparatorYs)
+        {
+            batch.Draw(Game1.staminaRect,
+                new Rectangle(
+                    this.layout.ContentX,
+                    separatorY - MenuVisualMetrics.ItemGroupSeparatorThickness / 2,
+                    this.layout.ContentWidth,
+                    MenuVisualMetrics.ItemGroupSeparatorThickness),
+                MenuVisualMetrics.ItemGroupSeparatorColor);
+        }
         foreach (ItemCard card in this.visibleCards)
             this.DrawCard(batch, card, card.Component.bounds.Contains(mouse) || this.currentlySnappedComponent == card.Component);
 
         foreach (ClickableComponent button in this.buttons)
         {
             bool highlighted = button.bounds.Contains(mouse)
-                || this.currentlySnappedComponent == button
-                || button.myID == EditJunkId && this.mode == JunkListMode.Junk
-                || button.myID == EditIgnoreId && this.mode == JunkListMode.Ignore;
+                || this.currentlySnappedComponent == button;
             this.DrawButton(batch, button, highlighted);
         }
 
-        if (this.filteredItems.Count == 0)
+        if (this.itemRows.Count == 0)
         {
             string empty = this.translate("config.junk_picker.empty");
             Vector2 size = Game1.smallFont.MeasureString(empty);
@@ -290,7 +291,7 @@ internal sealed class JunkListMenu : IClickableMenu
         this.height = this.layout.Height;
         this.initializeUpperRightCloseButton();
 
-        int searchWidth = Math.Min(420, Math.Max(100, (this.layout.ContentWidth - 16) * 55 / 100));
+        int searchWidth = this.layout.ContentWidth;
         this.searchBox = new TextBox(
             Game1.content.Load<Texture2D>("LooseSprites\\textBox"),
             null,
@@ -298,12 +299,13 @@ internal sealed class JunkListMenu : IClickableMenu
             Game1.textColor)
         {
             X = this.layout.ContentX,
-            Y = this.layout.Y + this.layout.HeaderHeight + 4,
+            Y = this.layout.Y + this.layout.HeaderHeight + 16,
             Width = searchWidth,
             Height = 48,
             Text = this.searchText
         };
         this.searchBounds = new Rectangle(this.searchBox.X, this.searchBox.Y, this.searchBox.Width, this.searchBox.Height);
+        this.RebuildItemRows();
         this.topRow = Math.Clamp(this.topRow, 0, this.MaximumTopRow);
         this.RebuildVisibleCards();
         this.BuildButtons();
@@ -313,27 +315,72 @@ internal sealed class JunkListMenu : IClickableMenu
     private void RebuildVisibleCards()
     {
         this.visibleCards.Clear();
-        int start = this.topRow * this.layout.Columns;
-        IEnumerable<(ConfigItem Item, int Index)> items = this.filteredItems
-            .Select((item, index) => (item, index))
-            .Skip(start)
-            .Take(this.layout.PageSize);
-
-        foreach ((ConfigItem item, int index) in items)
+        this.visibleSeparatorYs.Clear();
+        (ItemRow Row, int VisibleRow)[] visibleRows = this.itemRows
+            .Skip(this.topRow)
+            .Take(this.layout.Rows)
+            .Select((row, index) => (row, index))
+            .ToArray();
+        int separatorRow = Array.FindIndex(visibleRows,
+            entry => entry.VisibleRow > 0 && entry.Row.StartsNormalGroup);
+        int separatorGap = MenuVisualMetrics.ItemGroupSeparatorThickness
+            + MenuVisualMetrics.ItemGroupSeparatorVerticalPadding * 2;
+        int separatorExtraGap = separatorRow >= 0
+            ? Math.Max(0, separatorGap - this.layout.Gap)
+            : 0;
+        int visibleCardHeight = visibleRows.Length == 0
+            ? this.layout.CardHeight
+            : Math.Min(this.layout.CardHeight, Math.Max(1,
+                (this.layout.ContentBottom - this.layout.ContentTop
+                    - this.layout.Gap * Math.Max(0, visibleRows.Length - 1)
+                    - separatorExtraGap) / visibleRows.Length));
+        int componentIndex = 0;
+        int rowY = this.layout.ContentTop;
+        foreach ((ItemRow row, int visibleRow) in visibleRows)
         {
-            int visibleIndex = index - start;
-            int column = visibleIndex % this.layout.Columns;
-            int row = visibleIndex / this.layout.Columns;
-            Rectangle bounds = new(
-                this.layout.ContentX + column * (this.layout.CardWidth + this.layout.Gap),
-                this.layout.ContentTop + row * (this.layout.CardHeight + this.layout.Gap),
-                this.layout.CardWidth,
-                this.layout.CardHeight
-            );
-            this.visibleCards.Add(new ItemCard(
-                item,
-                new ClickableComponent(bounds, item.DisplayName) { myID = FirstItemId + visibleIndex }
-            ));
+            if (visibleRow == separatorRow)
+            {
+                int previousRowBottom = rowY - this.layout.Gap;
+                this.visibleSeparatorYs.Add(previousRowBottom + separatorGap / 2);
+                rowY += separatorExtraGap;
+            }
+
+            for (int column = 0; column < row.Items.Count; column++)
+            {
+                ConfigItem item = row.Items[column];
+                Rectangle bounds = new(
+                    this.layout.ContentX + column * (this.layout.CardWidth + this.layout.Gap),
+                    rowY,
+                    this.layout.CardWidth,
+                    visibleCardHeight);
+                this.visibleCards.Add(new ItemCard(
+                    item,
+                    new ClickableComponent(bounds, item.DisplayName) { myID = FirstItemId + componentIndex },
+                    visibleRow,
+                    column));
+                componentIndex++;
+            }
+
+            rowY += visibleCardHeight + this.layout.Gap;
+        }
+    }
+
+    private void RebuildItemRows()
+    {
+        JunkListGroups groups = JunkListSelection.Group(this.filteredItems, this.selectedIds);
+        List<ItemRow> rows = [];
+        this.AddRows(rows, groups.Selected, startsNormalGroup: false);
+        this.AddRows(rows, groups.Normal, startsNormalGroup: groups.Selected.Count > 0);
+        this.itemRows = rows;
+    }
+
+    private void AddRows(List<ItemRow> rows, IReadOnlyList<ConfigItem> items, bool startsNormalGroup)
+    {
+        for (int index = 0; index < items.Count; index += this.layout.Columns)
+        {
+            rows.Add(new ItemRow(
+                items.Skip(index).Take(this.layout.Columns).ToArray(),
+                startsNormalGroup && index == 0));
         }
     }
 
@@ -344,20 +391,6 @@ internal sealed class JunkListMenu : IClickableMenu
         int arrowSize = buttonHeight;
         int doneWidth = Math.Min(220, Math.Max(100, this.layout.ContentWidth / 3));
         this.buttons.Clear();
-        if (!this.treasureIgnoreOnly)
-        {
-            int modeGap = 8;
-            int modeLeft = this.searchBounds.Right + modeGap;
-            int modeWidth = Math.Max(1, (this.layout.ContentX + this.layout.ContentWidth - modeLeft - modeGap) / 2);
-            this.buttons.Add(new ClickableComponent(
-                new Rectangle(modeLeft, this.searchBounds.Y, modeWidth, this.searchBounds.Height),
-                this.translate("config.junk_picker.mode_junk"))
-            { myID = EditJunkId });
-            this.buttons.Add(new ClickableComponent(
-                new Rectangle(modeLeft + modeWidth + modeGap, this.searchBounds.Y, modeWidth, this.searchBounds.Height),
-                this.translate("config.junk_picker.mode_ignore"))
-            { myID = EditIgnoreId });
-        }
         this.buttons.Add(new ClickableComponent(
             new Rectangle(this.layout.ContentX, y, arrowSize, buttonHeight), "")
         { myID = ScrollUpId });
@@ -373,29 +406,28 @@ internal sealed class JunkListMenu : IClickableMenu
     private void BuildNavigation()
     {
         ClickableComponent done = this.buttons.First(button => button.myID == DoneId);
-        ClickableComponent? editJunk = this.buttons.FirstOrDefault(button => button.myID == EditJunkId);
-        ClickableComponent? editIgnore = this.buttons.FirstOrDefault(button => button.myID == EditIgnoreId);
-        if (editJunk is not null && editIgnore is not null)
-        {
-            editJunk.rightNeighborID = EditIgnoreId;
-            editIgnore.leftNeighborID = EditJunkId;
-            editJunk.downNeighborID = this.visibleCards.FirstOrDefault()?.Component.myID ?? DoneId;
-            editIgnore.downNeighborID = this.visibleCards.FirstOrDefault()?.Component.myID ?? DoneId;
-        }
         for (int index = 0; index < this.visibleCards.Count; index++)
         {
-            ClickableComponent card = this.visibleCards[index].Component;
-            int column = index % this.layout.Columns;
-            card.leftNeighborID = column == 0 ? -1 : this.visibleCards[index - 1].Component.myID;
-            card.rightNeighborID = column == this.layout.Columns - 1 || index == this.visibleCards.Count - 1
-                ? -1
-                : this.visibleCards[index + 1].Component.myID;
-            card.upNeighborID = index < this.layout.Columns
-                ? (this.treasureIgnoreOnly ? -1 : index < Math.Ceiling(this.layout.Columns / 2d) ? EditJunkId : EditIgnoreId)
-                : this.visibleCards[index - this.layout.Columns].Component.myID;
-            card.downNeighborID = index + this.layout.Columns < this.visibleCards.Count
-                ? this.visibleCards[index + this.layout.Columns].Component.myID
-                : DoneId;
+            ItemCard itemCard = this.visibleCards[index];
+            ClickableComponent card = itemCard.Component;
+            card.leftNeighborID = this.visibleCards
+                .FirstOrDefault(other => other.GridRow == itemCard.GridRow && other.GridColumn == itemCard.GridColumn - 1)?
+                .Component.myID ?? -1;
+            card.rightNeighborID = this.visibleCards
+                .FirstOrDefault(other => other.GridRow == itemCard.GridRow && other.GridColumn == itemCard.GridColumn + 1)?
+                .Component.myID ?? -1;
+            ItemCard? above = this.visibleCards
+                .Where(other => other.GridRow < itemCard.GridRow)
+                .OrderByDescending(other => other.GridRow)
+                .ThenBy(other => Math.Abs(other.GridColumn - itemCard.GridColumn))
+                .FirstOrDefault();
+            ItemCard? below = this.visibleCards
+                .Where(other => other.GridRow > itemCard.GridRow)
+                .OrderBy(other => other.GridRow)
+                .ThenBy(other => Math.Abs(other.GridColumn - itemCard.GridColumn))
+                .FirstOrDefault();
+            card.upNeighborID = above?.Component.myID ?? -1;
+            card.downNeighborID = below?.Component.myID ?? DoneId;
         }
 
         done.upNeighborID = this.visibleCards.LastOrDefault()?.Component.myID ?? -1;
@@ -410,28 +442,43 @@ internal sealed class JunkListMenu : IClickableMenu
 
     private void DrawHeader(SpriteBatch batch)
     {
+        string count = this.treasureIgnoreOnly
+            ? string.Format(this.translate("config.treasure_ignore_picker.selected"), this.selectedIds.Count)
+            : string.Format(this.translate("config.junk_picker.selected"), this.selectedIds.Count);
+        Vector2 countSize = Game1.smallFont.MeasureString(count);
+        Vector2 countPosition = new(
+            this.layout.X + this.layout.Width - this.layout.Padding - countSize.X,
+            this.layout.Y + 24);
+        this.DrawHeaderPanel(batch, countPosition, countSize, Game1.smallFont.LineSpacing);
+        Utility.drawTextWithShadow(batch, count, Game1.smallFont, countPosition, Game1.textColor);
+
+        float titleWidth = Math.Max(1f,
+            countPosition.X - this.layout.ContentX - MenuVisualMetrics.HeaderPanelHorizontalPadding * 2);
         string title = MenuText.Fit(this.translate(this.treasureIgnoreOnly
                 ? "config.treasure_ignore_picker.title"
-                : "config.junk_picker.title"), Game1.dialogueFont,
-            this.layout.Width - this.layout.Padding * 2 - 220);
-        Utility.drawTextWithShadow(batch, title, Game1.dialogueFont,
-            new Vector2(this.layout.ContentX, this.layout.Y + 20), Game1.textColor);
+                : "config.junk_picker.title"), Game1.dialogueFont, titleWidth);
+        Vector2 titleSize = Game1.dialogueFont.MeasureString(title);
+        Vector2 titlePosition = new(this.layout.ContentX, this.layout.Y + 16);
+        this.DrawHeaderPanel(batch, titlePosition, titleSize, Game1.dialogueFont.LineSpacing);
+        Utility.drawTextWithShadow(batch, title, Game1.dialogueFont, titlePosition, Game1.textColor);
+    }
 
-        string count = this.treasureIgnoreOnly
-            ? string.Format(this.translate("config.treasure_ignore_picker.selected"), this.ignoreIds.Count)
-            : string.Format(this.translate("config.junk_picker.selected"), this.junkIds.Count, this.ignoreIds.Count);
-        Vector2 countSize = Game1.smallFont.MeasureString(count);
-        Utility.drawTextWithShadow(batch, count, Game1.smallFont,
-            new Vector2(this.layout.X + this.layout.Width - this.layout.Padding - countSize.X,
-                this.layout.Y + 28), Game1.textColor);
+    private void DrawHeaderPanel(SpriteBatch batch, Vector2 position, Vector2 textSize, int lineSpacing)
+    {
+        drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
+            (int)position.X - MenuVisualMetrics.HeaderPanelHorizontalPadding,
+            (int)position.Y - MenuVisualMetrics.HeaderPanelVerticalPadding,
+            (int)Math.Ceiling(textSize.X) + MenuVisualMetrics.HeaderPanelHorizontalPadding * 2,
+            lineSpacing + MenuVisualMetrics.HeaderPanelVerticalPadding * 2,
+            Color.White);
     }
 
     private void DrawCard(SpriteBatch batch, ItemCard card, bool highlighted)
     {
         JunkItemState state = JunkListSelection.GetState(
-            this.junkIds,
-            this.ignoreIds,
-            card.Item.QualifiedItemId);
+            this.selectedIds,
+            card.Item.QualifiedItemId,
+            this.SelectedState);
         Rectangle bounds = card.Component.bounds;
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
             bounds.X, bounds.Y, bounds.Width, bounds.Height,
@@ -457,7 +504,7 @@ internal sealed class JunkListMenu : IClickableMenu
         Vector2 size = Game1.smallFont.MeasureString(name);
         float nameY = state == JunkItemState.Normal
             ? bounds.Center.Y - size.Y / 2f
-            : bounds.Center.Y - size.Y;
+            : bounds.Center.Y - size.Y / 2f - 7f;
         Utility.drawTextWithShadow(batch, name, Game1.smallFont,
             new Vector2(textLeft, nameY), Game1.textColor);
 
@@ -466,23 +513,30 @@ internal sealed class JunkListMenu : IClickableMenu
             string stateLabel = this.translate(state == JunkItemState.Junk
                 ? "config.junk_picker.state_junk"
                 : "config.junk_picker.state_ignore");
-            stateLabel = MenuText.Fit(stateLabel, Game1.tinyFont, bounds.Right - textLeft - 8);
-            batch.DrawString(Game1.tinyFont, stateLabel,
-                new Vector2(textLeft, bounds.Center.Y + 2),
-                state == JunkItemState.Junk ? Color.DarkRed : Color.DarkGreen);
+            float availableWidth = Math.Max(1f, bounds.Right - textLeft - 8);
+            stateLabel = MenuText.Fit(stateLabel, Game1.smallFont, availableWidth / CardStateScale);
+            this.DrawScaledStateText(batch, stateLabel,
+                new Vector2(textLeft, bounds.Center.Y + 1),
+                CardStateScale);
             batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
                 OptionsCheckbox.sourceRectChecked, Color.White, 0f, Vector2.Zero, 2f,
                 SpriteEffects.None, 0.95f);
         }
     }
 
+    private void DrawScaledStateText(
+        SpriteBatch batch,
+        string text,
+        Vector2 position,
+        float scale)
+    {
+        batch.DrawString(Game1.smallFont, text, position, MenuVisualMetrics.ItemStateText,
+            0f, Vector2.Zero, scale, SpriteEffects.None, 0.91f);
+    }
+
     private void DrawButton(SpriteBatch batch, ClickableComponent button, bool highlighted)
     {
-        Color tint = button.myID == EditJunkId && this.mode == JunkListMode.Junk
-            ? Color.LightCoral
-            : button.myID == EditIgnoreId && this.mode == JunkListMode.Ignore
-                ? Color.LightGreen
-                : highlighted ? Color.Wheat : Color.White;
+        Color tint = highlighted ? Color.Wheat : Color.White;
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
             button.bounds.X, button.bounds.Y, button.bounds.Width, button.bounds.Height,
             tint);
@@ -516,24 +570,33 @@ internal sealed class JunkListMenu : IClickableMenu
 
     private void MoveVertical(int direction)
     {
-        int selectedIndex = this.visibleCards.FindIndex(card => card.Component == this.currentlySnappedComponent);
-        if (selectedIndex >= 0 && selectedIndex < this.layout.Columns
-            && direction < 0 && this.topRow > 0)
+        ItemCard? selected = this.visibleCards
+            .FirstOrDefault(card => card.Component == this.currentlySnappedComponent);
+        if (selected is not null && selected.GridRow == 0 && direction < 0 && this.topRow > 0)
         {
-            int currentColumn = selectedIndex % this.layout.Columns;
+            int currentColumn = selected.GridColumn;
             this.Scroll(-1);
-            int targetIndex = Math.Min(currentColumn, this.visibleCards.Count - 1);
-            this.currentlySnappedComponent = this.visibleCards[targetIndex].Component;
+            this.currentlySnappedComponent = this.visibleCards
+                .Where(card => card.GridRow == 0)
+                .OrderBy(card => Math.Abs(card.GridColumn - currentColumn))
+                .First().Component;
             this.snapCursorToCurrentSnappedComponent();
             return;
         }
 
-        if (selectedIndex >= Math.Max(0, this.visibleCards.Count - this.layout.Columns)
+        int lastVisibleRow = this.visibleCards.Count == 0
+            ? -1
+            : this.visibleCards.Max(card => card.GridRow);
+        if (selected is not null && selected.GridRow == lastVisibleRow
             && direction > 0 && this.topRow < this.MaximumTopRow)
         {
-            int currentColumn = selectedIndex % this.layout.Columns;
+            int currentColumn = selected.GridColumn;
             this.Scroll(1);
-            this.currentlySnappedComponent = this.visibleCards[Math.Min(currentColumn, this.visibleCards.Count - 1)].Component;
+            int newLastVisibleRow = this.visibleCards.Max(card => card.GridRow);
+            this.currentlySnappedComponent = this.visibleCards
+                .Where(card => card.GridRow == newLastVisibleRow)
+                .OrderBy(card => Math.Abs(card.GridColumn - currentColumn))
+                .First().Component;
             this.snapCursorToCurrentSnappedComponent();
             return;
         }
@@ -553,15 +616,6 @@ internal sealed class JunkListMenu : IClickableMenu
         Game1.playSound("shwip");
     }
 
-    private void SetMode(JunkListMode mode)
-    {
-        if (this.mode == mode)
-            return;
-
-        this.mode = mode;
-        Game1.playSound("smallSelect");
-    }
-
     private void DeselectSearch()
     {
         if (this.searchBox is not null)
@@ -569,5 +623,11 @@ internal sealed class JunkListMenu : IClickableMenu
         Game1.closeTextEntry();
     }
 
-    private sealed record ItemCard(ConfigItem Item, ClickableComponent Component);
+    private sealed record ItemRow(IReadOnlyList<ConfigItem> Items, bool StartsNormalGroup);
+
+    private sealed record ItemCard(
+        ConfigItem Item,
+        ClickableComponent Component,
+        int GridRow,
+        int GridColumn);
 }

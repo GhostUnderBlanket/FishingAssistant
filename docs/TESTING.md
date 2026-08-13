@@ -5,9 +5,9 @@ tests and successful builds do not count as in-game verification.
 
 ## Current manual-test baseline
 
-Status updated on 2026-08-13:
+Status updated on 2026-08-14:
 
-- The project has entered `3.0.0-beta.1`. Beta status means the planned core and
+- The project has entered `3.0.0-beta.2`. Beta status means the planned core and
   approved Milestone 8 feature set is implemented; it does not mark the pending remote
   multiplayer, festival, special-catch, or known-issue checks as passed.
 
@@ -50,6 +50,8 @@ Status updated on 2026-08-13:
 - Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
   been tested yet.
 - Mixed split-screen multiplayer has not been tested yet.
+- Mouse and controller keybind capture now waits after activation and successfully
+  accepts a new binding in-game on `3.0.0-beta.1` (`ec87262`).
 
 ## Passed manual session: 2026-08-13
 
@@ -92,8 +94,8 @@ checks still need to be observed in-game before Milestone 2 can be marked comple
 - Repeat with a controller: verify A/B, D-pad/left stick navigation, Left/Right
   Shoulder and Left/Right Trigger category navigation, selector adjustment, and
   keybind capture/cancel.
-- Known regressions currently deferred: local co-op Fish Preview placement and controller
-  keybind capture. See [KNOWN-ISSUES.md](KNOWN-ISSUES.md).
+- The mouse/controller keybind capture regression passed on `ec87262`. Local co-op Fish
+  Preview placement remains open; see [KNOWN-ISSUES.md](KNOWN-ISSUES.md).
 - While the menu is open, change UI scale, zoom, window size, and game language. Check
   that no option or snappy-navigation focus is left at stale bounds after the menu
   rebuilds.
@@ -203,7 +205,7 @@ release-matrix scenarios are completed.
 - Verify automatic junk disposal with automation on/off, the option on/off, each five
   default trash item, a newly created stack, an existing partial stack, multiple items
   gained in one tick, treasure rewards, and inventory-full reward handling. Confirm the
-  Junk Ignore List always protects an item, untrashable/quest items remain untouched,
+  only explicitly selected Junk items are removed, untrashable/quest items remain untouched,
   fish require `AllowTrashFish`, only the newly gained quantity leaves an old stack,
   and trash-can reclamation money matches vanilla. Repeat for both split-screen players
   and as multiplayer host/farmhand, confirming only the event's owning inventory is

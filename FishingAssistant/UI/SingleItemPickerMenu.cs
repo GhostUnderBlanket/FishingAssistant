@@ -10,6 +10,7 @@ namespace FishingAssistant.UI;
 
 internal sealed class SingleItemPickerMenu : IClickableMenu
 {
+    private const float CardStateScale = 0.62f;
     private const int FirstItemId = 3000;
     private const int ScrollUpId = 4000;
     private const int ScrollDownId = 4001;
@@ -21,15 +22,16 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
     private readonly Action<string> setValue;
     private readonly Func<string, string> translate;
     private readonly List<ItemCard> visibleCards = [];
+    private readonly List<int> visibleSeparatorYs = [];
     private readonly List<ClickableComponent> buttons = [];
     private IReadOnlyList<PickerItem> filteredItems;
+    private IReadOnlyList<ItemRow> itemRows = [];
     private ItemPickerLayout layout = null!;
     private TextBox searchBox = null!;
     private Rectangle searchBounds;
     private string searchText = "";
     private string hoverText = "";
     private int topRow;
-    private bool positionedInitialSelection;
 
     public SingleItemPickerMenu(
         string title,
@@ -54,8 +56,7 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         Game1.playSound("bigSelect");
     }
 
-    private int MaximumTopRow => Math.Max(0,
-        (int)Math.Ceiling(this.filteredItems.Count / (double)this.layout.Columns) - this.layout.Rows);
+    private int MaximumTopRow => Math.Max(0, this.itemRows.Count - this.layout.Rows);
 
     public override bool areGamePadControlsImplemented() => true;
 
@@ -102,6 +103,10 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         {
             this.setValue(card.Item.Id);
             Game1.playSound("coin");
+            this.RebuildItemRows();
+            this.topRow = 0;
+            this.RebuildVisibleCards();
+            this.BuildNavigation();
             return;
         }
 
@@ -216,6 +221,7 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
                         || item.Id.Contains(query, StringComparison.OrdinalIgnoreCase))
                     .ToArray();
             this.topRow = 0;
+            this.RebuildItemRows();
             this.RebuildVisibleCards();
             this.BuildNavigation();
         }
@@ -237,6 +243,16 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         }
 
         Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
+        foreach (int separatorY in this.visibleSeparatorYs)
+        {
+            batch.Draw(Game1.staminaRect,
+                new Rectangle(
+                    this.layout.ContentX,
+                    separatorY - MenuVisualMetrics.ItemGroupSeparatorThickness / 2,
+                    this.layout.ContentWidth,
+                    MenuVisualMetrics.ItemGroupSeparatorThickness),
+                MenuVisualMetrics.ItemGroupSeparatorColor);
+        }
         foreach (ItemCard card in this.visibleCards)
             this.DrawCard(batch, card, card.Component.bounds.Contains(mouse) || this.currentlySnappedComponent == card.Component);
         foreach (ClickableComponent button in this.buttons)
@@ -273,25 +289,18 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         this.height = this.layout.Height;
         this.initializeUpperRightCloseButton();
 
-        int searchWidth = Math.Min(460, this.layout.ContentWidth);
+        int searchWidth = this.layout.ContentWidth;
         this.searchBox = new TextBox(Game1.content.Load<Texture2D>("LooseSprites\\textBox"), null,
             Game1.smallFont, Game1.textColor)
         {
             X = this.layout.ContentX,
-            Y = this.layout.Y + this.layout.HeaderHeight + 4,
+            Y = this.layout.Y + this.layout.HeaderHeight + 16,
             Width = searchWidth,
             Height = 48,
             Text = this.searchText
         };
         this.searchBounds = new Rectangle(this.searchBox.X, this.searchBox.Y, this.searchBox.Width, this.searchBox.Height);
-        if (!this.positionedInitialSelection)
-        {
-            int selectedIndex = Array.FindIndex(this.allItems, item =>
-                string.Equals(item.Id, this.getValue(), StringComparison.OrdinalIgnoreCase));
-            if (selectedIndex >= 0)
-                this.topRow = Math.Max(0, selectedIndex / this.layout.Columns - this.layout.Rows / 2);
-            this.positionedInitialSelection = true;
-        }
+        this.RebuildItemRows();
         this.topRow = Math.Clamp(this.topRow, 0, this.MaximumTopRow);
         this.RebuildVisibleCards();
         this.BuildButtons();
@@ -301,22 +310,78 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
     private void RebuildVisibleCards()
     {
         this.visibleCards.Clear();
-        int start = this.topRow * this.layout.Columns;
-        foreach ((PickerItem item, int index) in this.filteredItems
-                     .Select((item, index) => (item, index))
-                     .Skip(start)
-                     .Take(this.layout.PageSize))
+        this.visibleSeparatorYs.Clear();
+        (ItemRow Row, int VisibleRow)[] visibleRows = this.itemRows
+            .Skip(this.topRow)
+            .Take(this.layout.Rows)
+            .Select((row, index) => (row, index))
+            .ToArray();
+        int separatorRow = Array.FindIndex(visibleRows,
+            entry => entry.VisibleRow > 0 && entry.Row.StartsNormalGroup);
+        int separatorGap = MenuVisualMetrics.ItemGroupSeparatorThickness
+            + MenuVisualMetrics.ItemGroupSeparatorVerticalPadding * 2;
+        int separatorExtraGap = separatorRow >= 0
+            ? Math.Max(0, separatorGap - this.layout.Gap)
+            : 0;
+        int visibleCardHeight = visibleRows.Length == 0
+            ? this.layout.CardHeight
+            : Math.Min(this.layout.CardHeight, Math.Max(1,
+                (this.layout.ContentBottom - this.layout.ContentTop
+                    - this.layout.Gap * Math.Max(0, visibleRows.Length - 1)
+                    - separatorExtraGap) / visibleRows.Length));
+        int componentIndex = 0;
+        int rowY = this.layout.ContentTop;
+        foreach ((ItemRow row, int visibleRow) in visibleRows)
         {
-            int visibleIndex = index - start;
-            int column = visibleIndex % this.layout.Columns;
-            int row = visibleIndex / this.layout.Columns;
-            Rectangle bounds = new(
-                this.layout.ContentX + column * (this.layout.CardWidth + this.layout.Gap),
-                this.layout.ContentTop + row * (this.layout.CardHeight + this.layout.Gap),
-                this.layout.CardWidth,
-                this.layout.CardHeight);
-            this.visibleCards.Add(new ItemCard(item,
-                new ClickableComponent(bounds, item.DisplayName) { myID = FirstItemId + visibleIndex }));
+            if (visibleRow == separatorRow)
+            {
+                int previousRowBottom = rowY - this.layout.Gap;
+                this.visibleSeparatorYs.Add(previousRowBottom + separatorGap / 2);
+                rowY += separatorExtraGap;
+            }
+
+            for (int column = 0; column < row.Items.Count; column++)
+            {
+                PickerItem item = row.Items[column];
+                Rectangle bounds = new(
+                    this.layout.ContentX + column * (this.layout.CardWidth + this.layout.Gap),
+                    rowY,
+                    this.layout.CardWidth,
+                    visibleCardHeight);
+                this.visibleCards.Add(new ItemCard(
+                    item,
+                    new ClickableComponent(bounds, item.DisplayName) { myID = FirstItemId + componentIndex },
+                    visibleRow,
+                    column));
+                componentIndex++;
+            }
+
+            rowY += visibleCardHeight + this.layout.Gap;
+        }
+    }
+
+    private void RebuildItemRows()
+    {
+        string selectedId = this.getValue();
+        PickerItem[] selected = this.filteredItems
+            .Where(item => string.Equals(item.Id, selectedId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        PickerItem[] normal = this.filteredItems
+            .Where(item => !string.Equals(item.Id, selectedId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        List<ItemRow> rows = [];
+        this.AddRows(rows, selected, startsNormalGroup: false);
+        this.AddRows(rows, normal, startsNormalGroup: selected.Length > 0);
+        this.itemRows = rows;
+    }
+
+    private void AddRows(List<ItemRow> rows, IReadOnlyList<PickerItem> items, bool startsNormalGroup)
+    {
+        for (int index = 0; index < items.Count; index += this.layout.Columns)
+        {
+            rows.Add(new ItemRow(
+                items.Skip(index).Take(this.layout.Columns).ToArray(),
+                startsNormalGroup && index == 0));
         }
     }
 
@@ -343,14 +408,26 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         ClickableComponent done = this.buttons.First(button => button.myID == DoneId);
         for (int index = 0; index < this.visibleCards.Count; index++)
         {
-            ClickableComponent card = this.visibleCards[index].Component;
-            int column = index % this.layout.Columns;
-            card.leftNeighborID = column == 0 ? -1 : this.visibleCards[index - 1].Component.myID;
-            card.rightNeighborID = column == this.layout.Columns - 1 || index == this.visibleCards.Count - 1
-                ? -1 : this.visibleCards[index + 1].Component.myID;
-            card.upNeighborID = index < this.layout.Columns ? -1 : this.visibleCards[index - this.layout.Columns].Component.myID;
-            card.downNeighborID = index + this.layout.Columns < this.visibleCards.Count
-                ? this.visibleCards[index + this.layout.Columns].Component.myID : DoneId;
+            ItemCard itemCard = this.visibleCards[index];
+            ClickableComponent card = itemCard.Component;
+            card.leftNeighborID = this.visibleCards
+                .FirstOrDefault(other => other.GridRow == itemCard.GridRow && other.GridColumn == itemCard.GridColumn - 1)?
+                .Component.myID ?? -1;
+            card.rightNeighborID = this.visibleCards
+                .FirstOrDefault(other => other.GridRow == itemCard.GridRow && other.GridColumn == itemCard.GridColumn + 1)?
+                .Component.myID ?? -1;
+            ItemCard? above = this.visibleCards
+                .Where(other => other.GridRow < itemCard.GridRow)
+                .OrderByDescending(other => other.GridRow)
+                .ThenBy(other => Math.Abs(other.GridColumn - itemCard.GridColumn))
+                .FirstOrDefault();
+            ItemCard? below = this.visibleCards
+                .Where(other => other.GridRow > itemCard.GridRow)
+                .OrderBy(other => other.GridRow)
+                .ThenBy(other => Math.Abs(other.GridColumn - itemCard.GridColumn))
+                .FirstOrDefault();
+            card.upNeighborID = above?.Component.myID ?? -1;
+            card.downNeighborID = below?.Component.myID ?? DoneId;
         }
 
         done.upNeighborID = this.visibleCards.LastOrDefault()?.Component.myID ?? -1;
@@ -363,9 +440,23 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
 
     private void DrawHeader(SpriteBatch batch)
     {
-        string fitted = MenuText.Fit(this.title, Game1.dialogueFont, this.layout.ContentWidth);
-        Utility.drawTextWithShadow(batch, fitted, Game1.dialogueFont,
-            new Vector2(this.layout.ContentX, this.layout.Y + 20), Game1.textColor);
+        float titleWidth = Math.Max(1f,
+            this.layout.ContentWidth - MenuVisualMetrics.HeaderPanelHorizontalPadding * 2);
+        string fitted = MenuText.Fit(this.title, Game1.dialogueFont, titleWidth);
+        Vector2 size = Game1.dialogueFont.MeasureString(fitted);
+        Vector2 position = new(this.layout.ContentX, this.layout.Y + 16);
+        this.DrawHeaderPanel(batch, position, size, Game1.dialogueFont.LineSpacing);
+        Utility.drawTextWithShadow(batch, fitted, Game1.dialogueFont, position, Game1.textColor);
+    }
+
+    private void DrawHeaderPanel(SpriteBatch batch, Vector2 position, Vector2 textSize, int lineSpacing)
+    {
+        drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
+            (int)position.X - MenuVisualMetrics.HeaderPanelHorizontalPadding,
+            (int)position.Y - MenuVisualMetrics.HeaderPanelVerticalPadding,
+            (int)Math.Ceiling(textSize.X) + MenuVisualMetrics.HeaderPanelHorizontalPadding * 2,
+            lineSpacing + MenuVisualMetrics.HeaderPanelVerticalPadding * 2,
+            Color.White);
     }
 
     private void DrawCard(SpriteBatch batch, ItemCard card, bool highlighted)
@@ -397,10 +488,19 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         string name = MenuText.Fit(card.Item.DisplayName, Game1.smallFont,
             bounds.Right - textLeft - (selected ? 32 : 12));
         Vector2 size = Game1.smallFont.MeasureString(name);
+        float nameY = selected
+            ? bounds.Center.Y - size.Y / 2f - 7f
+            : bounds.Center.Y - size.Y / 2f;
         Utility.drawTextWithShadow(batch, name, Game1.smallFont,
-            new Vector2(textLeft, bounds.Center.Y - size.Y / 2f), Game1.textColor);
+            new Vector2(textLeft, nameY), Game1.textColor);
         if (selected)
         {
+            string selectedLabel = this.translate("config.item_picker.state_selected");
+            float availableWidth = Math.Max(1f, bounds.Right - textLeft - 8);
+            selectedLabel = MenuText.Fit(selectedLabel, Game1.smallFont, availableWidth / CardStateScale);
+            batch.DrawString(Game1.smallFont, selectedLabel,
+                new Vector2(textLeft, bounds.Center.Y + 1), MenuVisualMetrics.ItemStateText,
+                0f, Vector2.Zero, CardStateScale, SpriteEffects.None, 0.91f);
             batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
                 OptionsCheckbox.sourceRectChecked, Color.White, 0f, Vector2.Zero, 2f,
                 SpriteEffects.None, 0.95f);
@@ -440,19 +540,31 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
 
     private void MoveVertical(int direction)
     {
-        int selectedIndex = this.visibleCards.FindIndex(card => card.Component == this.currentlySnappedComponent);
-        bool crossingTop = selectedIndex >= 0 && selectedIndex < this.layout.Columns && direction < 0 && this.topRow > 0;
-        bool crossingBottom = selectedIndex >= Math.Max(0, this.visibleCards.Count - this.layout.Columns)
-            && direction > 0 && this.topRow < this.MaximumTopRow;
-        if (crossingTop || crossingBottom)
+        ItemCard? selected = this.visibleCards
+            .FirstOrDefault(card => card.Component == this.currentlySnappedComponent);
+        if (selected is not null && selected.GridRow == 0 && direction < 0 && this.topRow > 0)
         {
-            int column = selectedIndex % this.layout.Columns;
-            this.Scroll(direction);
-            int targetIndex = direction < 0
-                ? Math.Min(Math.Max(0, this.visibleCards.Count - this.layout.Columns) + column,
-                    this.visibleCards.Count - 1)
-                : Math.Min(column, this.visibleCards.Count - 1);
-            this.currentlySnappedComponent = this.visibleCards[targetIndex].Component;
+            int currentColumn = selected.GridColumn;
+            this.Scroll(-1);
+            this.currentlySnappedComponent = this.visibleCards
+                .Where(card => card.GridRow == 0)
+                .OrderBy(card => Math.Abs(card.GridColumn - currentColumn))
+                .First().Component;
+            this.snapCursorToCurrentSnappedComponent();
+            return;
+        }
+
+        int lastVisibleRow = this.visibleCards.Count == 0 ? -1 : this.visibleCards.Max(card => card.GridRow);
+        if (selected is not null && selected.GridRow == lastVisibleRow
+            && direction > 0 && this.topRow < this.MaximumTopRow)
+        {
+            int currentColumn = selected.GridColumn;
+            this.Scroll(1);
+            int newLastVisibleRow = this.visibleCards.Max(card => card.GridRow);
+            this.currentlySnappedComponent = this.visibleCards
+                .Where(card => card.GridRow == newLastVisibleRow)
+                .OrderBy(card => Math.Abs(card.GridColumn - currentColumn))
+                .First().Component;
             this.snapCursorToCurrentSnappedComponent();
             return;
         }
@@ -480,5 +592,11 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
 
     private sealed record PickerItem(string Id, string DisplayName, ConfigItem? Item);
 
-    private sealed record ItemCard(PickerItem Item, ClickableComponent Component);
+    private sealed record ItemRow(IReadOnlyList<PickerItem> Items, bool StartsNormalGroup);
+
+    private sealed record ItemCard(
+        PickerItem Item,
+        ClickableComponent Component,
+        int GridRow,
+        int GridColumn);
 }

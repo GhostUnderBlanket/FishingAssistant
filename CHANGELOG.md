@@ -133,6 +133,24 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Keybind capture now waits for the mouse, keyboard, or controller activation input to
+  be released before accepting the next input, preventing an immediate return to the
+  previous binding.
+- Configuration-menu rebuilds now retain their current layout signature instead of
+  rebuilding every tick and cancelling active keybind capture.
+- Added Vanilla-style backing panels to the Junk List Editor title and selection
+  counts, separated its search and mode controls from the upper frame, and replaced
+  tiny-font item states with scaled small-font labels.
+- Refined picker spacing and header padding, added the missing item-picker title panel,
+  and tightened two-line item-card labels.
+- Added clear gutters between configuration options, pagination, and the scrollbar.
+- Added top spacing above the category selector so its label and navigation buttons no
+  longer touch the menu frame.
+- Tightened the vertical spacing between item names and Junk/Ignored state labels.
+- Junk, protected-item, and treasure-ignore editors now group the active mode's selected
+  items first, followed by a separator and all unassigned items.
+- Replaced the oversized Vanilla partition sprite between editor groups with a thin
+  separator confined to the row gap, and improved selected-card label contrast.
 - Disabling Automation with F5 no longer cancels a cast already in progress. Vanilla
   finishes that cast normally while every later automatic action remains disabled,
   avoiding stuck rod state or shared fishing audio in local co-op.

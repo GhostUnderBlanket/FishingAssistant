@@ -12,7 +12,7 @@ internal sealed record MenuLayout(
     int OptionHeight,
     int VisibleOptionCount)
 {
-    public int CategoryTop => this.Y + this.HeaderHeight;
+    public int CategoryTop => this.Y + this.HeaderHeight + MenuVisualMetrics.CategoryTopSpacing;
 
     public int ContentTop => this.CategoryTop + this.CategoryHeight;
 
@@ -31,7 +31,8 @@ internal sealed record MenuLayout(
         int headerHeight = Math.Min(88, Math.Max(48, height / 6));
         int categoryHeight = height >= 300 ? 44 : 32;
         int footerHeight = Math.Min(88, Math.Max(56, height / 5));
-        int contentHeight = Math.Max(1, height - headerHeight - categoryHeight - footerHeight);
+        int contentHeight = Math.Max(1,
+            height - headerHeight - MenuVisualMetrics.CategoryTopSpacing - categoryHeight - footerHeight);
         int visibleOptionCount = Math.Max(1, contentHeight / 52);
         int optionHeight = Math.Max(1, contentHeight / visibleOptionCount);
 

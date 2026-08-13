@@ -58,7 +58,7 @@ public sealed class ConfigValidatorTests
         Assert.Equal("Any", config.PreferredBait);
         Assert.Equal("(O)686", config.PreferredTackle);
         Assert.Equal(["(O)170"], config.JunkList);
-        Assert.Equal(["(O)168", "(O)169"], config.JunkIgnoreList);
+        Assert.Empty(config.JunkIgnoreList);
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.ConfigVersion));
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.EnableAutomationButton));
     }
@@ -160,8 +160,8 @@ public sealed class ConfigValidatorTests
         Assert.Equal("Any", config.PreferredAdvIridiumTackle);
         Assert.Equal("(T)TrainingRod", config.StartWithFishingRod);
         Assert.Equal(["(O)169"], config.JunkList);
-        Assert.Equal(["(O)168"], config.JunkIgnoreList);
-        Assert.Equal(7, report.Corrections.Count);
+        Assert.Empty(config.JunkIgnoreList);
+        Assert.Equal(6, report.Corrections.Count);
     }
 
     private sealed class FakeItemCatalog(params ConfigItem[] items) : IItemCatalog

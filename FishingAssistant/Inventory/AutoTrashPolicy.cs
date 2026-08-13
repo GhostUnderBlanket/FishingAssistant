@@ -9,8 +9,7 @@ internal sealed record AutoTrashConditions(
     bool AllowTrashFish,
     int AcquiredQuantity,
     int CurrentStack,
-    IReadOnlyCollection<string> JunkList,
-    IReadOnlyCollection<string> IgnoreList);
+    IReadOnlyCollection<string> JunkList);
 
 internal sealed record AutoTrashDecision(bool ShouldTrash, int Quantity);
 
@@ -20,9 +19,6 @@ internal static class AutoTrashPolicy
     {
         ArgumentNullException.ThrowIfNull(conditions);
 
-        bool isIgnored = conditions.IgnoreList.Contains(
-            conditions.QualifiedItemId,
-            StringComparer.OrdinalIgnoreCase);
         bool isJunk = conditions.JunkList.Contains(
             conditions.QualifiedItemId,
             StringComparer.OrdinalIgnoreCase);
@@ -30,7 +26,6 @@ internal static class AutoTrashPolicy
             && conditions.AutoTrashEnabled
             && conditions.CanBeTrashed
             && isJunk
-            && !isIgnored
             && (!conditions.IsFish || conditions.AllowTrashFish);
         if (!isEligible)
             return new(false, 0);

@@ -51,15 +51,6 @@ public sealed class AutoTrashPolicyTests
         Assert.False(decision.ShouldTrash);
     }
 
-    [Fact]
-    public void Decide_IgnoreListWinsEvenWhenItemIsAlsoJunk()
-    {
-        AutoTrashDecision decision = AutoTrashPolicy.Decide(Conditions(
-            ignoreList: ["(o)168"]));
-
-        Assert.False(decision.ShouldTrash);
-    }
-
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, true)]
@@ -89,8 +80,7 @@ public sealed class AutoTrashPolicyTests
         bool allowTrashFish = false,
         int acquiredQuantity = 1,
         int currentStack = 1,
-        IReadOnlyCollection<string>? junkList = null,
-        IReadOnlyCollection<string>? ignoreList = null)
+        IReadOnlyCollection<string>? junkList = null)
     {
         return new AutoTrashConditions(
             automationEnabled,
@@ -101,7 +91,6 @@ public sealed class AutoTrashPolicyTests
             allowTrashFish,
             acquiredQuantity,
             currentStack,
-            junkList ?? ["(O)168"],
-            ignoreList ?? []);
+            junkList ?? ["(O)168"]);
     }
 }

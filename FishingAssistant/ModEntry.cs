@@ -104,22 +104,11 @@ internal sealed class ModEntry : Mod
     {
         if (Game1.activeClickableMenu is ConfigurationMenu { IsListeningForKeybind: true } menu)
         {
-            SButton[] pressed = e.Pressed
-                .Where(button => !IsControllerButton(button))
-                .ToArray();
-            if (pressed.Length == 0)
-                return;
-
-            SButton[] buttons = e.Held
-                .Concat(pressed)
-                .Where(button => !IsControllerButton(button))
-                .Where(button => button != SButton.None)
-                .Distinct()
-                .ToArray();
-            foreach (SButton button in pressed)
+            IReadOnlyList<SButton> captured = menu.ReceiveKeybindInput(
+                e.Pressed.ToArray(),
+                e.Held.ToArray());
+            foreach (SButton button in captured)
                 this.Helper.Input.Suppress(button);
-
-            menu.ReceiveKeybindInput(buttons);
             return;
         }
 
@@ -145,11 +134,6 @@ internal sealed class ModEntry : Mod
             this.Helper.Input.SuppressActiveKeybinds(openConfigKeybind);
         if (e.Pressed.Contains(ConfigurationMenuInput.ControllerFallbackButton))
             this.Helper.Input.Suppress(ConfigurationMenuInput.ControllerFallbackButton);
-    }
-
-    private static bool IsControllerButton(SButton button)
-    {
-        return button.ToString().StartsWith("Controller", StringComparison.Ordinal);
     }
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)

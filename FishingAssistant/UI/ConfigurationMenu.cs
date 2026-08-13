@@ -43,8 +43,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private int scrollOffset;
     private string hoverText = "";
     private string statusText = "";
-    private Keys? ignoredGamePadKeyPress;
-    private bool ignoreNextControllerClick;
 
     public ConfigurationMenu(
         ConfigEditSession session,
@@ -73,9 +71,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public bool IsListeningForKeybind => this.options.OfType<ConfigKeybind>().Any(control => control.IsListening);
 
-    public void ReceiveKeybindInput(IReadOnlyList<SButton> buttons)
+    public IReadOnlyList<SButton> ReceiveKeybindInput(
+        IReadOnlyList<SButton> pressed,
+        IReadOnlyList<SButton> held)
     {
-        this.options.OfType<ConfigKeybind>().FirstOrDefault(control => control.IsListening)?.Capture(buttons);
+        return this.options.OfType<ConfigKeybind>()
+            .FirstOrDefault(control => control.IsListening)?
+            .ObserveInput(pressed, held) ?? [];
     }
 
     public override bool areGamePadControlsImplemented() => false;
@@ -124,12 +126,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
-        if (this.ignoreNextControllerClick)
-        {
-            this.ignoreNextControllerClick = false;
-            return;
-        }
-
         base.receiveLeftClick(x, y, playSound);
         if (Game1.activeClickableMenu != this)
             return;
@@ -186,12 +182,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveKeyPress(Keys key)
     {
-        if (this.ignoredGamePadKeyPress == key)
-        {
-            this.ignoredGamePadKeyPress = null;
-            return;
-        }
-
         if (this.IsListeningForKeybind)
             return;
 
@@ -220,17 +210,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     public override void receiveGamePadButton(Buttons button)
     {
         if (this.IsListeningForKeybind)
-        {
-            ConfigKeybind? keybind = this.options.OfType<ConfigKeybind>()
-                .FirstOrDefault(control => control.IsListening);
-            if (keybind?.ReceiveGamePadButton(button) == true)
-            {
-                this.ignoredGamePadKeyPress = Utility.mapGamePadButtonToKey(button);
-                if (button == Buttons.A)
-                    this.ignoreNextControllerClick = true;
-            }
             return;
-        }
 
         int? categoryDirection = CategoryNavigationInput.GetDirection(button);
         if (categoryDirection is not null)
@@ -326,12 +306,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.layout.X + this.layout.Padding,
             this.layout.Y + (this.layout.HeaderHeight - titleFont.LineSpacing) / 2f
         );
-        int backgroundPadding = 14;
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
-            (int)titlePosition.X - backgroundPadding,
-            (int)titlePosition.Y - 6,
-            (int)titleSize.X + backgroundPadding * 2,
-            titleFont.LineSpacing + 12,
+            (int)titlePosition.X - MenuVisualMetrics.HeaderPanelHorizontalPadding,
+            (int)titlePosition.Y - MenuVisualMetrics.HeaderPanelVerticalPadding,
+            (int)Math.Ceiling(titleSize.X) + MenuVisualMetrics.HeaderPanelHorizontalPadding * 2,
+            titleFont.LineSpacing + MenuVisualMetrics.HeaderPanelVerticalPadding * 2,
             Color.White);
         Utility.drawTextWithShadow(batch, title, titleFont, titlePosition, Game1.textColor);
     }
@@ -504,6 +483,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         this.RebuildVisibleOptions();
         this.BuildNavigation();
         this.RestoreSelection(selectedId);
+        this.layoutContext = this.GetCurrentLayoutContext();
     }
 
     private void RebuildVisibleOptions()
@@ -512,7 +492,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
         int contentWidth = this.layout.Width - this.layout.Padding * 2;
         bool showScroll = this.MaximumScrollOffset > 0;
         int scrollWidth = showScroll ? Math.Min(44, contentWidth / 5) : 0;
-        int optionWidth = contentWidth - scrollWidth;
+        int scrollGap = showScroll ? MenuVisualMetrics.ScrollbarGap : 0;
+        int optionWidth = contentWidth - scrollWidth - scrollGap;
 
         this.options.Clear();
         this.optionKeys.Clear();
@@ -542,11 +523,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
         if (showScroll)
         {
             int buttonHeight = Math.Min(44, Math.Max(1, this.layout.OptionHeight));
-            int x = contentX + optionWidth;
-            this.scrollButtons.Add(this.CreateButton(ScrollUpButtonId, x, this.layout.ContentTop,
+            int x = contentX + optionWidth + scrollGap;
+            this.scrollButtons.Add(this.CreateButton(ScrollUpButtonId, x,
+                this.layout.ContentTop + MenuVisualMetrics.ScrollbarVerticalInset,
                 scrollWidth, buttonHeight, "^"));
             this.scrollButtons.Add(this.CreateButton(ScrollDownButtonId, x,
-                this.layout.ContentBottom - buttonHeight, scrollWidth, buttonHeight, "v"));
+                this.layout.ContentBottom - buttonHeight - MenuVisualMetrics.ScrollbarVerticalInset,
+                scrollWidth, buttonHeight, "v"));
         }
     }
 
@@ -582,11 +565,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.AutoTrashJunk = value);
                 this.AddActionDefinition("junk_lists",
                     () => string.Format(this.translate("config.junk_picker.selected"),
-                        this.session.Draft.JunkList.Count,
-                        this.session.Draft.JunkIgnoreList.Count),
+                        this.session.Draft.JunkList.Count),
                     () => this.SetChildMenu(new JunkListMenu(
                         this.session.Draft.JunkList,
-                        this.session.Draft.JunkIgnoreList,
                         this.itemSource,
                         this.translate)));
                 this.AddDefinition("trash_fish", () => this.session.Draft.AllowTrashFish,
@@ -650,7 +631,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddActionDefinition("treasure_ignore_list",
                     () => string.Format(this.translate("config.treasure_ignore_picker.selected"),
                         this.session.Draft.TreasureChestIgnoreList.Count),
-                    () => this.SetChildMenu(new JunkListMenu(
+                    () => this.SetChildMenu(JunkListMenu.CreateTreasureIgnoreMenu(
                         this.session.Draft.TreasureChestIgnoreList,
                         this.itemSource,
                         this.translate)));

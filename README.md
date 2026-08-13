@@ -17,7 +17,8 @@ the remaining known issues still need verification before the release candidate.
 - Add new assistance options without taking control away from the player.
 
 See the [development roadmap](docs/ROADMAP.md), [testing status](docs/TESTING.md), and
-[known issues](docs/KNOWN-ISSUES.md) for the remaining beta work.
+[release-candidate gate](docs/RELEASE-CANDIDATE.md) for the remaining beta work. New
+gameplay features are frozen until after version 3.0.
 
 ## Current status
 

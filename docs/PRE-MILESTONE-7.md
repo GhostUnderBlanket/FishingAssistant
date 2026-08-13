@@ -26,7 +26,7 @@ Audit baseline:
 ## Milestone 1: Configuration and migration
 
 - [x] Document that the Fishing Assistant 2 `JunkHighestPrice` setting is retired and
-  replaced by the visual Junk List/Junk Ignore List editor.
+  replaced by the visual Junk List editor.
 - [x] Add a complete Fishing Assistant 2 migration fixture covering every legacy
   property, not only the representative enum and keybind subset.
 - [x] Verify the fixture preserves every still-supported user choice and deliberately

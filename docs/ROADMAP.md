@@ -259,12 +259,15 @@ Deferred candidates for a later version:
 - A compact on-screen control panel for changing the most common runtime toggles without
   opening the full configuration menu.
 
-New features must not delay the first beta unless explicitly promoted into the 3.0
-scope. Otherwise they move to a 3.1 milestone.
+Version 3.0 is now feature-frozen. These candidates move to a 3.1 milestone and must
+not delay the release candidate.
 
 ## Milestone 9: Beta, release candidate, and publication
 
 Goal: turn the feature-complete build into a supportable public release.
+
+The actionable promotion gate is maintained in
+[RELEASE-CANDIDATE.md](RELEASE-CANDIDATE.md).
 
 - Freeze configuration keys and document migration from version 2.
 - Complete English source text and review carried-forward translations; mark outdated
