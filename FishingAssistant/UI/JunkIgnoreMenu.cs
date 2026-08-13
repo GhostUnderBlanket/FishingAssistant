@@ -255,7 +255,15 @@ internal sealed class JunkListMenu : IClickableMenu
 
         Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
         foreach (int separatorY in this.visibleSeparatorYs)
-            this.drawHorizontalPartition(batch, separatorY, small: true);
+        {
+            batch.Draw(Game1.staminaRect,
+                new Rectangle(
+                    this.layout.ContentX,
+                    separatorY - MenuVisualMetrics.ItemGroupSeparatorThickness / 2,
+                    this.layout.ContentWidth,
+                    MenuVisualMetrics.ItemGroupSeparatorThickness),
+                MenuVisualMetrics.ItemGroupSeparatorColor);
+        }
         foreach (ItemCard card in this.visibleCards)
             this.DrawCard(batch, card, card.Component.bounds.Contains(mouse) || this.currentlySnappedComponent == card.Component);
 
@@ -528,9 +536,8 @@ internal sealed class JunkListMenu : IClickableMenu
                 : "config.junk_picker.state_ignore");
             float availableWidth = Math.Max(1f, bounds.Right - textLeft - 8);
             stateLabel = MenuText.Fit(stateLabel, Game1.smallFont, availableWidth / CardStateScale);
-            this.DrawScaledTextWithShadow(batch, stateLabel,
+            this.DrawScaledStateText(batch, stateLabel,
                 new Vector2(textLeft, bounds.Center.Y + 1),
-                state == JunkItemState.Junk ? Color.DarkRed : Color.DarkGreen,
                 CardStateScale);
             batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
                 OptionsCheckbox.sourceRectChecked, Color.White, 0f, Vector2.Zero, 2f,
@@ -538,16 +545,13 @@ internal sealed class JunkListMenu : IClickableMenu
         }
     }
 
-    private void DrawScaledTextWithShadow(
+    private void DrawScaledStateText(
         SpriteBatch batch,
         string text,
         Vector2 position,
-        Color color,
         float scale)
     {
-        batch.DrawString(Game1.smallFont, text, position + new Vector2(2f, 2f),
-            Color.Black * 0.35f, 0f, Vector2.Zero, scale, SpriteEffects.None, 0.9f);
-        batch.DrawString(Game1.smallFont, text, position, color,
+        batch.DrawString(Game1.smallFont, text, position, MenuVisualMetrics.ItemStateText,
             0f, Vector2.Zero, scale, SpriteEffects.None, 0.91f);
     }
 

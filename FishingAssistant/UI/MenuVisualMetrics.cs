@@ -16,6 +16,8 @@ internal static class MenuVisualMetrics
 
     public const int CategoryTopSpacing = 8;
 
+    public const int ItemGroupSeparatorThickness = 4;
+
     public const float ArrowScale = 1.75f;
 
     public static Rectangle ArrowSource { get; } = new(421, 459, 11, 12);
@@ -33,6 +35,10 @@ internal static class MenuVisualMetrics
     public static Color DisabledMessageAccent { get; } = new(98, 106, 109);
 
     public static Color DisabledMessageText { get; } = new(48, 55, 58);
+
+    public static Color ItemGroupSeparatorColor { get; } = new(166, 91, 45);
+
+    public static Color ItemStateText { get; } = new(74, 34, 20);
 
     public static int GetControlWidth(int availableWidth)
     {

@@ -16,6 +16,7 @@ public sealed class MenuVisualMetricsTests
         Assert.Equal(12, MenuVisualMetrics.ScrollbarGap);
         Assert.Equal(8, MenuVisualMetrics.ScrollbarVerticalInset);
         Assert.Equal(8, MenuVisualMetrics.CategoryTopSpacing);
+        Assert.Equal(4, MenuVisualMetrics.ItemGroupSeparatorThickness);
     }
 
     [Fact]
@@ -36,5 +37,14 @@ public sealed class MenuVisualMetricsTests
 
         Assert.True(backgroundBrightness - textBrightness >= 400);
         Assert.NotEqual(MenuVisualMetrics.InlineMessageAccent, text);
+    }
+
+    [Fact]
+    public void ItemStateText_IsDarkAndNeutralAgainstBothSelectionTints()
+    {
+        Color text = MenuVisualMetrics.ItemStateText;
+
+        Assert.True(text.R + text.G + text.B < 180);
+        Assert.True(Math.Abs(text.R - text.G) < 60);
     }
 }

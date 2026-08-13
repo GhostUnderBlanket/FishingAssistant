@@ -149,6 +149,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Tightened the vertical spacing between item names and Junk/Ignored state labels.
 - Junk, protected-item, and treasure-ignore editors now group the active mode's selected
   items first, followed by a separator and all unassigned items.
+- Replaced the oversized Vanilla partition sprite between editor groups with a thin
+  separator confined to the row gap, and improved selected-card label contrast.
 - Disabling Automation with F5 no longer cancels a cast already in progress. Vanilla
   finishes that cast normally while every later automatic action remains disabled,
   avoiding stuck rod state or shared fishing audio in local co-op.
