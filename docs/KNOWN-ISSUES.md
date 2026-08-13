@@ -25,6 +25,7 @@ were originally reproduced.
   binding (for example `F5`) instead of waiting for or saving the next input.
 - **Fix:** Mouse, keyboard, and controller inputs now share one SMAPI capture path. The
   capture gate ignores the activation input until every button is released, then accepts
-  the next input or chord for the current local screen.
+  the next input or chord for the current local screen. The menu also persists its
+  rebuilt layout signature so the next update tick does not cancel capture.
 - **Follow-up:** Verify activation, cancellation, clearing, and persistence with mouse,
   keyboard, and controller in single-player and local split-screen.

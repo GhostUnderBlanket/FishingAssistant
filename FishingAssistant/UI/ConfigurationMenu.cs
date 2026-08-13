@@ -483,6 +483,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         this.RebuildVisibleOptions();
         this.BuildNavigation();
         this.RestoreSelection(selectedId);
+        this.layoutContext = this.GetCurrentLayoutContext();
     }
 
     private void RebuildVisibleOptions()
