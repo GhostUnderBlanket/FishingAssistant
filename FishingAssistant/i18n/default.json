@@ -159,6 +159,7 @@
   "config.warning.spawn_bait_requires_attach": "No effect while automatic bait attachment is off.",
   "config.warning.spawn_tackle_requires_attach": "No effect while automatic tackle attachment is off.",
   "config.warning.auto_minigame_overridden": "Skipped catches take priority over automatic minigame play.",
+  "config.unavailable.remote_enchantments": "Unavailable while remote players are connected.",
   "config.status.defaults_loaded": "Defaults loaded. Select Apply to save them.",
   "config.status.save_failed": "The configuration could not be saved. Check the SMAPI log.",
   "hud.title": "Fishing Assistant",

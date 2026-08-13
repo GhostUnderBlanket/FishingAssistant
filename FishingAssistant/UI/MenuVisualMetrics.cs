@@ -16,6 +16,14 @@ internal static class MenuVisualMetrics
 
     public static Color InlineMessageText { get; } = new(82, 28, 22);
 
+    public static Color DisabledControlOverlay { get; } = Color.Black * 0.38f;
+
+    public static Color DisabledMessageBackground { get; } = new(215, 220, 217);
+
+    public static Color DisabledMessageAccent { get; } = new(98, 106, 109);
+
+    public static Color DisabledMessageText { get; } = new(48, 55, 58);
+
     public static int GetControlWidth(int availableWidth)
     {
         return Math.Clamp(availableWidth * 43 / 100, 152, 320);

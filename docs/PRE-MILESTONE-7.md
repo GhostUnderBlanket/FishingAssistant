@@ -46,7 +46,7 @@ Completed on 2026-08-13. Release verification passed with 265 automated tests.
 - [x] Add deliberate confirmation before Reset Defaults changes the menu draft.
 - [x] Surface actionable validation warnings inline beneath their affected controls;
   visual controls constrain values so Apply-time corrections aren't normally needed.
-- [ ] Add a reusable disabled state and unavailable-reason presentation for controls
+- [x] Add a reusable disabled state and unavailable-reason presentation for controls
   whose behavior is unsafe or unsupported in the current context.
 - [ ] Support gamepad trigger category navigation in addition to shoulder buttons.
 - [ ] Rebuild layout, clickable bounds, and snappy-navigation links after locale,

@@ -9,6 +9,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A reusable disabled configuration-control state with inline unavailable reasons;
+  temporary rod enchantment controls are disabled while remote players are connected.
 - Small colored validation descriptions beneath settings whose dependencies make them
   ineffective or overridden, updated immediately while editing the configuration draft.
 - Initial SMAPI project scaffold for Fishing Assistant 3.

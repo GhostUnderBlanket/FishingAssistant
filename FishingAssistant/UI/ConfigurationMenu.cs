@@ -31,6 +31,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
     private readonly Dictionary<int, string> optionKeys = [];
+    private readonly Dictionary<int, Func<ConfigControlState>> optionStateProviders = [];
     private readonly List<ClickableComponent> categoryButtons = [];
     private readonly List<ClickableComponent> scrollButtons = [];
     private readonly List<ClickableComponent> footerButtons = [];
@@ -127,6 +128,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
         IConfigControl? option = this.options.FirstOrDefault(item => item.Component.containsPoint(x, y));
         if (option is not null)
         {
+            if (!this.TryUseOption(option))
+                return;
+
             option.ReceiveLeftClick(x, y);
             return;
         }
@@ -225,9 +229,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
     public override void performHoverAction(int x, int y)
     {
         base.performHoverAction(x, y);
-        this.hoverText = this.options
-            .FirstOrDefault(item => item.Component.containsPoint(x, y))?
-            .Description ?? "";
+        IConfigControl? option = this.options.FirstOrDefault(item => item.Component.containsPoint(x, y));
+        this.hoverText = option is null
+            ? ""
+            : this.GetOptionState(option).IsEnabled
+                ? option.Description
+                : this.translate(this.GetOptionState(option).UnavailableReasonKey!);
     }
 
     public override void draw(SpriteBatch batch)
@@ -250,10 +257,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
             bool highlighted = option.Component.bounds.Contains(mouse)
                 || this.currentlySnappedComponent == option.Component;
             string? optionKey = this.optionKeys.GetValueOrDefault(option.Component.myID);
-            InlineConfigMessage? inlineMessage = optionKey is null
-                ? null
-                : inlineMessages.GetValueOrDefault(optionKey);
-            this.DrawOption(batch, option, highlighted, inlineMessage);
+            ConfigControlState state = this.GetOptionState(option);
+            InlineConfigMessage? inlineMessage = state.IsEnabled && optionKey is not null
+                ? inlineMessages.GetValueOrDefault(optionKey)
+                : null;
+            this.DrawOption(batch, option, highlighted, inlineMessage, state);
         }
 
         foreach (ClickableComponent button in this.scrollButtons)
@@ -385,6 +393,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
     {
         IConfigControl? selected = this.options
             .FirstOrDefault(option => option.Component == this.currentlySnappedComponent);
+        if (selected is not null && !this.TryUseOption(selected))
+            return;
         if (selected?.Adjust(direction) == true)
             return;
 
@@ -482,6 +492,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
         this.options.Clear();
         this.optionKeys.Clear();
+        this.optionStateProviders.Clear();
         IEnumerable<(ControlDefinition Definition, int Index)> visible = this.definitions
             .Select((definition, index) => (definition, index))
             .Skip(this.scrollOffset)
@@ -498,6 +509,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             IConfigControl option = definition.Create(FirstOptionId + index, bounds);
             this.options.Add(option);
             this.optionKeys[option.Component.myID] = definition.Key;
+            this.optionStateProviders[option.Component.myID] = definition.GetState;
             row++;
         }
 
@@ -639,16 +651,18 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.ShowLegendaryFish = value);
                 break;
             case ConfigCategory.Enchantments:
+                Func<ConfigControlState> enchantmentState = () =>
+                    ConfigControlAvailability.TemporaryEnchantments(Context.HasRemotePlayers);
                 this.AddDefinition("enchant_auto_hook", () => this.session.Draft.AddAutoHookEnchantment,
-                    value => this.session.Draft.AddAutoHookEnchantment = value);
+                    value => this.session.Draft.AddAutoHookEnchantment = value, enchantmentState);
                 this.AddDefinition("enchant_efficient", () => this.session.Draft.AddEfficientEnchantment,
-                    value => this.session.Draft.AddEfficientEnchantment = value);
+                    value => this.session.Draft.AddEfficientEnchantment = value, enchantmentState);
                 this.AddDefinition("enchant_master", () => this.session.Draft.AddMasterEnchantment,
-                    value => this.session.Draft.AddMasterEnchantment = value);
+                    value => this.session.Draft.AddMasterEnchantment = value, enchantmentState);
                 this.AddDefinition("enchant_preserving", () => this.session.Draft.AddPreservingEnchantment,
-                    value => this.session.Draft.AddPreservingEnchantment = value);
+                    value => this.session.Draft.AddPreservingEnchantment = value, enchantmentState);
                 this.AddDefinition("remove_enchantments", () => this.session.Draft.RemoveWhenUnequipped,
-                    value => this.session.Draft.RemoveWhenUnequipped = value);
+                    value => this.session.Draft.RemoveWhenUnequipped = value, enchantmentState);
                 break;
             case ConfigCategory.Controls:
                 this.AddKeybindDefinition("toggle_automation", () => this.session.Draft.EnableAutomationButton,
@@ -667,7 +681,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
         }
     }
 
-    private void AddDefinition(string key, Func<bool> getValue, Action<bool> setValue)
+    private void AddDefinition(
+        string key,
+        Func<bool> getValue,
+        Action<bool> setValue,
+        Func<ConfigControlState>? getState = null)
     {
         this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigCheckbox(
             id,
@@ -676,7 +694,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.translate($"config.option.{key}.description"),
             getValue,
             setValue
-        )));
+        ), getState ?? (() => ConfigControlState.Enabled)));
     }
 
     private void AddEnumDefinition<TEnum>(string key, Func<TEnum> getValue, Action<TEnum> setValue)
@@ -692,7 +710,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             setValue,
             (current, direction) => OptionAdjustment.Cycle(values, current, direction),
             value => this.translate($"config.value.{value.ToString().ToLowerInvariant()}")
-        )));
+        ), () => ConfigControlState.Enabled));
     }
 
     private void AddNumberDefinition(
@@ -713,7 +731,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             setValue,
             (current, direction) => OptionAdjustment.Step(current, direction, increment, minimum, maximum),
             format ?? (value => value.ToString("0.##"))
-        )));
+        ), () => ConfigControlState.Enabled));
     }
 
     private void AddItemDefinition(
@@ -749,7 +767,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 getValue,
                 setValue,
                 this.translate))
-        )));
+        ), () => ConfigControlState.Enabled));
     }
 
     private void AddKeybindDefinition(
@@ -765,7 +783,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.translate("config.keybind.listening"),
             getValue,
             setValue
-        )));
+        ), () => ConfigControlState.Enabled));
     }
 
     private void AddActionDefinition(string key, Func<string> getButtonLabel, Action activate)
@@ -777,7 +795,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.translate($"config.option.{key}.description"),
             getButtonLabel,
             activate
-        )));
+        ), () => ConfigControlState.Enabled));
     }
 
     private void BuildCategoryButtons()
@@ -878,16 +896,22 @@ internal sealed class ConfigurationMenu : IClickableMenu
         SpriteBatch batch,
         IConfigControl option,
         bool highlighted,
-        InlineConfigMessage? inlineMessage)
+        InlineConfigMessage? inlineMessage,
+        ConfigControlState state)
     {
         Rectangle originalBounds = option.Component.bounds;
+        string? messageKey = !state.IsEnabled
+            ? state.UnavailableReasonKey
+            : inlineMessage?.TranslationKey;
         int inlineLineHeight = (int)Math.Ceiling(Game1.smallFont.LineSpacing * InlineMessageScale);
-        int messageHeight = inlineMessage is null
+        int messageHeight = messageKey is null
             ? 0
             : Math.Min(inlineLineHeight + 4, Math.Max(0, originalBounds.Height / 2));
         bool hasInlineSpace = messageHeight >= inlineLineHeight;
         option.Draw(batch, highlighted, hasInlineSpace ? messageHeight : 0);
-        if (inlineMessage is null)
+        if (!state.IsEnabled)
+            batch.Draw(Game1.staminaRect, originalBounds, MenuVisualMetrics.DisabledControlOverlay);
+        if (messageKey is null)
             return;
 
         float y = hasInlineSpace
@@ -898,22 +922,48 @@ internal sealed class ConfigurationMenu : IClickableMenu
             (int)y,
             Math.Max(1, option.InlineMessageRight - originalBounds.X - 4),
             Math.Min(inlineLineHeight + 2, Math.Max(1, originalBounds.Bottom - (int)y)));
-        batch.Draw(Game1.staminaRect, messageBounds, MenuVisualMetrics.InlineMessageBackground);
+        Color background = state.IsEnabled
+            ? MenuVisualMetrics.InlineMessageBackground
+            : MenuVisualMetrics.DisabledMessageBackground;
+        Color accent = state.IsEnabled
+            ? MenuVisualMetrics.InlineMessageAccent
+            : MenuVisualMetrics.DisabledMessageAccent;
+        Color text = state.IsEnabled
+            ? MenuVisualMetrics.InlineMessageText
+            : MenuVisualMetrics.DisabledMessageText;
+        batch.Draw(Game1.staminaRect, messageBounds, background);
         batch.Draw(Game1.staminaRect,
             new Rectangle(messageBounds.X, messageBounds.Y, Math.Min(4, messageBounds.Width), messageBounds.Height),
-            MenuVisualMetrics.InlineMessageAccent);
+            accent);
 
-        string warning = this.translate(inlineMessage.TranslationKey);
-        string fitted = MenuText.Fit(warning, Game1.smallFont,
+        string message = this.translate(messageKey);
+        string fitted = MenuText.Fit(message, Game1.smallFont,
             Math.Max(1, messageBounds.Width - 16) / InlineMessageScale);
         batch.DrawString(Game1.smallFont, fitted,
             new Vector2(messageBounds.X + 10, messageBounds.Y),
-            MenuVisualMetrics.InlineMessageText,
+            text,
             0f,
             Vector2.Zero,
             InlineMessageScale,
             SpriteEffects.None,
             0.9f);
+    }
+
+    private ConfigControlState GetOptionState(IConfigControl option)
+    {
+        return this.optionStateProviders.GetValueOrDefault(option.Component.myID)?.Invoke()
+            ?? ConfigControlState.Enabled;
+    }
+
+    private bool TryUseOption(IConfigControl option)
+    {
+        ConfigControlState state = this.GetOptionState(option);
+        if (state.IsEnabled)
+            return true;
+
+        this.statusText = this.translate(state.UnavailableReasonKey!);
+        Game1.playSound("cancel");
+        return false;
     }
 
     private bool TryDrawArrow(SpriteBatch batch, ClickableComponent button)
@@ -961,5 +1011,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
             ?? this.categoryButtons[0];
     }
 
-    private sealed record ControlDefinition(string Key, Func<int, Rectangle, IConfigControl> Create);
+    private sealed record ControlDefinition(
+        string Key,
+        Func<int, Rectangle, IConfigControl> Create,
+        Func<ConfigControlState> GetState);
 }
