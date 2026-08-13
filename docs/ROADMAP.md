@@ -238,9 +238,9 @@ Candidate features, subject to separate design approval:
 - Treasure Chest Ignore List: visually select rewards that automatic treasure looting
   leaves behind, then choose whether an ignored-only chest stays open, drops its
   contents, or discards them. This is the first Milestone 8 feature.
-- Automatic Bubble Steering: while a player is manually casting, steer the cast left
-  or right toward a reachable fishing bubble. It must never move the player or change
-  automatic recasts unexpectedly. This follows the treasure ignore list.
+- Automatic Bubble Steering: steer manual and automatic casts left or right toward a
+  reachable fishing bubble. It must never move the player, extend the cast, or change
+  its configured or manually selected power. This follows the treasure ignore list.
 - Named automation profiles: Relaxed automates the whole loop, Training leaves the
   minigame to the player, Manual+ enables preview and quality-of-life assistance, and
   Custom preserves individually edited values. This follows bubble steering so the

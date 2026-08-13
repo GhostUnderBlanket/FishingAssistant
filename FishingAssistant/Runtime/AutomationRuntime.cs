@@ -224,14 +224,13 @@ internal sealed class AutomationRuntime(
         {
             if (!rod.TryGetBubbleSteeringTarget(
                     getConfig().AutomaticBubbleSteering,
-                    isManualCast: !screen.Pending.AutomaticCastInProgress,
                     out Microsoft.Xna.Framework.Vector2 target))
                 return;
 
             screen.Pending.BubbleSteeringRod = rod.Identity;
             screen.Pending.BubbleSteeringTarget = target;
             screen.Pending.BubbleSteeringExpectedPosition = rod.BobberPosition;
-            monitor.Log($"Started steering a manual cast toward a fishing bubble for local screen {Context.ScreenId}.",
+            monitor.Log($"Started steering a cast toward a fishing bubble for local screen {Context.ScreenId}.",
                 LogLevel.Trace);
         }
 

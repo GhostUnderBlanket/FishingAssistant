@@ -201,13 +201,12 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             rod.timeUntilFishingBite = 0f;
     }
 
-    public bool TryGetBubbleSteeringTarget(bool enabled, bool isManualCast, out Vector2 target)
+    public bool TryGetBubbleSteeringTarget(bool enabled, out Vector2 target)
     {
         Point bubble = player.currentLocation.fishSplashPoint.Value;
         float flightMilliseconds = rod.animations.Count > 0 ? rod.animations[0].interval : 0f;
         return BubbleSteeringPolicy.TryGetTarget(new BubbleSteeringConditions(
             enabled,
-            isManualCast,
             rod.castedButBobberStillInAir,
             player.currentLocation.canFishHere(),
             bubble != Point.Zero && player.currentLocation.isTileFishable(bubble.X, bubble.Y),

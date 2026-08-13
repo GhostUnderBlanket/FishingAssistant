@@ -34,7 +34,7 @@ public sealed class ConfigDefaultsTests
         Assert.False(config.InfiniteBait);
         Assert.False(config.InfiniteTackle);
         Assert.Equal(SkipMinigameBehavior.Off, config.SkipFishingMiniGame);
-        Assert.False(config.AutomaticBubbleSteering);
+        Assert.True(config.AutomaticBubbleSteering);
         Assert.Equal(TreasureChanceBehavior.Default, config.TreasureChance);
         Assert.Equal(TreasureChanceBehavior.Default, config.GoldenTreasureChance);
         Assert.False(config.TreasureTargeting);

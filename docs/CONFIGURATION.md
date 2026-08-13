@@ -2,7 +2,7 @@
 
 Fishing Assistant 3 loads SMAPI's standard `config.json` as the migration-compatible
 base template. Once a player is loaded, that player's settings are stored separately in
-`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `9`.
+`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `10`.
 Saved configuration, the active validated player profile, and an editable menu draft
 are treated as separate objects.
 
@@ -25,7 +25,7 @@ Unknown top-level properties are reported in the SMAPI log before a migrated fil
 written. Reports include a bounded representation of the original JSON value so the
 setting can be identified; values with credential-like property names are redacted.
 They are not silently treated as supported options. A file whose
-`ConfigVersion` is newer than 9 is loaded read-only: its schema version is not
+`ConfigVersion` is newer than 10 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
@@ -46,10 +46,10 @@ open for manual handling; players may instead opt into dropping ignored items in
 world or permanently discarding them. Inventory-full handling remains separate and
 never classifies ignored treasure as an item that failed to fit.
 
-Schema version 8 adds opt-in `AutomaticBubbleSteering`. It only assists manual casts:
-the player chooses direction and cast power, then the assistant applies vanilla-speed
-sideways steering toward a reachable, fishable bubble. It doesn't move the player,
-extend the chosen cast distance, or alter automatic recasts.
+Schema version 8 adds opt-in `AutomaticBubbleSteering`. It assists both manual and
+automatic casts by applying vanilla-speed sideways steering toward a reachable,
+fishable bubble. It doesn't move the player, extend the chosen cast distance, or
+change the configured or manually selected cast power.
 
 Schema version 9 adds per-player automation profiles. Relaxed automates the core loop;
 Training leaves the fishing minigame to the player; Manual+ leaves casting, hooking,
@@ -58,6 +58,9 @@ treasure looting. Editing any profile-controlled option marks the draft as Custo
 Migration labels existing configurations Custom so their individual choices are never
 silently replaced by a preset. Profiles do not change cheat, catch-result, difficulty,
 inventory, food, equipment, or keybind settings.
+
+Schema version 10 extends bubble steering to automatic casts. Relaxed and Training
+profiles enable it; Custom profiles retain the player's explicit choice.
 
 The migration test fixture contains every public Fishing Assistant 2 configuration
 property. It verifies that every still-supported non-default choice survives and that

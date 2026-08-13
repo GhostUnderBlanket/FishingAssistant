@@ -5,7 +5,6 @@ namespace FishingAssistant.Fishing;
 
 internal sealed record BubbleSteeringConditions(
     bool Enabled,
-    bool IsManualCast,
     bool IsBobberInAir,
     bool CanFishHere,
     bool IsBubbleTileFishable,
@@ -28,7 +27,6 @@ internal static class BubbleSteeringPolicy
             conditions.BubbleTile.Y * Game1.tileSize + Game1.tileSize / 2f);
 
         if (!conditions.Enabled
-            || !conditions.IsManualCast
             || !conditions.IsBobberInAir
             || !conditions.CanFishHere
             || !conditions.IsBubbleTileFishable

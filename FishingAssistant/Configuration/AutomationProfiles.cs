@@ -10,11 +10,11 @@ internal static class AutomationProfiles
         {
             case AutomationProfile.Relaxed:
                 SetCore(config, autoCast: true, autoHook: true, autoMinigame: true,
-                    autoClose: true, autoLoot: true, bubbleSteering: false);
+                    autoClose: true, autoLoot: true, bubbleSteering: true);
                 break;
             case AutomationProfile.Training:
                 SetCore(config, autoCast: true, autoHook: true, autoMinigame: false,
-                    autoClose: true, autoLoot: true, bubbleSteering: false);
+                    autoClose: true, autoLoot: true, bubbleSteering: true);
                 break;
             case AutomationProfile.ManualPlus:
                 SetCore(config, autoCast: false, autoHook: false, autoMinigame: false,

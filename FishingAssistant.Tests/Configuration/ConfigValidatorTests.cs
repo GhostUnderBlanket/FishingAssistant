@@ -79,6 +79,38 @@ public sealed class ConfigValidatorTests
         Assert.Equal(nameof(config.ConfigVersion), report.Warnings[0].Property);
     }
 
+    [Theory]
+    [InlineData((int)AutomationProfile.Relaxed)]
+    [InlineData((int)AutomationProfile.Training)]
+    public void Normalize_EnablesBubbleSteeringForExistingPresetProfiles(int profileValue)
+    {
+        ModConfig config = new()
+        {
+            ConfigVersion = 9,
+            AutomationProfile = (AutomationProfile)profileValue,
+            AutomaticBubbleSteering = false
+        };
+
+        ConfigValidator.Normalize(config);
+
+        Assert.True(config.AutomaticBubbleSteering);
+    }
+
+    [Fact]
+    public void Normalize_PreservesCustomBubbleSteeringChoice()
+    {
+        ModConfig config = new()
+        {
+            ConfigVersion = 9,
+            AutomationProfile = AutomationProfile.Custom,
+            AutomaticBubbleSteering = false
+        };
+
+        ConfigValidator.Normalize(config);
+
+        Assert.False(config.AutomaticBubbleSteering);
+    }
+
     [Fact]
     public void Normalize_ReportsInactiveAndOverriddenSettings()
     {

@@ -8,7 +8,6 @@ public sealed class BubbleSteeringPolicyTests
 {
     private static BubbleSteeringConditions ReachableVerticalCast => new(
         Enabled: true,
-        IsManualCast: true,
         IsBobberInAir: true,
         CanFishHere: true,
         IsBubbleTileFishable: true,
@@ -23,13 +22,6 @@ public sealed class BubbleSteeringPolicyTests
     {
         Assert.True(BubbleSteeringPolicy.TryGetTarget(ReachableVerticalCast, out Vector2 target));
         Assert.Equal(new Vector2(416f, 672f), target);
-    }
-
-    [Fact]
-    public void TryGetTarget_RejectsAutomaticCast()
-    {
-        Assert.False(BubbleSteeringPolicy.TryGetTarget(
-            ReachableVerticalCast with { IsManualCast = false }, out _));
     }
 
     [Fact]

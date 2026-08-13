@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 9;
+    internal const int CurrentVersion = 10;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -83,7 +83,7 @@ internal sealed class ModConfig
 
     public bool InstantFishBite { get; set; }
 
-    public bool AutomaticBubbleSteering { get; set; }
+    public bool AutomaticBubbleSteering { get; set; } = true;
 
     public int PreferFishAmount { get; set; } = 1;
 

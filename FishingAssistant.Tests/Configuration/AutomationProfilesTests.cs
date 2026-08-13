@@ -17,7 +17,7 @@ public sealed class AutomationProfilesTests
         Assert.True(config.AutoClosePopup);
         Assert.True(config.AutoLootTreasure);
         Assert.True(config.DisplayFishPreview);
-        Assert.False(config.AutomaticBubbleSteering);
+        Assert.True(config.AutomaticBubbleSteering);
     }
 
     [Fact]
@@ -32,6 +32,7 @@ public sealed class AutomationProfilesTests
         Assert.False(config.AutoPlayMiniGame);
         Assert.True(config.AutoClosePopup);
         Assert.True(config.AutoLootTreasure);
+        Assert.True(config.AutomaticBubbleSteering);
     }
 
     [Fact]

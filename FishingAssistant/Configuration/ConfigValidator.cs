@@ -22,6 +22,13 @@ internal static class ConfigValidator
             report.Add(nameof(config.AutomationProfile), null, config.AutomationProfile,
                 "Existing individually configured automation settings were preserved as Custom.");
         }
+        else if (originalVersion < 10
+                 && config.AutomationProfile is AutomationProfile.Relaxed or AutomationProfile.Training)
+        {
+            config.AutomaticBubbleSteering = true;
+            report.Add(nameof(config.AutomaticBubbleSteering), false, true,
+                "Bubble steering was enabled for the selected automation profile.");
+        }
         NormalizeKeybind(report, nameof(config.EnableAutomationButton),
             () => config.EnableAutomationButton, value => config.EnableAutomationButton = value, SButton.F5);
         NormalizeKeybind(report, nameof(config.OpenConfigMenuButton),
