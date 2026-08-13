@@ -368,7 +368,7 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         string fitted = MenuText.Fit(this.title, Game1.dialogueFont,
             this.layout.ContentWidth - HeaderPanelHorizontalPadding * 2);
         Vector2 size = Game1.dialogueFont.MeasureString(fitted);
-        Vector2 position = new(this.layout.ContentX, this.layout.Y + 28);
+        Vector2 position = new(this.layout.ContentX, this.layout.Y + 20);
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
             (int)position.X - HeaderPanelHorizontalPadding,
             (int)position.Y - HeaderPanelVerticalPadding,

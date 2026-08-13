@@ -419,7 +419,7 @@ internal sealed class JunkListMenu : IClickableMenu
         Vector2 countSize = Game1.smallFont.MeasureString(count);
         Vector2 countPosition = new(
             this.layout.X + this.layout.Width - this.layout.Padding - countSize.X,
-            this.layout.Y + 32);
+            this.layout.Y + 24);
         this.DrawHeaderPanel(batch, countPosition, countSize, Game1.smallFont.LineSpacing);
         Utility.drawTextWithShadow(batch, count, Game1.smallFont, countPosition, Game1.textColor);
 
@@ -429,7 +429,7 @@ internal sealed class JunkListMenu : IClickableMenu
                 ? "config.treasure_ignore_picker.title"
                 : "config.junk_picker.title"), Game1.dialogueFont, titleWidth);
         Vector2 titleSize = Game1.dialogueFont.MeasureString(title);
-        Vector2 titlePosition = new(this.layout.ContentX, this.layout.Y + 28);
+        Vector2 titlePosition = new(this.layout.ContentX, this.layout.Y + 16);
         this.DrawHeaderPanel(batch, titlePosition, titleSize, Game1.dialogueFont.LineSpacing);
         Utility.drawTextWithShadow(batch, title, Game1.dialogueFont, titlePosition, Game1.textColor);
     }
