@@ -10,9 +10,7 @@ internal enum AutomationState
     Minigame,
     CatchResult,
     TreasureMenu,
-    Cooldown,
-    Paused,
-    Faulted
+    Paused
 }
 
 internal enum AutomationTransitionReason

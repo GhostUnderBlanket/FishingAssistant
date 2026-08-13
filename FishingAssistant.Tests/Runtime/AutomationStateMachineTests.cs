@@ -28,6 +28,18 @@ public sealed class AutomationStateMachineTests
     }
 
     [Fact]
+    public void EveryState_IsReachableFromAnObservation()
+    {
+        AutomationState[] classified = Observations
+            .Select(values => AutomationStateMachine.Classify((FishingObservation)values[0]))
+            .Distinct()
+            .Order()
+            .ToArray();
+
+        Assert.Equal(Enum.GetValues<AutomationState>().Order(), classified);
+    }
+
+    [Fact]
     public void Observe_FollowsLegalFishingSequence()
     {
         AutomationSession session = new();

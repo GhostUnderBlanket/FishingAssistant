@@ -64,7 +64,7 @@ All 55 user-editable configuration properties are already represented in the men
 
 ## Milestone 3: Runtime context and state recovery
 
-- [ ] Make every retained automation state meaningful and reachable. In particular,
+- [x] Make every retained automation state meaningful and reachable. In particular,
   implement `Cooldown` and `Faulted` transitions or remove them and update the roadmap
   and HUD contract.
 - [ ] Define bounded timeouts for states that can otherwise remain stuck after an

@@ -31,7 +31,7 @@ internal static class AutomationStateMachine
     {
         if (previous == current)
             return true;
-        if (current is AutomationState.Idle or AutomationState.Paused or AutomationState.Faulted)
+        if (current is AutomationState.Idle or AutomationState.Paused)
             return true;
 
         return previous switch
@@ -45,12 +45,9 @@ internal static class AutomationStateMachine
                 or AutomationState.WaitingForBite,
             AutomationState.Minigame => current is AutomationState.CatchResult or AutomationState.TreasureMenu,
             AutomationState.CatchResult => current is AutomationState.TreasureMenu
-                or AutomationState.Cooldown
                 or AutomationState.Ready,
-            AutomationState.TreasureMenu => current is AutomationState.Cooldown or AutomationState.Ready,
-            AutomationState.Cooldown => current is AutomationState.Ready or AutomationState.Casting,
-            AutomationState.Paused => current is not AutomationState.Faulted,
-            AutomationState.Faulted => current == AutomationState.Idle,
+            AutomationState.TreasureMenu => current == AutomationState.Ready,
+            AutomationState.Paused => true,
             _ => false
         };
     }

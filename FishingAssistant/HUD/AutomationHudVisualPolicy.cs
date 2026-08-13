@@ -13,7 +13,6 @@ internal static class AutomationHudVisualPolicy
         return state switch
         {
             AutomationState.Paused => Color.Gold,
-            AutomationState.Faulted => Color.IndianRed,
             _ => Color.White
         };
     }

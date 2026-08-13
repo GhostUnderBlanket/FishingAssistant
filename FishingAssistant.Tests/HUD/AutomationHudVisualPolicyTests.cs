@@ -13,13 +13,11 @@ public sealed class AutomationHudVisualPolicyTests
             AutomationHudVisualPolicy.GetAutomationTint(false, AutomationState.Ready));
     }
 
-    [Theory]
-    [InlineData((int)AutomationState.Paused)]
-    [InlineData((int)AutomationState.Faulted)]
-    public void GetAutomationTint_UsesWarningColorForExceptionalState(int state)
+    [Fact]
+    public void GetAutomationTint_UsesWarningColorForPausedState()
     {
         Assert.NotEqual(Color.White,
-            AutomationHudVisualPolicy.GetAutomationTint(true, (AutomationState)state));
+            AutomationHudVisualPolicy.GetAutomationTint(true, AutomationState.Paused));
     }
 
     [Fact]

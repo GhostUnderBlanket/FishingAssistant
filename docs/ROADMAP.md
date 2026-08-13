@@ -109,8 +109,10 @@ Goal: create the safe execution core that all fishing features use.
 - Introduce per-screen session state through SMAPI's split-screen utilities.
 - Track the correct local player, rod, menu, viewport, input context, and automation
   state without assuming `Game1.player` is globally unique.
-- Model the fishing loop explicitly: Idle, Ready, Casting, WaitingForBite, Hooking,
-  Minigame, CatchResult, TreasureMenu, Cooldown, Paused, and Faulted.
+- Model the observed fishing loop explicitly: Idle, Ready, Casting, WaitingForBite,
+  Hooking, Minigame, CatchResult, TreasureMenu, and Paused. Unexpected jumps are marked
+  as recovered transitions instead of introducing synthetic Cooldown or Faulted states
+  which cannot be derived reliably from the game context.
 - Define legal transitions, cancellation rules, timeouts, and recovery behavior.
 - Reset stale state on tool changes, menu changes, warps, day transitions, save unload,
   return to title, disconnect, and local-player removal.

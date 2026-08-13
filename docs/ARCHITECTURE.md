@@ -147,12 +147,15 @@ The automation coordinator will use explicit states rather than unrelated tick f
 Idle -> Ready -> Casting -> WaitingForBite -> Hooking -> Minigame
   ^                                                    |
   |                                                    v
-  +---------- Cooldown <- TreasureMenu <- CatchResult -+
+  +--------------------- TreasureMenu <- CatchResult --+
 ```
 
-`Paused` and `Faulted` are recoverable side states. Tool changes, warps, menu conflicts,
-save unload, return to title, disconnect, and local-player removal must return the
-session to a safe state and release any temporary changes.
+`Paused` is the observed side state for a blocking menu. There are deliberately no
+synthetic `Cooldown` or `Faulted` states: neither can be identified reliably from a
+single game observation, and unexpected jumps are already recorded as recovered
+transitions. Tool changes, warps, menu conflicts, save unload, return to title,
+disconnect, and local-player removal must return the session to a safe state and
+release any temporary changes.
 
 Observed game state may occasionally skip an expected phase between update ticks. The
 state machine records those jumps as recoveries and adopts the observed safe state;
