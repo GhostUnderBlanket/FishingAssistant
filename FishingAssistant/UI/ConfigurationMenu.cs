@@ -77,6 +77,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     {
         this.CancelKeybindListening();
         this.RebuildComponents();
+        this.GetChildMenu()?.gameWindowSizeChanged(oldBounds, newBounds);
     }
 
     public override bool readyToClose() => !this.IsListeningForKeybind;
@@ -316,9 +317,31 @@ internal sealed class ConfigurationMenu : IClickableMenu
     {
         try
         {
-            this.apply(this.session);
+            ConfigValidationReport report = this.apply(this.session);
             Game1.playSound("coin");
-            this.exitThisMenu(playSound: false);
+            ConfigApplyFeedback feedback = ConfigApplyFeedback.Create(report);
+            if (!feedback.HasMessages)
+            {
+                this.exitThisMenu(playSound: false);
+                return;
+            }
+
+            string affected = string.Join(", ", feedback.AffectedProperties);
+            if (feedback.AdditionalPropertyCount > 0)
+            {
+                affected = string.Format(this.translate("config.apply.feedback.more"),
+                    affected,
+                    feedback.AdditionalPropertyCount);
+            }
+
+            string message = string.Format(this.translate("config.apply.feedback.summary"),
+                feedback.CorrectionCount,
+                feedback.WarningCount,
+                affected);
+            this.SetChildMenu(new ConfigApplyFeedbackDialog(
+                message,
+                this.translate("config.action.done"),
+                () => this.exitThisMenu(playSound: false)));
         }
         catch (InvalidOperationException exception)
         {

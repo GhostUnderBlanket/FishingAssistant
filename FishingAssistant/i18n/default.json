@@ -156,6 +156,8 @@
   "config.junk_picker.state_ignore": "Ignored",
   "config.junk_picker.empty": "No matching items found.",
   "config.confirm.reset": "Reset every setting to its default value? Changes are not saved until you select Apply.",
+  "config.apply.feedback.summary": "Settings applied with {0} automatic correction(s) and {1} warning(s). Affected: {2}. See the SMAPI log for details.",
+  "config.apply.feedback.more": "{0}, and {1} more",
   "config.status.defaults_loaded": "Defaults loaded. Select Apply to save them.",
   "config.status.save_failed": "The configuration could not be saved. Check the SMAPI log.",
   "hud.title": "Fishing Assistant",

@@ -9,6 +9,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A responsive Apply-result dialog when configuration validation makes automatic
+  corrections or reports warnings, including affected property names and a pointer to
+  detailed SMAPI log entries.
 - Initial SMAPI project scaffold for Fishing Assistant 3.
 - Startup log confirming that the mod loaded.
 - Development roadmap and project documentation.
