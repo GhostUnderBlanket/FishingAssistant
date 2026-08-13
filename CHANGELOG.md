@@ -115,6 +115,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Value selectors and numeric steppers can now be adjusted with the mouse wheel while
+  hovered; scrolling elsewhere continues to move the configuration page.
 - Replaced the text automation-status HUD with a compact Fishing Assistant 2-style
   full-color fishing-rod icon and animated Vanilla emotes for active, disabled, paused,
   stopped, warning, and recovered states.

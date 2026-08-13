@@ -178,6 +178,21 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveScrollWheelAction(int direction)
     {
+        int adjustment = MouseWheelAdjustment.GetDirection(direction);
+        if (adjustment == 0)
+            return;
+
+        Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
+        IMouseWheelAdjustableConfigControl? selector = this.options
+            .OfType<IMouseWheelAdjustableConfigControl>()
+            .FirstOrDefault(option => option.Component.bounds.Contains(mouse));
+        if (selector is not null)
+        {
+            if (this.TryUseOption(selector))
+                selector.Adjust(adjustment);
+            return;
+        }
+
         if (direction > 0)
             this.Scroll(-1);
         else if (direction < 0)

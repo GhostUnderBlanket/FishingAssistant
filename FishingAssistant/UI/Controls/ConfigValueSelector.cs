@@ -5,7 +5,7 @@ using StardewValley.Menus;
 
 namespace FishingAssistant.UI.Controls;
 
-internal sealed class ConfigValueSelector<T> : IConfigControl
+internal sealed class ConfigValueSelector<T> : IMouseWheelAdjustableConfigControl
 {
     private readonly Func<T> getValue;
     private readonly Action<T> setValue;

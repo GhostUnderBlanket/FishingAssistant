@@ -17,3 +17,7 @@ internal interface IConfigControl
 
     void Draw(SpriteBatch batch, bool highlighted, int labelBottomInset = 0);
 }
+
+internal interface IMouseWheelAdjustableConfigControl : IConfigControl
+{
+}
