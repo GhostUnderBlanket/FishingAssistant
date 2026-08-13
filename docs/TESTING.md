@@ -60,6 +60,9 @@ checks still need to be observed in-game before Milestone 2 can be marked comple
 - With a remote player connected, open Rod Enchantments and confirm every temporary
   enchantment option is visibly disabled, explains why, ignores edits, and becomes
   editable again after the remote player leaves.
+- In local split-screen, confirm a D-pad press advances exactly one config option,
+  Controller Back opens the menu for the controller-owning player, and Fish Preview
+  stays beside that same player's BobberBar rather than another screen's viewport.
 
 The festival support and multiplayer-safe architecture currently present in the code
 must therefore be treated as implemented but manually unverified until the matching

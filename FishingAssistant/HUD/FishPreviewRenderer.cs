@@ -57,7 +57,11 @@ internal sealed class FishPreviewRenderer
             ? (int)Math.Ceiling(Game1.smallFont.MeasureString(wrappedLabel).Y) + 4
             : 0;
         int desiredHeight = PanelPadding * 2 + IconSize + textHeight;
-        Rectangle viewport = new(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height);
+        Rectangle viewport = FishPreviewViewport.FromGameViewport(new Rectangle(
+            Game1.viewport.X,
+            Game1.viewport.Y,
+            Game1.viewport.Width,
+            Game1.viewport.Height));
         Rectangle bounds = FishPreviewLayout.Place(
             viewport,
             snapshot.BobberBounds,

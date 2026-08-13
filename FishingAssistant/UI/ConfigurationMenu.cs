@@ -214,6 +214,15 @@ internal sealed class ConfigurationMenu : IClickableMenu
             return;
         }
 
+        int? manualDirection = ConfigurationMenuGamepadNavigation.GetManualDirection(
+            button,
+            Game1.options.snappyMenus);
+        if (manualDirection is not null)
+        {
+            this.applyMovementKey(manualDirection.Value);
+            return;
+        }
+
         switch (button)
         {
             case Buttons.A:
@@ -221,22 +230,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 break;
             case Buttons.B:
                 this.exitThisMenu();
-                break;
-            case Buttons.DPadUp:
-            case Buttons.LeftThumbstickUp:
-                this.MoveUp();
-                break;
-            case Buttons.DPadRight:
-            case Buttons.LeftThumbstickRight:
-                this.MoveHorizontal(1);
-                break;
-            case Buttons.DPadDown:
-            case Buttons.LeftThumbstickDown:
-                this.MoveDown();
-                break;
-            case Buttons.DPadLeft:
-            case Buttons.LeftThumbstickLeft:
-                this.MoveHorizontal(-1);
                 break;
         }
     }

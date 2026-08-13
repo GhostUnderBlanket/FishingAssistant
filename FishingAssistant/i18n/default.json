@@ -116,7 +116,7 @@
   "config.option.toggle_automation": "Toggle automation",
   "config.option.toggle_automation.description": "The keybind used to enable or disable fishing automation for this local player.",
   "config.option.open_config": "Open configuration menu",
-  "config.option.open_config.description": "The keybind used to open this custom configuration menu.",
+  "config.option.open_config.description": "The keybind used to open this custom configuration menu. Controller Back also opens it while no menu is active.",
   "config.option.add_test_rod": "Add test fishing rod",
   "config.option.add_test_rod.description": "Add an Advanced Iridium Rod when this local player has no fishing rod.",
   "config.option.warp_beach": "Warp to beach fishing spot",

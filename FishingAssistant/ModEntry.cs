@@ -9,6 +9,7 @@ using FishingAssistant.UI;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 
 namespace FishingAssistant;
@@ -108,14 +109,7 @@ internal sealed class ModEntry : Mod
         }
 
         if (Game1.activeClickableMenu is ConfigurationMenu)
-        {
-            if (this.configManager!.Active.OpenConfigMenuButton.JustPressed())
-            {
-                this.Helper.Input.SuppressActiveKeybinds(this.configManager.Active.OpenConfigMenuButton);
-                this.TryOpenConfigMenu();
-            }
             return;
-        }
 
         if (Context.IsWorldReady && this.configManager!.Active.EnableAutomationButton.JustPressed())
         {
@@ -124,11 +118,18 @@ internal sealed class ModEntry : Mod
             return;
         }
 
-        if (!this.configManager!.Active.OpenConfigMenuButton.JustPressed())
+        KeybindList openConfigKeybind = this.configManager!.Active.OpenConfigMenuButton;
+        bool configuredKeybindPressed = openConfigKeybind.JustPressed();
+        if (!ConfigurationMenuInput.IsOpenRequested(configuredKeybindPressed, e.Pressed))
             return;
 
-        this.Helper.Input.SuppressActiveKeybinds(this.configManager.Active.OpenConfigMenuButton);
-        this.TryOpenConfigMenu();
+        if (!this.TryOpenConfigMenu())
+            return;
+
+        if (configuredKeybindPressed)
+            this.Helper.Input.SuppressActiveKeybinds(openConfigKeybind);
+        if (e.Pressed.Contains(ConfigurationMenuInput.ControllerFallbackButton))
+            this.Helper.Input.Suppress(ConfigurationMenuInput.ControllerFallbackButton);
     }
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
@@ -223,19 +224,19 @@ internal sealed class ModEntry : Mod
         this.TryOpenConfigMenu();
     }
 
-    private void TryOpenConfigMenu()
+    private bool TryOpenConfigMenu()
     {
         if (Game1.activeClickableMenu is ConfigurationMenu menu)
         {
             menu.exitThisMenu();
-            return;
+            return true;
         }
 
         if (!Context.IsWorldReady || !Context.IsPlayerFree || Game1.currentMinigame is not null)
         {
             this.Monitor.Log("The configuration menu can't open until a player is free in the world.",
                 LogLevel.Info);
-            return;
+            return false;
         }
 
         Game1.activeClickableMenu = new ConfigurationMenu(
@@ -247,6 +248,7 @@ internal sealed class ModEntry : Mod
             this.starterFishingRod!.AddTestRodFromMenu,
             this.debugWarp!.WarpToBeachFishingSpot
         );
+        return true;
     }
 
     private ConfigValidationReport ApplyConfig(ConfigEditSession session)

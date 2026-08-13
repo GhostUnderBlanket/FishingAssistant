@@ -9,6 +9,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Controller Back can open the configuration menu from the world as a fallback for
+  local controller players, while the configurable F6 default remains unchanged.
 - Automatic configuration-menu layout and navigation rebuilding when viewport size, UI
   scale, zoom, language, or visible option set changes while the menu is open.
 - Left and right trigger support for configuration-menu category navigation.
@@ -113,6 +115,11 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   items as junk: Trash, Driftwood, Broken Glasses, Broken CD, and Soggy Newspaper.
 
 ### Fixed
+
+- Prevented snappy controller navigation from processing a directional press twice and
+  skipping an option.
+- Positioned Fish Preview against the active local game's viewport, matching the
+  BobberBar coordinate system in split-screen.
 
 - Reset Defaults confirmation now wraps to the current UI viewport instead of creating
   an oversized, off-screen vanilla dialog.

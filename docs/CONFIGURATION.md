@@ -91,8 +91,10 @@ second local split-screen player applies a newer draft first, the stale menu is 
 close and reopen instead of silently overwriting the other player's changes.
 
 The menu opens through `OpenConfigMenuButton`, which defaults to F6, or the `fa_config`
-SMAPI console command. The console command remains available if the menu keybind is
-manually cleared. Item pickers are populated from the game registry after
+SMAPI console command. Controller Back is also available as a local controller fallback
+while no menu is active, so a keyboard-only default does not block a split-screen
+player from reaching the keybind editor. The console command remains available if the
+menu keybind is manually cleared. Item pickers are populated from the game registry after
 `GameLaunched`, so loaded
 content-pack bait and tackle can appear by localized name. The controls category can
 capture keyboard, mouse, controller, and multi-button keybinds through SMAPI. Escape or
