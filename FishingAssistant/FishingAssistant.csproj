@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>FishingAssistant</AssemblyName>
+    <RootNamespace>FishingAssistant</RootNamespace>
+    <Description>A configurable fishing assistant for Stardew Valley.</Description>
+    <VersionPrefix>3.0.0</VersionPrefix>
+    <VersionSuffix>beta.1</VersionSuffix>
+
+    <EnableModDeploy>false</EnableModDeploy>
+    <EnableModZip>false</EnableModZip>
+    <EnableHarmony>true</EnableHarmony>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" />
+  </ItemGroup>
+</Project>

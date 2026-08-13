@@ -1,0 +1,12 @@
+{
+  "Name": "Fishing Assistant 3",
+  "Author": "ChibiKyu",
+  "Version": "%ProjectVersion%",
+  "Description": "A configurable fishing assistant for Stardew Valley.",
+  "UniqueID": "ChibiKyu.FishingAssistant2",
+  "EntryDll": "FishingAssistant.dll",
+  "MinimumApiVersion": "4.5.2",
+  "UpdateKeys": [
+    "Nexus:5815"
+  ]
+}

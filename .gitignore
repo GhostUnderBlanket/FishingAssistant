@@ -1,11 +1,15 @@
 # Repository-local development tools
 .tools/
+.idea/
 
 # Decompiled proprietary game assemblies (reference use only)
 .reference/
 
 # Local agent working instructions
 AGENT.md
+
+# Local Codex conversation exports (may contain private project context)
+.codex-export/
 
 # .NET build output
 bin/
