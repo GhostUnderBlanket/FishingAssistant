@@ -60,14 +60,18 @@ internal sealed class FishPreviewRenderer
             ? (int)Math.Ceiling(Game1.smallFont.MeasureString(wrappedLabel).Y) + 4
             : 0;
         int desiredHeight = PanelPadding * 2 + IconSize + textHeight;
-        Rectangle viewport = FishPreviewViewport.FromGameViewport(new Rectangle(
+        FishPreviewCoordinateSpace coordinateSpace = FishPreviewViewport.FromViewports(new Rectangle(
             Game1.viewport.X,
             Game1.viewport.Y,
             Game1.viewport.Width,
-            Game1.viewport.Height));
+            Game1.viewport.Height), new Rectangle(
+            Game1.uiViewport.X,
+            Game1.uiViewport.Y,
+            Game1.uiViewport.Width,
+            Game1.uiViewport.Height));
         Rectangle bounds = FishPreviewLayout.Place(
-            viewport,
-            snapshot.BobberBounds,
+            coordinateSpace.Viewport,
+            coordinateSpace.ToUi(snapshot.BobberBounds),
             new Point(desiredWidth, desiredHeight));
 
         IClickableMenu.drawTextureBox(

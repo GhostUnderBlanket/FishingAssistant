@@ -43,6 +43,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private string hoverText = "";
     private string statusText = "";
     private Keys? ignoredGamePadKeyPress;
+    private bool ignoreNextControllerClick;
 
     public ConfigurationMenu(
         ConfigEditSession session,
@@ -76,7 +77,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         this.options.OfType<ConfigKeybind>().FirstOrDefault(control => control.IsListening)?.Capture(buttons);
     }
 
-    public override bool areGamePadControlsImplemented() => true;
+    public override bool areGamePadControlsImplemented() => false;
 
     public override bool showWithoutTransparencyIfOptionIsSet() => true;
 
@@ -122,6 +123,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
+        if (this.ignoreNextControllerClick)
+        {
+            this.ignoreNextControllerClick = false;
+            return;
+        }
+
         base.receiveLeftClick(x, y, playSound);
         if (Game1.activeClickableMenu != this)
             return;
@@ -216,7 +223,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
             ConfigKeybind? keybind = this.options.OfType<ConfigKeybind>()
                 .FirstOrDefault(control => control.IsListening);
             if (keybind?.ReceiveGamePadButton(button) == true)
+            {
                 this.ignoredGamePadKeyPress = Utility.mapGamePadButtonToKey(button);
+                if (button == Buttons.A)
+                    this.ignoreNextControllerClick = true;
+            }
             return;
         }
 
@@ -231,9 +242,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
         switch (button)
         {
-            case Buttons.A:
-                this.ActivateSnappedComponent();
-                break;
             case Buttons.B:
                 this.exitThisMenu();
                 break;

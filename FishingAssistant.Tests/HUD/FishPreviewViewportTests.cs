@@ -6,18 +6,25 @@ namespace FishingAssistant.Tests.HUD;
 public sealed class FishPreviewViewportTests
 {
     [Fact]
-    public void FromGameViewport_UsesLocalSizeAndIgnoresCameraPosition()
+    public void FromViewports_UsesLocalUiSizeAndConvertsGameCoordinates()
     {
-        Rectangle result = FishPreviewViewport.FromGameViewport(new Rectangle(4320, 1872, 960, 540));
+        FishPreviewCoordinateSpace result = FishPreviewViewport.FromViewports(
+            new Rectangle(4320, 1872, 1024, 1080),
+            new Rectangle(4320, 1872, 819, 864));
 
-        Assert.Equal(new Rectangle(0, 0, 960, 540), result);
+        Assert.Equal(new Rectangle(0, 0, 819, 864), result.Viewport);
+        Assert.Equal(new Rectangle(331, 480, 77, 509),
+            result.ToUi(new Rectangle(414, 600, 96, 636)));
     }
 
     [Fact]
-    public void FromGameViewport_ClampsInvalidDimensions()
+    public void FromViewports_ClampsInvalidDimensions()
     {
-        Rectangle result = FishPreviewViewport.FromGameViewport(new Rectangle(0, 0, 0, -5));
+        FishPreviewCoordinateSpace result = FishPreviewViewport.FromViewports(
+            new Rectangle(0, 0, 0, -5),
+            new Rectangle(0, 0, 0, -2));
 
-        Assert.Equal(new Rectangle(0, 0, 1, 1), result);
+        Assert.Equal(new Rectangle(0, 0, 1, 1), result.Viewport);
+        Assert.Equal(new Rectangle(0, 0, 1, 1), result.ToUi(new Rectangle(0, 0, 0, 0)));
     }
 }
