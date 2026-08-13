@@ -14,6 +14,8 @@ internal static class MenuVisualMetrics
 
     public const int ScrollbarVerticalInset = 8;
 
+    public const int CategoryTopSpacing = 8;
+
     public const float ArrowScale = 1.75f;
 
     public static Rectangle ArrowSource { get; } = new(421, 459, 11, 12);

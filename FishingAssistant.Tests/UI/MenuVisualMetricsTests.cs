@@ -15,6 +15,7 @@ public sealed class MenuVisualMetricsTests
         Assert.Equal(12, MenuVisualMetrics.HeaderPanelVerticalPadding);
         Assert.Equal(12, MenuVisualMetrics.ScrollbarGap);
         Assert.Equal(8, MenuVisualMetrics.ScrollbarVerticalInset);
+        Assert.Equal(8, MenuVisualMetrics.CategoryTopSpacing);
     }
 
     [Fact]

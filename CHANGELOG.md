@@ -139,6 +139,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Refined picker spacing and header padding, added the missing item-picker title panel,
   and tightened two-line item-card labels.
 - Added clear gutters between configuration options, pagination, and the scrollbar.
+- Added top spacing above the category selector so its label and navigation buttons no
+  longer touch the menu frame.
 - Disabling Automation with F5 no longer cancels a cast already in progress. Vanilla
   finishes that cast normally while every later automatic action remains disabled,
   avoiding stuck rod state or shared fishing audio in local co-op.

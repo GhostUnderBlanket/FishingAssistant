@@ -18,6 +18,8 @@ public sealed class MenuLayoutTests
         Assert.True(layout.X + layout.Width <= viewportWidth);
         Assert.True(layout.Y + layout.Height <= viewportHeight);
         Assert.True(layout.ContentTop < layout.ContentBottom);
+        Assert.Equal(layout.Y + layout.HeaderHeight + MenuVisualMetrics.CategoryTopSpacing,
+            layout.CategoryTop);
         Assert.True(layout.OptionHeight > 0);
         Assert.True(layout.VisibleOptionCount > 0);
     }
