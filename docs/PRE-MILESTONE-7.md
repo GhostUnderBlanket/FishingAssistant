@@ -53,7 +53,7 @@ Completed on 2026-08-13. Release verification passed with 265 automated tests.
   effective UI scale, and option-visibility changes.
 - [x] Add reusable section-header and description-block controls, or document the
   deliberate replacement if the final menu design no longer needs them.
-- [ ] Add focused tests for Reset confirmation, Apply validation feedback, Cancel draft
+- [x] Add focused tests for Reset confirmation, inline validation feedback, Cancel draft
   isolation, disabled controls, and navigation rebuilding.
 - [ ] Verify the complete menu with mouse, keyboard, and controller in fullscreen and a
   small local split-screen viewport. Include long translated labels and non-default UI

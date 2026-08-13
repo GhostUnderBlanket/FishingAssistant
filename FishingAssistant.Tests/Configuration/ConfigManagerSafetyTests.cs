@@ -1,6 +1,6 @@
+using System.Reflection;
 using FishingAssistant.Configuration;
 using StardewModdingAPI;
-using System.Reflection;
 
 namespace FishingAssistant.Tests.Configuration;
 
@@ -45,6 +45,33 @@ public sealed class ConfigManagerSafetyTests
         Assert.Contains(report.Warnings, warning => warning.Property == nameof(ModConfig.ConfigVersion));
         Assert.Throws<InvalidOperationException>(() => manager.Apply(session));
         Assert.Equal(0, helper.WriteCount);
+        Assert.Equal(originalJson, File.ReadAllText(configPath));
+    }
+
+    [Fact]
+    public void CreateEditSession_DiscardingTheDraftLeavesSavedAndActiveConfigurationUnchanged()
+    {
+        using TemporaryDirectory directory = new();
+        string configPath = Path.Combine(directory.Path, "config.json");
+        const string originalJson = "{\"AutoCastFishingRod\":false,\"JunkList\":[\"(O)168\"]}";
+        File.WriteAllText(configPath, originalJson);
+        FakeModHelper helper = FakeModHelper.Create(directory.Path, new ModConfig
+        {
+            AutoCastFishingRod = false,
+            JunkList = ["(O)168"]
+        });
+        ConfigManager manager = new(helper.Instance, NoOpMonitor.Create());
+        manager.Load();
+        int writesBeforeDraft = helper.WriteCount;
+
+        ConfigEditSession session = manager.CreateEditSession();
+        session.Draft.AutoCastFishingRod = true;
+        session.Draft.JunkList.Add("(O)169");
+
+        // The menu's Cancel action discards this session without calling Apply.
+        Assert.False(manager.Active.AutoCastFishingRod);
+        Assert.Equal(["(O)168"], manager.Active.JunkList);
+        Assert.Equal(writesBeforeDraft, helper.WriteCount);
         Assert.Equal(originalJson, File.ReadAllText(configPath));
     }
 
