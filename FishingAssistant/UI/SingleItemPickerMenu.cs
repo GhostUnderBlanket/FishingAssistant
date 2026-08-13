@@ -10,8 +10,6 @@ namespace FishingAssistant.UI;
 
 internal sealed class SingleItemPickerMenu : IClickableMenu
 {
-    private const int HeaderPanelHorizontalPadding = 20;
-    private const int HeaderPanelVerticalPadding = 12;
     private const int FirstItemId = 3000;
     private const int ScrollUpId = 4000;
     private const int ScrollDownId = 4001;
@@ -366,14 +364,14 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
     private void DrawHeader(SpriteBatch batch)
     {
         string fitted = MenuText.Fit(this.title, Game1.dialogueFont,
-            this.layout.ContentWidth - HeaderPanelHorizontalPadding * 2);
+            this.layout.ContentWidth - MenuVisualMetrics.HeaderPanelHorizontalPadding * 2);
         Vector2 size = Game1.dialogueFont.MeasureString(fitted);
         Vector2 position = new(this.layout.ContentX, this.layout.Y + 20);
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
-            (int)position.X - HeaderPanelHorizontalPadding,
-            (int)position.Y - HeaderPanelVerticalPadding,
-            (int)Math.Ceiling(size.X) + HeaderPanelHorizontalPadding * 2,
-            Game1.dialogueFont.LineSpacing + HeaderPanelVerticalPadding * 2,
+            (int)position.X - MenuVisualMetrics.HeaderPanelHorizontalPadding,
+            (int)position.Y - MenuVisualMetrics.HeaderPanelVerticalPadding,
+            (int)Math.Ceiling(size.X) + MenuVisualMetrics.HeaderPanelHorizontalPadding * 2,
+            Game1.dialogueFont.LineSpacing + MenuVisualMetrics.HeaderPanelVerticalPadding * 2,
             Color.White);
         Utility.drawTextWithShadow(batch, fitted, Game1.dialogueFont,
             position, Game1.textColor);

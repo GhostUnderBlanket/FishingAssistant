@@ -11,6 +11,8 @@ public sealed class MenuVisualMetricsTests
         Assert.Equal(48, MenuVisualMetrics.GetControlHeight(52));
         Assert.Equal(320, MenuVisualMetrics.GetControlWidth(800));
         Assert.Equal(1.75f, MenuVisualMetrics.ArrowScale);
+        Assert.Equal(20, MenuVisualMetrics.HeaderPanelHorizontalPadding);
+        Assert.Equal(12, MenuVisualMetrics.HeaderPanelVerticalPadding);
     }
 
     [Fact]

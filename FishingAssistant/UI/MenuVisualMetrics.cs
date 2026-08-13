@@ -6,6 +6,10 @@ internal static class MenuVisualMetrics
 {
     public const int ControlHeight = 48;
 
+    public const int HeaderPanelHorizontalPadding = 20;
+
+    public const int HeaderPanelVerticalPadding = 12;
+
     public const float ArrowScale = 1.75f;
 
     public static Rectangle ArrowSource { get; } = new(421, 459, 11, 12);

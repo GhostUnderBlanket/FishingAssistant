@@ -341,12 +341,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.layout.X + this.layout.Padding,
             this.layout.Y + (this.layout.HeaderHeight - titleFont.LineSpacing) / 2f
         );
-        int backgroundPadding = 14;
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
-            (int)titlePosition.X - backgroundPadding,
-            (int)titlePosition.Y - 6,
-            (int)titleSize.X + backgroundPadding * 2,
-            titleFont.LineSpacing + 12,
+            (int)titlePosition.X - MenuVisualMetrics.HeaderPanelHorizontalPadding,
+            (int)titlePosition.Y - MenuVisualMetrics.HeaderPanelVerticalPadding,
+            (int)Math.Ceiling(titleSize.X) + MenuVisualMetrics.HeaderPanelHorizontalPadding * 2,
+            titleFont.LineSpacing + MenuVisualMetrics.HeaderPanelVerticalPadding * 2,
             Color.White);
         Utility.drawTextWithShadow(batch, title, titleFont, titlePosition, Game1.textColor);
     }

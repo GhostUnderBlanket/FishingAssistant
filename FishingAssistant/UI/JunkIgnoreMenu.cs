@@ -11,8 +11,6 @@ namespace FishingAssistant.UI;
 internal sealed class JunkListMenu : IClickableMenu
 {
     private const float CardStateScale = 0.62f;
-    private const int HeaderPanelHorizontalPadding = 20;
-    private const int HeaderPanelVerticalPadding = 12;
     private const int FirstItemId = 1000;
     private const int ScrollUpId = 2000;
     private const int ScrollDownId = 2001;
@@ -424,7 +422,7 @@ internal sealed class JunkListMenu : IClickableMenu
         Utility.drawTextWithShadow(batch, count, Game1.smallFont, countPosition, Game1.textColor);
 
         float titleWidth = Math.Max(1f,
-            countPosition.X - this.layout.ContentX - HeaderPanelHorizontalPadding * 2);
+            countPosition.X - this.layout.ContentX - MenuVisualMetrics.HeaderPanelHorizontalPadding * 2);
         string title = MenuText.Fit(this.translate(this.treasureIgnoreOnly
                 ? "config.treasure_ignore_picker.title"
                 : "config.junk_picker.title"), Game1.dialogueFont, titleWidth);
@@ -437,10 +435,10 @@ internal sealed class JunkListMenu : IClickableMenu
     private void DrawHeaderPanel(SpriteBatch batch, Vector2 position, Vector2 textSize, int lineSpacing)
     {
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
-            (int)position.X - HeaderPanelHorizontalPadding,
-            (int)position.Y - HeaderPanelVerticalPadding,
-            (int)Math.Ceiling(textSize.X) + HeaderPanelHorizontalPadding * 2,
-            lineSpacing + HeaderPanelVerticalPadding * 2,
+            (int)position.X - MenuVisualMetrics.HeaderPanelHorizontalPadding,
+            (int)position.Y - MenuVisualMetrics.HeaderPanelVerticalPadding,
+            (int)Math.Ceiling(textSize.X) + MenuVisualMetrics.HeaderPanelHorizontalPadding * 2,
+            lineSpacing + MenuVisualMetrics.HeaderPanelVerticalPadding * 2,
             Color.White);
     }
 
