@@ -24,6 +24,18 @@ public sealed class AutomationRecoveryPolicyTests
     }
 
     [Theory]
+    [InlineData((int)AutomationState.WaitingForBite)]
+    [InlineData((int)AutomationState.Minigame)]
+    [InlineData((int)AutomationState.TreasureMenu)]
+    public void GetPendingAction_DoesNotClaimManualFishingStates(int state)
+    {
+        PendingAutomationAction result = AutomationRecoveryPolicy.GetPendingAction(
+            new AutomationRecoveryConditions((AutomationState)state, false, false, false));
+
+        Assert.Equal(PendingAutomationAction.None, result);
+    }
+
+    [Theory]
     [InlineData((int)PendingAutomationAction.AutomaticCast,
         AutomationRecoveryPolicy.AutomaticCastTimeoutTicks)]
     [InlineData((int)PendingAutomationAction.AutomaticHook,

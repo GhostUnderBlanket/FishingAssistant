@@ -167,6 +167,12 @@ seconds to advance. A timeout cancels the owned action, clears all per-screen pe
 flags, and disables automation for that screen. Manual waiting, manual minigames, and
 manually opened menus are not timed out.
 
+Pending cast, hook, popup, and treasure-targeting flags live in one per-screen state
+object with a single reset operation. This keeps every cancellation path consistent and
+makes stale-flag cleanup testable without a running game. SMAPI's `PerScreen` container
+removes inactive split-screen values when its current value is next synchronized; the
+mod does not call newer cleanup methods unavailable in its build-time API baseline.
+
 A blocking menu cancels pending assistant-owned casts, hooks, or popup-close attempts
 immediately. The same cancellation path runs when automation is disabled, the equipped
 tool changes, the player warps, saving begins, a remote peer disconnects, or the session

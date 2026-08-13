@@ -110,22 +110,22 @@ internal sealed class AutomationRuntime(
             this.GetRecoveryConditions(screen));
         if (action == PendingAutomationAction.None)
         {
-            screen.PendingAction = PendingAutomationAction.None;
-            screen.PendingActionTicks = 0;
+            screen.Pending.Action = PendingAutomationAction.None;
+            screen.Pending.ActionTicks = 0;
             return false;
         }
 
-        if (screen.PendingAction != action)
+        if (screen.Pending.Action != action)
         {
-            screen.PendingAction = action;
-            screen.PendingActionTicks = 1;
+            screen.Pending.Action = action;
+            screen.Pending.ActionTicks = 1;
         }
         else
         {
-            screen.PendingActionTicks++;
+            screen.Pending.ActionTicks++;
         }
 
-        if (!AutomationRecoveryPolicy.HasTimedOut(action, screen.PendingActionTicks))
+        if (!AutomationRecoveryPolicy.HasTimedOut(action, screen.Pending.ActionTicks))
             return false;
 
         monitor.Log(
@@ -139,9 +139,9 @@ internal sealed class AutomationRuntime(
     {
         return new AutomationRecoveryConditions(
             screen.Session.State,
-            screen.AutomaticCastInProgress,
-            screen.HookAttemptedForNibble,
-            screen.FishPopupCloseAttempted);
+            screen.Pending.AutomaticCastInProgress,
+            screen.Pending.HookAttemptedForNibble,
+            screen.Pending.FishPopupCloseAttempted);
     }
 
     private void CancelPendingActions(
@@ -149,6 +149,9 @@ internal sealed class AutomationRuntime(
         AutomationTransitionReason reason,
         bool disable)
     {
+        if (!AutomationLifecyclePolicy.CancelsPendingWork(reason))
+            throw new ArgumentOutOfRangeException(nameof(reason), reason, "Reason doesn't cancel pending work.");
+
         this.ClearPendingActions(screen, cancelAutomaticCast: true);
         this.autoEat.ResetCurrent();
         AutomationTransition? transition = disable
@@ -159,18 +162,10 @@ internal sealed class AutomationRuntime(
 
     private void ClearPendingActions(ScreenContext screen, bool cancelAutomaticCast)
     {
-        if (cancelAutomaticCast && screen.AutomaticCastInProgress)
+        if (cancelAutomaticCast && screen.Pending.AutomaticCastInProgress)
             FishingRodAdapter.ForCurrentPlayer()?.CancelAutomaticCast();
 
-        screen.ReadyTicks = 0;
-        screen.AutomaticCastInProgress = false;
-        screen.HookAttemptedForNibble = false;
-        screen.IsPursuingTreasure = false;
-        screen.ConfiguredBobberBar = null;
-        screen.FishPopupVisibleTicks = 0;
-        screen.FishPopupCloseAttempted = false;
-        screen.PendingAction = PendingAutomationAction.None;
-        screen.PendingActionTicks = 0;
+        screen.Pending.Clear();
         this.ResetTreasureLoot(screen);
     }
 
@@ -180,23 +175,23 @@ internal sealed class AutomationRuntime(
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         if (rod is null)
         {
-            screen.ReadyTicks = 0;
-            screen.AutomaticCastInProgress = false;
+            screen.Pending.ReadyTicks = 0;
+            screen.Pending.AutomaticCastInProgress = false;
             return;
         }
 
-        if (screen.AutomaticCastInProgress)
+        if (screen.Pending.AutomaticCastInProgress)
         {
             if (rod.IsTimingCast)
                 rod.SetCastPower(config.DefaultCastPower);
 
             if (screen.Session.State is AutomationState.Ready or AutomationState.Casting)
             {
-                screen.ReadyTicks = 0;
+                screen.Pending.ReadyTicks = 0;
                 return;
             }
 
-            screen.AutomaticCastInProgress = false;
+            screen.Pending.AutomaticCastInProgress = false;
         }
 
         AutoCastConditions conditions = rod.ReadAutoCastConditions(
@@ -208,17 +203,17 @@ internal sealed class AutomationRuntime(
         int requiredTicks = (int)Math.Ceiling(config.AutoCastDelaySeconds * 60f);
         if (rod.IsSupportedFishingMinigame)
             requiredTicks = Math.Max(requiredTicks, 75);
-        switch (AutoCastPolicy.Decide(conditions, screen.ReadyTicks, requiredTicks))
+        switch (AutoCastPolicy.Decide(conditions, screen.Pending.ReadyTicks, requiredTicks))
         {
             case AutoCastDecision.Reset:
-                screen.ReadyTicks = 0;
+                screen.Pending.ReadyTicks = 0;
                 break;
             case AutoCastDecision.Wait:
-                screen.ReadyTicks++;
+                screen.Pending.ReadyTicks++;
                 break;
             case AutoCastDecision.Cast:
-                screen.ReadyTicks = 0;
-                screen.AutomaticCastInProgress = true;
+                screen.Pending.ReadyTicks = 0;
+                screen.Pending.AutomaticCastInProgress = true;
                 rod.BeginAutomaticCast(config.DefaultCastPower);
                 monitor.Log($"Started an automatic cast for local screen {Context.ScreenId}.", LogLevel.Trace);
                 break;
@@ -257,7 +252,7 @@ internal sealed class AutomationRuntime(
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         if (rod is null)
         {
-            screen.HookAttemptedForNibble = false;
+            screen.Pending.HookAttemptedForNibble = false;
             return;
         }
 
@@ -266,17 +261,17 @@ internal sealed class AutomationRuntime(
             screen.Session.IsEnabled,
             config.AutoHookFish,
             screen.Session.State,
-            screen.HookAttemptedForNibble
+            screen.Pending.HookAttemptedForNibble
         );
         switch (AutoHookPolicy.Decide(conditions))
         {
             case AutoHookDecision.ResetAttempt:
-                screen.HookAttemptedForNibble = false;
+                screen.Pending.HookAttemptedForNibble = false;
                 break;
             case AutoHookDecision.Wait:
                 break;
             case AutoHookDecision.Hook:
-                screen.HookAttemptedForNibble = true;
+                screen.Pending.HookAttemptedForNibble = true;
                 rod.HookFish();
                 monitor.Log($"Hooked a fish automatically for local screen {Context.ScreenId}.", LogLevel.Trace);
                 break;
@@ -303,8 +298,8 @@ internal sealed class AutomationRuntime(
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         if (rod is null)
         {
-            screen.FishPopupVisibleTicks = 0;
-            screen.FishPopupCloseAttempted = false;
+            screen.Pending.FishPopupVisibleTicks = 0;
+            screen.Pending.FishPopupCloseAttempted = false;
             return;
         }
 
@@ -313,20 +308,20 @@ internal sealed class AutomationRuntime(
             screen.Session.IsEnabled,
             config.AutoClosePopup,
             screen.Session.State,
-            screen.FishPopupCloseAttempted
+            screen.Pending.FishPopupCloseAttempted
         );
-        switch (AutoClosePopupPolicy.Decide(conditions, screen.FishPopupVisibleTicks))
+        switch (AutoClosePopupPolicy.Decide(conditions, screen.Pending.FishPopupVisibleTicks))
         {
             case AutoClosePopupDecision.Reset:
-                screen.FishPopupVisibleTicks = 0;
-                screen.FishPopupCloseAttempted = false;
+                screen.Pending.FishPopupVisibleTicks = 0;
+                screen.Pending.FishPopupCloseAttempted = false;
                 break;
             case AutoClosePopupDecision.Wait:
                 if (conditions.IsEligible)
-                    screen.FishPopupVisibleTicks++;
+                    screen.Pending.FishPopupVisibleTicks++;
                 break;
             case AutoClosePopupDecision.Close:
-                screen.FishPopupCloseAttempted = true;
+                screen.Pending.FishPopupCloseAttempted = true;
                 rod.CloseFishPopup();
                 monitor.Log($"Closed the catch popup automatically for local screen {Context.ScreenId}.",
                     LogLevel.Trace);
@@ -339,20 +334,20 @@ internal sealed class AutomationRuntime(
         BobberBarAdapter? bar = BobberBarAdapter.ForCurrentScreen();
         if (bar is null)
         {
-            screen.IsPursuingTreasure = false;
-            screen.ConfiguredBobberBar = null;
+            screen.Pending.IsPursuingTreasure = false;
+            screen.Pending.ConfiguredBobberBar = null;
             return;
         }
 
         ModConfig config = getConfig();
         bar.ApplyLiveCatchModifiers(config);
-        if (!ReferenceEquals(screen.ConfiguredBobberBar, bar.Identity))
+        if (!ReferenceEquals(screen.Pending.ConfiguredBobberBar, bar.Identity))
         {
             FishDifficultyDecision difficulty = bar.ApplyDifficulty(config);
             TreasureChanceDecision chance = TreasureChancePolicy.Decide(
                 bar.ReadTreasureChanceConditions(config));
             bar.ApplyTreasureChance(chance);
-            screen.ConfiguredBobberBar = bar.Identity;
+            screen.Pending.ConfiguredBobberBar = bar.Identity;
             monitor.Log(
                 $"Configured fishing minigame for local screen {Context.ScreenId}: " +
                 $"difficulty={difficulty.VanillaDifficulty:0.##}->{difficulty.AdjustedDifficulty:0.##}, " +
@@ -364,7 +359,7 @@ internal sealed class AutomationRuntime(
             == InstantTreasureDecision.Capture)
         {
             bar.CaptureTreasure();
-            screen.IsPursuingTreasure = false;
+            screen.Pending.IsPursuingTreasure = false;
             monitor.Log($"Captured fishing treasure instantly for local screen {Context.ScreenId}.",
                 LogLevel.Trace);
         }
@@ -378,9 +373,9 @@ internal sealed class AutomationRuntime(
         TreasureTargetDecision target = TreasureTargetPolicy.Decide(bar.ReadTreasureConditions(
             assistanceActive,
             config.TreasureTargeting,
-            screen.IsPursuingTreasure
+            screen.Pending.IsPursuingTreasure
         ));
-        screen.IsPursuingTreasure = target.IsTargetingTreasure;
+        screen.Pending.IsPursuingTreasure = target.IsTargetingTreasure;
         MinigameControlDecision decision = MinigameControlPolicy.Decide(bar.ReadConditions(
             screen.Session.IsEnabled,
             config.AutoPlayMiniGame,
@@ -400,7 +395,7 @@ internal sealed class AutomationRuntime(
 
         bar.CompleteMinigame(
             config.TreasureTargeting || config.InstantCatchTreasure);
-        screen.IsPursuingTreasure = false;
+        screen.Pending.IsPursuingTreasure = false;
         monitor.Log(
             $"Skipped the fishing minigame for local screen {Context.ScreenId}; treasure targeting was " +
             $"{(config.TreasureTargeting ? "enabled" : "disabled")} in config.",
@@ -512,23 +507,7 @@ internal sealed class AutomationRuntime(
 
         public bool HasObservedTool { get; set; }
 
-        public int ReadyTicks { get; set; }
-
-        public bool AutomaticCastInProgress { get; set; }
-
-        public bool HookAttemptedForNibble { get; set; }
-
-        public bool IsPursuingTreasure { get; set; }
-
-        public object? ConfiguredBobberBar { get; set; }
-
-        public int FishPopupVisibleTicks { get; set; }
-
-        public bool FishPopupCloseAttempted { get; set; }
-
-        public PendingAutomationAction PendingAction { get; set; }
-
-        public int PendingActionTicks { get; set; }
+        public AutomationPendingState Pending { get; } = new();
 
         public object? TreasureMenuIdentity { get; set; }
 
