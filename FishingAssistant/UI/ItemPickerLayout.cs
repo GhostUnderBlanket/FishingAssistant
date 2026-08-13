@@ -36,8 +36,8 @@ internal sealed record ItemPickerLayout(
         int width = Math.Min(980, Math.Max(1, viewportWidth - margin * 2));
         int height = Math.Min(720, Math.Max(1, viewportHeight - margin * 2));
         int padding = width >= 640 ? 40 : 18;
-        int headerHeight = Math.Min(76, Math.Max(44, height / 8));
-        int searchHeight = Math.Min(60, Math.Max(44, height / 10));
+        int headerHeight = Math.Min(88, Math.Max(52, height / 7));
+        int searchHeight = Math.Min(68, Math.Max(52, height / 9));
         int footerHeight = Math.Min(72, Math.Max(52, height / 8));
         int gap = width >= 600 ? 10 : 6;
         int contentWidth = Math.Max(1, width - padding * 2);

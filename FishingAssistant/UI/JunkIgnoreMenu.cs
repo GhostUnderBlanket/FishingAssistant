@@ -10,6 +10,8 @@ namespace FishingAssistant.UI;
 
 internal sealed class JunkListMenu : IClickableMenu
 {
+    private const float CardStateScale = 0.68f;
+    private const int HeaderPanelPadding = 14;
     private const int FirstItemId = 1000;
     private const int ScrollUpId = 2000;
     private const int ScrollDownId = 2001;
@@ -298,7 +300,7 @@ internal sealed class JunkListMenu : IClickableMenu
             Game1.textColor)
         {
             X = this.layout.ContentX,
-            Y = this.layout.Y + this.layout.HeaderHeight + 4,
+            Y = this.layout.Y + this.layout.HeaderHeight + 8,
             Width = searchWidth,
             Height = 48,
             Text = this.searchText
@@ -410,20 +412,34 @@ internal sealed class JunkListMenu : IClickableMenu
 
     private void DrawHeader(SpriteBatch batch)
     {
-        string title = MenuText.Fit(this.translate(this.treasureIgnoreOnly
-                ? "config.treasure_ignore_picker.title"
-                : "config.junk_picker.title"), Game1.dialogueFont,
-            this.layout.Width - this.layout.Padding * 2 - 220);
-        Utility.drawTextWithShadow(batch, title, Game1.dialogueFont,
-            new Vector2(this.layout.ContentX, this.layout.Y + 20), Game1.textColor);
-
         string count = this.treasureIgnoreOnly
             ? string.Format(this.translate("config.treasure_ignore_picker.selected"), this.ignoreIds.Count)
             : string.Format(this.translate("config.junk_picker.selected"), this.junkIds.Count, this.ignoreIds.Count);
         Vector2 countSize = Game1.smallFont.MeasureString(count);
-        Utility.drawTextWithShadow(batch, count, Game1.smallFont,
-            new Vector2(this.layout.X + this.layout.Width - this.layout.Padding - countSize.X,
-                this.layout.Y + 28), Game1.textColor);
+        Vector2 countPosition = new(
+            this.layout.X + this.layout.Width - this.layout.Padding - countSize.X,
+            this.layout.Y + 24);
+        this.DrawHeaderPanel(batch, countPosition, countSize, Game1.smallFont.LineSpacing);
+        Utility.drawTextWithShadow(batch, count, Game1.smallFont, countPosition, Game1.textColor);
+
+        float titleWidth = Math.Max(1f, countPosition.X - this.layout.ContentX - HeaderPanelPadding * 2);
+        string title = MenuText.Fit(this.translate(this.treasureIgnoreOnly
+                ? "config.treasure_ignore_picker.title"
+                : "config.junk_picker.title"), Game1.dialogueFont, titleWidth);
+        Vector2 titleSize = Game1.dialogueFont.MeasureString(title);
+        Vector2 titlePosition = new(this.layout.ContentX, this.layout.Y + 16);
+        this.DrawHeaderPanel(batch, titlePosition, titleSize, Game1.dialogueFont.LineSpacing);
+        Utility.drawTextWithShadow(batch, title, Game1.dialogueFont, titlePosition, Game1.textColor);
+    }
+
+    private void DrawHeaderPanel(SpriteBatch batch, Vector2 position, Vector2 textSize, int lineSpacing)
+    {
+        drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
+            (int)position.X - HeaderPanelPadding,
+            (int)position.Y - 6,
+            (int)Math.Ceiling(textSize.X) + HeaderPanelPadding * 2,
+            lineSpacing + 12,
+            Color.White);
     }
 
     private void DrawCard(SpriteBatch batch, ItemCard card, bool highlighted)
@@ -466,14 +482,29 @@ internal sealed class JunkListMenu : IClickableMenu
             string stateLabel = this.translate(state == JunkItemState.Junk
                 ? "config.junk_picker.state_junk"
                 : "config.junk_picker.state_ignore");
-            stateLabel = MenuText.Fit(stateLabel, Game1.tinyFont, bounds.Right - textLeft - 8);
-            batch.DrawString(Game1.tinyFont, stateLabel,
+            float availableWidth = Math.Max(1f, bounds.Right - textLeft - 8);
+            stateLabel = MenuText.Fit(stateLabel, Game1.smallFont, availableWidth / CardStateScale);
+            this.DrawScaledTextWithShadow(batch, stateLabel,
                 new Vector2(textLeft, bounds.Center.Y + 2),
-                state == JunkItemState.Junk ? Color.DarkRed : Color.DarkGreen);
+                state == JunkItemState.Junk ? Color.DarkRed : Color.DarkGreen,
+                CardStateScale);
             batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
                 OptionsCheckbox.sourceRectChecked, Color.White, 0f, Vector2.Zero, 2f,
                 SpriteEffects.None, 0.95f);
         }
+    }
+
+    private void DrawScaledTextWithShadow(
+        SpriteBatch batch,
+        string text,
+        Vector2 position,
+        Color color,
+        float scale)
+    {
+        batch.DrawString(Game1.smallFont, text, position + new Vector2(2f, 2f),
+            Color.Black * 0.35f, 0f, Vector2.Zero, scale, SpriteEffects.None, 0.9f);
+        batch.DrawString(Game1.smallFont, text, position, color,
+            0f, Vector2.Zero, scale, SpriteEffects.None, 0.91f);
     }
 
     private void DrawButton(SpriteBatch batch, ClickableComponent button, bool highlighted)

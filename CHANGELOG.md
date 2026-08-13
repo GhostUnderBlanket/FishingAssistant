@@ -133,6 +133,9 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Added Vanilla-style backing panels to the Junk List Editor title and selection
+  counts, separated its search and mode controls from the upper frame, and replaced
+  tiny-font item states with scaled small-font labels.
 - Disabling Automation with F5 no longer cancels a cast already in progress. Vanilla
   finishes that cast normally while every later automatic action remains disabled,
   avoiding stuck rod state or shared fishing audio in local co-op.
