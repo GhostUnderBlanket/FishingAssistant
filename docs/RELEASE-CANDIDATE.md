@@ -7,12 +7,12 @@ leaks, stuck automation, or a misleading release experience.
 
 ## 1. Resolve release-blocking known issues
 
-- [ ] Fix mouse and controller keybind capture so the activation input is ignored until
+- [x] Fix mouse and controller keybind capture so the activation input is ignored until
   released and the next keyboard, mouse, or controller input persists for the correct
-  local player.
+  local player. Verified in-game on `3.0.0-beta.1` (`ec87262`) on 2026-08-14.
 - [ ] Fix Fish Preview placement in horizontal and vertical local split-screen across
   representative UI-scale and zoom settings.
-- [ ] Re-test both fixes with keyboard/mouse and controller and update
+- [ ] Re-test the remaining Fish Preview fix and update
   [KNOWN-ISSUES.md](KNOWN-ISSUES.md).
 
 ## 2. Multiplayer safety gate

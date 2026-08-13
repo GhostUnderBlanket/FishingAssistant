@@ -1,10 +1,7 @@
 # Known Issues
 
-These issues are intentionally deferred so development can continue. Re-test them before
-the version 3 release candidate.
-
-They remain open in `3.0.0-beta.1`; the alpha build references below record where they
-were originally reproduced.
+Open issues must be re-tested before the version 3 release candidate. Resolved issues
+remain recorded below as regression history.
 
 ## Local co-op Fish Preview offset
 
@@ -18,8 +15,8 @@ were originally reproduced.
 
 ## Mouse and controller keybind capture does not persist
 
-- **Status:** Fix implemented in beta; awaiting in-game verification with mouse and
-  controller before closing.
+- **Status:** Resolved and verified in-game with mouse and controller on
+  `3.0.0-beta.1` (`ec87262`) on 2026-08-14.
 - **Symptom:** Activating a keybind control with controller A or a mouse click briefly
   shows `Press a key or button...`, but the control immediately returns to the previous
   binding (for example `F5`) instead of waiting for or saving the next input.
@@ -27,5 +24,5 @@ were originally reproduced.
   capture gate ignores the activation input until every button is released, then accepts
   the next input or chord for the current local screen. The menu also persists its
   rebuilt layout signature so the next update tick does not cancel capture.
-- **Follow-up:** Verify activation, cancellation, clearing, and persistence with mouse,
-  keyboard, and controller in single-player and local split-screen.
+- **Regression coverage:** Retain automated activation-release tests and repeat capture
+  checks in the release-candidate input matrix.
