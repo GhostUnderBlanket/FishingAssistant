@@ -108,6 +108,7 @@
   "config.option.fish_name": "Show the fish name",
   "config.option.fish_name.description": "Include the current fish's name in the preview.",
   "config.info.fish_name_classic_only": "Fish names are only shown in the Classic preview style.",
+  "hud.config_wait_for_cast": "The config menu will open after the cast finishes.",
   "config.option.show_treasure": "Show treasure status",
   "config.option.show_treasure.description": "Include fishing treasure information in the preview.",
   "config.option.uncaught_fish": "Reveal uncaught fish",

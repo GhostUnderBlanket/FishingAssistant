@@ -1,11 +1,37 @@
 using FishingAssistant.Fishing;
 using Microsoft.Xna.Framework;
 using StardewValley;
+using StardewValley.Tools;
 
 namespace FishingAssistant.Tests.Fishing;
 
 public sealed class FishingRodAdapterTests
 {
+    [Theory]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    public void IsCastInProgressFor_DetectsEveryCastingPhase(
+        bool isTimingCast,
+        bool isCasting,
+        bool bobberInAir)
+    {
+        FishingRod rod = new()
+        {
+            isTimingCast = isTimingCast,
+            isCasting = isCasting,
+            castedButBobberStillInAir = bobberInAir
+        };
+
+        Assert.True(FishingRodAdapter.IsCastInProgressFor(rod));
+    }
+
+    [Fact]
+    public void IsCastInProgressFor_ReturnsFalseAfterCastCompletes()
+    {
+        Assert.False(FishingRodAdapter.IsCastInProgressFor(new FishingRod()));
+    }
+
     [Fact]
     public void ResetCancelledCastState_ClearsEveryCastingPhaseIncludingBobberFlight()
     {

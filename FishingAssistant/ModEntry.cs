@@ -29,6 +29,7 @@ internal sealed class ModEntry : Mod
     private InfiniteAttachmentService? infiniteAttachment;
     private RodEnchantmentService? rodEnchantments;
     private AutoTrashService? autoTrash;
+    private readonly PerScreen<bool> pendingConfigMenuOpen = new(() => false);
 
     public override void Entry(IModHelper helper)
     {
@@ -144,6 +145,7 @@ internal sealed class ModEntry : Mod
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
+        this.TryCompletePendingConfigMenuOpen();
         this.rodEnchantments!.UpdateCurrent(this.configManager!.Active);
         this.infiniteAttachment!.UpdateCurrent(this.configManager.Active);
         this.baitAttachment!.UpdateCurrent(this.configManager!.Active);
@@ -169,6 +171,7 @@ internal sealed class ModEntry : Mod
 
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
     {
+        this.pendingConfigMenuOpen.ResetAllScreens();
         this.rodEnchantments!.RemoveAllAndReset();
         this.infiniteAttachment!.RestoreAll();
         this.infiniteAttachment.ResetAll();
@@ -179,6 +182,7 @@ internal sealed class ModEntry : Mod
     {
         if (e.IsLocalPlayer)
         {
+            this.pendingConfigMenuOpen.Value = false;
             this.infiniteAttachment!.RestoreCurrent();
             this.automationRuntime!.ResetCurrent(AutomationTransitionReason.Warped);
         }
@@ -261,6 +265,19 @@ internal sealed class ModEntry : Mod
             return true;
         }
 
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod?.IsCastInProgress == true)
+        {
+            if (!this.pendingConfigMenuOpen.Value)
+            {
+                this.pendingConfigMenuOpen.Value = true;
+                Game1.addHUDMessage(new HUDMessage(
+                    this.Helper.Translation.Get("hud.config_wait_for_cast"),
+                    HUDMessage.newQuest_type));
+            }
+            return true;
+        }
+
         if (!Context.IsWorldReady || !Context.IsPlayerFree || Game1.currentMinigame is not null)
         {
             this.Monitor.Log("The configuration menu can't open until a player is free in the world.",
@@ -278,6 +295,18 @@ internal sealed class ModEntry : Mod
             castPower => this.debugFishingBubble!.Create(castPower)
         );
         return true;
+    }
+
+    private void TryCompletePendingConfigMenuOpen()
+    {
+        if (!this.pendingConfigMenuOpen.Value)
+            return;
+
+        if (FishingRodAdapter.ForCurrentPlayer()?.IsCastInProgress == true)
+            return;
+
+        this.pendingConfigMenuOpen.Value = false;
+        this.TryOpenConfigMenu();
     }
 
     private ConfigValidationReport ApplyConfig(ConfigEditSession session)
