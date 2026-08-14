@@ -37,6 +37,7 @@ public sealed class ConfigDefaultsTests
         Assert.Equal(TreasureChanceBehavior.Default, config.TreasureChance);
         Assert.Equal(TreasureChanceBehavior.Default, config.GoldenTreasureChance);
         Assert.False(config.TreasureTargeting);
+        Assert.Equal(FishPreviewStyle.Sonar, config.FishPreviewStyle);
         Assert.Equal("None", config.StartWithFishingRod);
         Assert.Equal(1f, config.AutoCastDelaySeconds);
     }

@@ -43,7 +43,7 @@ internal sealed class ModEntry : Mod
             () => this.configManager.Active,
             key => helper.Translation.Get(key));
         this.automationHud = new AutomationHudRenderer();
-        this.fishPreview = new FishPreviewRenderer();
+        this.fishPreview = new FishPreviewRenderer(this.Monitor);
         this.starterFishingRod = new StarterFishingRodService(this.Monitor);
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
         this.debugFishingBubble = new DebugFishingBubbleService(
@@ -54,8 +54,13 @@ internal sealed class ModEntry : Mod
         this.rodEnchantments = new RodEnchantmentService(this.Monitor, key => helper.Translation.Get(key));
         this.autoTrash = new AutoTrashService(this.Monitor, key => helper.Translation.Get(key));
         ConfigValidationReport report = this.configManager.Load();
+        Harmony harmony = new(this.ModManifest.UniqueID);
         CatchResultPatch.Apply(
-            new Harmony(this.ModManifest.UniqueID),
+            harmony,
+            () => this.configManager.Active,
+            this.Monitor);
+        SonarPreviewPatch.Apply(
+            harmony,
             () => this.configManager.Active,
             this.Monitor);
 
@@ -78,6 +83,7 @@ internal sealed class ModEntry : Mod
         helper.Events.Multiplayer.PeerConnected += this.OnPeerConnected;
         helper.Events.Multiplayer.PeerDisconnected += this.OnPeerDisconnected;
         helper.Events.Display.RenderedHud += this.OnRenderedHud;
+        helper.Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         helper.ConsoleCommands.Add("fa_config", "Open the Fishing Assistant configuration menu.",
@@ -230,6 +236,11 @@ internal sealed class ModEntry : Mod
             return;
 
         this.fishPreview!.Draw(e.SpriteBatch, this.configManager!.Active);
+    }
+
+    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    {
+        SonarPreviewPatch.BeginActiveMenuDraw();
     }
 
     private void OnConfigCommand(string command, string[] arguments)

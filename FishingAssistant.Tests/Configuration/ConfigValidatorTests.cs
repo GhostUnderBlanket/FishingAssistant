@@ -112,6 +112,22 @@ public sealed class ConfigValidatorTests
     }
 
     [Fact]
+    public void Normalize_PreservesClassicPreviewForExistingConfigs()
+    {
+        ModConfig config = new()
+        {
+            ConfigVersion = 11,
+            FishPreviewStyle = FishPreviewStyle.Sonar
+        };
+
+        ConfigValidationReport report = ConfigValidator.Normalize(config);
+
+        Assert.Equal(FishPreviewStyle.Classic, config.FishPreviewStyle);
+        Assert.Contains(report.Corrections,
+            correction => correction.Property == nameof(config.FishPreviewStyle));
+    }
+
+    [Fact]
     public void Normalize_ReportsInactiveAndOverriddenSettings()
     {
         ModConfig config = new()

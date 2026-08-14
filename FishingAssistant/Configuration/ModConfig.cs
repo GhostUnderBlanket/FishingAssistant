@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 11;
+    internal const int CurrentVersion = 12;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -108,6 +108,8 @@ internal sealed class ModConfig
     public TreasureChanceBehavior GoldenTreasureChance { get; set; } = TreasureChanceBehavior.Default;
 
     public bool DisplayFishPreview { get; set; } = true;
+
+    public FishPreviewStyle FishPreviewStyle { get; set; } = FishPreviewStyle.Sonar;
 
     public bool ShowFishName { get; set; } = true;
 

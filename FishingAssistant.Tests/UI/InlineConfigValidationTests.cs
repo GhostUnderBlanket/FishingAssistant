@@ -8,9 +8,20 @@ public sealed class InlineConfigValidationTests
     [Fact]
     public void Evaluate_ReturnsNoMessagesForSafeDefaults()
     {
-        ModConfig config = new();
+        ModConfig config = new() { FishPreviewStyle = FishPreviewStyle.Classic };
 
         Assert.Empty(InlineConfigValidation.Evaluate(config));
+    }
+
+    [Fact]
+    public void Evaluate_ExplainsThatFishNameIsClassicOnlyForSonarStyle()
+    {
+        ModConfig config = new() { FishPreviewStyle = FishPreviewStyle.Sonar };
+
+        InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
+
+        Assert.Equal("fish_name", message.OptionKey);
+        Assert.Equal("config.info.fish_name_classic_only", message.TranslationKey);
     }
 
     [Theory]
@@ -20,7 +31,11 @@ public sealed class InlineConfigValidationTests
         string optionKey,
         string translationKey)
     {
-        ModConfig config = new() { ActionIfInventoryFull = (InventoryFullAction)action };
+        ModConfig config = new()
+        {
+            FishPreviewStyle = FishPreviewStyle.Classic,
+            ActionIfInventoryFull = (InventoryFullAction)action
+        };
 
         InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
 
@@ -31,7 +46,11 @@ public sealed class InlineConfigValidationTests
     [Fact]
     public void Evaluate_AttachesDestructiveIgnoredTreasureMessage()
     {
-        ModConfig config = new() { ActionIfOnlyIgnoredTreasureRemains = IgnoredTreasureAction.Discard };
+        ModConfig config = new()
+        {
+            FishPreviewStyle = FishPreviewStyle.Classic,
+            ActionIfOnlyIgnoredTreasureRemains = IgnoredTreasureAction.Discard
+        };
 
         InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
 
@@ -46,7 +65,7 @@ public sealed class InlineConfigValidationTests
     [InlineData("eat_fish", "config.warning.eat_fish")]
     public void Evaluate_AttachesOptInConsumptionMessage(string optionKey, string translationKey)
     {
-        ModConfig config = new();
+        ModConfig config = new() { FishPreviewStyle = FishPreviewStyle.Classic };
         switch (optionKey)
         {
             case "auto_trash":
@@ -72,7 +91,11 @@ public sealed class InlineConfigValidationTests
     [Fact]
     public void Evaluate_AttachesFreeItemMessageToSelectedStarterRod()
     {
-        ModConfig config = new() { StartWithFishingRod = "(T)IridiumRod" };
+        ModConfig config = new()
+        {
+            FishPreviewStyle = FishPreviewStyle.Classic,
+            StartWithFishingRod = "(T)IridiumRod"
+        };
 
         InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
 
@@ -85,6 +108,7 @@ public sealed class InlineConfigValidationTests
     {
         ModConfig config = new()
         {
+            FishPreviewStyle = FishPreviewStyle.Classic,
             AutoAttachBait = false,
             SpawnBaitIfDontHave = true
         };
@@ -100,6 +124,7 @@ public sealed class InlineConfigValidationTests
     {
         ModConfig config = new()
         {
+            FishPreviewStyle = FishPreviewStyle.Classic,
             AutoAttachBait = true,
             SpawnBaitIfDontHave = true
         };
@@ -115,6 +140,7 @@ public sealed class InlineConfigValidationTests
     {
         ModConfig config = new()
         {
+            FishPreviewStyle = FishPreviewStyle.Classic,
             AutoAttachTackles = false,
             SpawnTackleIfDontHave = true
         };
@@ -130,6 +156,7 @@ public sealed class InlineConfigValidationTests
     {
         ModConfig config = new()
         {
+            FishPreviewStyle = FishPreviewStyle.Classic,
             AutoAttachTackles = true,
             SpawnTackleIfDontHave = true
         };
@@ -145,6 +172,7 @@ public sealed class InlineConfigValidationTests
     {
         ModConfig config = new()
         {
+            FishPreviewStyle = FishPreviewStyle.Classic,
             AutoPlayMiniGame = true,
             SkipFishingMiniGame = SkipMinigameBehavior.SkipAll
         };
@@ -160,6 +188,7 @@ public sealed class InlineConfigValidationTests
     {
         ModConfig config = new()
         {
+            FishPreviewStyle = FishPreviewStyle.Classic,
             AutoAttachBait = false,
             SpawnBaitIfDontHave = true,
             AutoAttachTackles = false,

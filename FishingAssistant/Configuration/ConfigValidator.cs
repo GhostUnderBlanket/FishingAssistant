@@ -17,6 +17,12 @@ internal static class ConfigValidator
         int originalVersion = config.ConfigVersion;
         NormalizeVersion(config, report);
         RetireJunkIgnoreList(config, originalVersion, report);
+        if (originalVersion < 12)
+        {
+            config.FishPreviewStyle = FishPreviewStyle.Classic;
+            report.Add(nameof(config.FishPreviewStyle), null, config.FishPreviewStyle,
+                "The existing fish preview appearance was preserved during migration.");
+        }
         if (originalVersion < 9)
         {
             config.AutomationProfile = AutomationProfile.Custom;
@@ -37,6 +43,8 @@ internal static class ConfigValidator
 
         NormalizeEnum(report, nameof(config.ModStatusPosition),
             () => config.ModStatusPosition, value => config.ModStatusPosition = value, HudPosition.Left);
+        NormalizeEnum(report, nameof(config.FishPreviewStyle),
+            () => config.FishPreviewStyle, value => config.FishPreviewStyle = value, FishPreviewStyle.Classic);
         NormalizeEnum(report, nameof(config.AutomationProfile),
             () => config.AutomationProfile, value => config.AutomationProfile = value, AutomationProfile.Custom);
         NormalizeEnum(report, nameof(config.ActionIfInventoryFull),
