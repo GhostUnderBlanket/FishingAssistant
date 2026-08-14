@@ -9,6 +9,13 @@ internal enum HudPosition
     Right
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<FishPreviewStyle>))]
+internal enum FishPreviewStyle
+{
+    Classic,
+    Sonar
+}
+
 [JsonConverter(typeof(SafeStringEnumConverter<InventoryFullAction>))]
 internal enum InventoryFullAction
 {

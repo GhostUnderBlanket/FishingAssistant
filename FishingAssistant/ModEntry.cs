@@ -29,6 +29,7 @@ internal sealed class ModEntry : Mod
     private InfiniteAttachmentService? infiniteAttachment;
     private RodEnchantmentService? rodEnchantments;
     private AutoTrashService? autoTrash;
+    private readonly PerScreen<bool> pendingConfigMenuOpen = new(() => false);
 
     public override void Entry(IModHelper helper)
     {
@@ -43,7 +44,7 @@ internal sealed class ModEntry : Mod
             () => this.configManager.Active,
             key => helper.Translation.Get(key));
         this.automationHud = new AutomationHudRenderer();
-        this.fishPreview = new FishPreviewRenderer();
+        this.fishPreview = new FishPreviewRenderer(this.Monitor);
         this.starterFishingRod = new StarterFishingRodService(this.Monitor);
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
         this.debugFishingBubble = new DebugFishingBubbleService(
@@ -54,8 +55,13 @@ internal sealed class ModEntry : Mod
         this.rodEnchantments = new RodEnchantmentService(this.Monitor, key => helper.Translation.Get(key));
         this.autoTrash = new AutoTrashService(this.Monitor, key => helper.Translation.Get(key));
         ConfigValidationReport report = this.configManager.Load();
+        Harmony harmony = new(this.ModManifest.UniqueID);
         CatchResultPatch.Apply(
-            new Harmony(this.ModManifest.UniqueID),
+            harmony,
+            () => this.configManager.Active,
+            this.Monitor);
+        SonarPreviewPatch.Apply(
+            harmony,
             () => this.configManager.Active,
             this.Monitor);
 
@@ -78,6 +84,7 @@ internal sealed class ModEntry : Mod
         helper.Events.Multiplayer.PeerConnected += this.OnPeerConnected;
         helper.Events.Multiplayer.PeerDisconnected += this.OnPeerDisconnected;
         helper.Events.Display.RenderedHud += this.OnRenderedHud;
+        helper.Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         helper.ConsoleCommands.Add("fa_config", "Open the Fishing Assistant configuration menu.",
@@ -138,6 +145,7 @@ internal sealed class ModEntry : Mod
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
+        this.TryCompletePendingConfigMenuOpen();
         this.rodEnchantments!.UpdateCurrent(this.configManager!.Active);
         this.infiniteAttachment!.UpdateCurrent(this.configManager.Active);
         this.baitAttachment!.UpdateCurrent(this.configManager!.Active);
@@ -163,6 +171,7 @@ internal sealed class ModEntry : Mod
 
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
     {
+        this.pendingConfigMenuOpen.ResetAllScreens();
         this.rodEnchantments!.RemoveAllAndReset();
         this.infiniteAttachment!.RestoreAll();
         this.infiniteAttachment.ResetAll();
@@ -173,6 +182,7 @@ internal sealed class ModEntry : Mod
     {
         if (e.IsLocalPlayer)
         {
+            this.pendingConfigMenuOpen.Value = false;
             this.infiniteAttachment!.RestoreCurrent();
             this.automationRuntime!.ResetCurrent(AutomationTransitionReason.Warped);
         }
@@ -232,6 +242,11 @@ internal sealed class ModEntry : Mod
         this.fishPreview!.Draw(e.SpriteBatch, this.configManager!.Active);
     }
 
+    private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)
+    {
+        SonarPreviewPatch.BeginActiveMenuDraw();
+    }
+
     private void OnConfigCommand(string command, string[] arguments)
     {
         this.TryOpenConfigMenu();
@@ -247,6 +262,19 @@ internal sealed class ModEntry : Mod
         if (Game1.activeClickableMenu is ConfigurationMenu menu)
         {
             menu.exitThisMenu();
+            return true;
+        }
+
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod?.IsCastInProgress == true)
+        {
+            if (!this.pendingConfigMenuOpen.Value)
+            {
+                this.pendingConfigMenuOpen.Value = true;
+                Game1.addHUDMessage(new HUDMessage(
+                    this.Helper.Translation.Get("hud.config_wait_for_cast"),
+                    HUDMessage.newQuest_type));
+            }
             return true;
         }
 
@@ -267,6 +295,18 @@ internal sealed class ModEntry : Mod
             castPower => this.debugFishingBubble!.Create(castPower)
         );
         return true;
+    }
+
+    private void TryCompletePendingConfigMenuOpen()
+    {
+        if (!this.pendingConfigMenuOpen.Value)
+            return;
+
+        if (FishingRodAdapter.ForCurrentPlayer()?.IsCastInProgress == true)
+            return;
+
+        this.pendingConfigMenuOpen.Value = false;
+        this.TryOpenConfigMenu();
     }
 
     private ConfigValidationReport ApplyConfig(ConfigEditSession session)

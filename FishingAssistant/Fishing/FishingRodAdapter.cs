@@ -22,11 +22,21 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
 
     public bool IsBobberInAir => rod.castedButBobberStillInAir;
 
+    public bool IsCastInProgress => IsCastInProgressFor(rod);
+
     public object Identity => rod;
 
     public Vector2 BobberPosition => rod.bobber.Value;
 
     public float CastingPower => Math.Clamp(rod.castingPower, 0f, 1f);
+
+    internal static bool IsCastInProgressFor(FishingRod fishingRod)
+    {
+        ArgumentNullException.ThrowIfNull(fishingRod);
+        return fishingRod.isTimingCast
+            || fishingRod.isCasting
+            || fishingRod.castedButBobberStillInAir;
+    }
 
     public bool IsSupportedFishingMinigame => Game1.currentMinigame is FishingGame { gameDone: false };
 

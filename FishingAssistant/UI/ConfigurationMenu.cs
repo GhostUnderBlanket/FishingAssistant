@@ -666,6 +666,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.ModStatusPosition = value);
                 this.AddDefinition("fish_preview", () => this.session.Draft.DisplayFishPreview,
                     value => this.SetProfileOption(() => this.session.Draft.DisplayFishPreview = value));
+                this.AddEnumDefinition("fish_preview_style", () => this.session.Draft.FishPreviewStyle,
+                    value => this.session.Draft.FishPreviewStyle = value,
+                    () => ConfigControlAvailability.FishPreviewStyle(this.session.Draft.DisplayFishPreview));
                 this.AddDefinition("fish_name", () => this.session.Draft.ShowFishName,
                     value => this.session.Draft.ShowFishName = value);
                 this.AddDefinition("show_treasure", () => this.session.Draft.ShowTreasure,
@@ -728,7 +731,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
         AutomationProfiles.MarkCustom(this.session.Draft);
     }
 
-    private void AddEnumDefinition<TEnum>(string key, Func<TEnum> getValue, Action<TEnum> setValue)
+    private void AddEnumDefinition<TEnum>(
+        string key,
+        Func<TEnum> getValue,
+        Action<TEnum> setValue,
+        Func<ConfigControlState>? getState = null)
         where TEnum : struct, Enum
     {
         TEnum[] values = Enum.GetValues<TEnum>();
@@ -741,7 +748,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             setValue,
             (current, direction) => OptionAdjustment.Cycle(values, current, direction),
             value => this.translate($"config.value.{value.ToString().ToLowerInvariant()}")
-        ), () => ConfigControlState.Enabled));
+        ), getState ?? (() => ConfigControlState.Enabled)));
     }
 
     private void AddNumberDefinition(

@@ -11,6 +11,13 @@ internal static class InlineConfigValidation
         ArgumentNullException.ThrowIfNull(config);
 
         List<InlineConfigMessage> messages = [];
+        if (config.FishPreviewStyle == FishPreviewStyle.Sonar)
+        {
+            messages.Add(new InlineConfigMessage(
+                "fish_name",
+                "config.info.fish_name_classic_only"));
+        }
+
         if (config.ActionIfInventoryFull == InventoryFullAction.Discard)
         {
             messages.Add(new InlineConfigMessage(

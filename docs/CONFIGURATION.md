@@ -2,7 +2,7 @@
 
 Fishing Assistant 3 loads SMAPI's standard `config.json` as the migration-compatible
 base template. Once a player is loaded, that player's settings are stored separately in
-`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `11`.
+`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `12`.
 Saved configuration, the active validated player profile, and an editable menu draft
 are treated as separate objects.
 
@@ -25,7 +25,7 @@ Unknown top-level properties are reported in the SMAPI log before a migrated fil
 written. Reports include a bounded representation of the original JSON value so the
 setting can be identified; values with credential-like property names are redacted.
 They are not silently treated as supported options. A file whose
-`ConfigVersion` is newer than 11 is loaded read-only: its schema version is not
+`ConfigVersion` is newer than 12 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
@@ -65,6 +65,15 @@ Schema version 11 retires the redundant `JunkIgnoreList`. The explicit Junk List
 has only Junk and Normal states. During migration, any legacy ignored item is removed
 from the Junk List before the obsolete field is cleared, preserving the user's request
 not to discard that item. The separate Treasure Chest Ignore List is unchanged.
+
+Schema version 12 adds `FishPreviewStyle`. New configurations default to the
+fixed-size Vanilla-inspired Sonar bubble, which shows the fish icon and overlapping
+treasure indicator without a fish-name label. Existing configurations migrate to Classic so
+their established appearance doesn't change unexpectedly. When Fish Preview is active,
+a narrow compatibility patch suppresses only Vanilla's Sonar preview drawing and reserves
+the same space for Challenge Bait status. If that hook is unavailable, the
+renderer falls back to Classic, or leaves an equipped Vanilla Sonar Bobber alone to
+avoid drawing duplicate previews.
 
 `UnlockCastPowerTime` extends the Fishing Assistant 2 smart-cast behavior with a
 per-screen session value. A session starts at `DefaultCastPower`. While automation is
