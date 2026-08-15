@@ -695,6 +695,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
             case ConfigCategory.Controls:
                 this.AddKeybindDefinition("toggle_automation", () => this.session.Draft.EnableAutomationButton,
                     value => this.session.Draft.EnableAutomationButton = value);
+                this.AddKeybindDefinition("toggle_treasure_targeting",
+                    () => this.session.Draft.ToggleTreasureTargetingButton,
+                    value => this.session.Draft.ToggleTreasureTargetingButton = value);
                 this.AddKeybindDefinition("open_config", () => this.session.Draft.OpenConfigMenuButton,
                     value => this.session.Draft.OpenConfigMenuButton = value);
                 break;

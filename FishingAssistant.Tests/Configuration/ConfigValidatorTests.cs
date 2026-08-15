@@ -23,6 +23,7 @@ public sealed class ConfigValidatorTests
             ConfigVersion = 2,
             EnableAutomationButton = null!,
             OpenConfigMenuButton = null!,
+            ToggleTreasureTargetingButton = null!,
             ModStatusPosition = (HudPosition)999,
             TimeToPause = 99,
             EnergyPercentToEat = 0,
@@ -45,6 +46,7 @@ public sealed class ConfigValidatorTests
         Assert.Equal(ModConfig.CurrentVersion, config.ConfigVersion);
         Assert.Equal("F5", config.EnableAutomationButton.ToString());
         Assert.Equal("F6", config.OpenConfigMenuButton.ToString());
+        Assert.False(config.ToggleTreasureTargetingButton.IsBound);
         Assert.Equal(HudPosition.Left, config.ModStatusPosition);
         Assert.Equal(25, config.TimeToPause);
         Assert.Equal(5, config.EnergyPercentToEat);
@@ -61,6 +63,7 @@ public sealed class ConfigValidatorTests
         Assert.Empty(config.JunkIgnoreList);
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.ConfigVersion));
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.EnableAutomationButton));
+        Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.ToggleTreasureTargetingButton));
     }
 
     [Fact]

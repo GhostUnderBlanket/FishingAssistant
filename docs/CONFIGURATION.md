@@ -2,7 +2,7 @@
 
 Fishing Assistant 3 loads SMAPI's standard `config.json` as the migration-compatible
 base template. Once a player is loaded, that player's settings are stored separately in
-`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `12`.
+`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `13`.
 Saved configuration, the active validated player profile, and an editable menu draft
 are treated as separate objects.
 
@@ -25,7 +25,7 @@ Unknown top-level properties are reported in the SMAPI log before a migrated fil
 written. Reports include a bounded representation of the original JSON value so the
 setting can be identified; values with credential-like property names are redacted.
 They are not silently treated as supported options. A file whose
-`ConfigVersion` is newer than 12 is loaded read-only: its schema version is not
+`ConfigVersion` is newer than 13 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
@@ -33,8 +33,10 @@ Schema version 6 retires two Fishing Assistant 2 settings and reports both durin
 migration:
 
 - `CatchTreasureButton` is omitted when the normalized file is rewritten. Its
-  replacement, `TreasureTargeting`, is edited only through the custom configuration
-  menu and defaults to off.
+  replacement, `TreasureTargeting`, defaults to off and can be edited through the
+  custom configuration menu. Schema version 13 later adds a new optional keybind;
+  the retired binding isn't restored automatically because that could unexpectedly
+  reclaim a button the player has reused.
 - `JunkHighestPrice` is omitted because price-based junk classification was replaced
   by the visual Junk List editor. A price threshold cannot be mapped safely to a stable
   set of item IDs, so the editor starts from the documented default trash list.
@@ -74,6 +76,11 @@ a narrow compatibility patch suppresses only Vanilla's Sonar preview drawing and
 the same space for Challenge Bait status. If that hook is unavailable, the
 renderer falls back to Classic, or leaves an equipped Vanilla Sonar Bobber alone to
 avoid drawing duplicate previews.
+
+Schema version 13 adds `ToggleTreasureTargetingButton`. It is unbound by default and
+is stored per player like the other controls. A small Vanilla Treasure Hunter tackle
+icon appears beside the rod HUD whenever targeting is on and disappears when targeting is off,
+whether the setting was changed through the optional keybind or the configuration menu.
 
 `UnlockCastPowerTime` extends the Fishing Assistant 2 smart-cast behavior with a
 per-screen session value. A session starts at `DefaultCastPower`. While automation is

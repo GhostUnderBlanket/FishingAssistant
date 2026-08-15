@@ -127,6 +127,8 @@
   "config.option.remove_enchantments.description": "Remove assistant-added enchantments when the rod is unequipped. They are always removed while saving and never enabled with remote players.",
   "config.option.toggle_automation": "Toggle automation",
   "config.option.toggle_automation.description": "The keybind used to enable or disable fishing automation for this local player.",
+  "config.option.toggle_treasure_targeting": "Toggle treasure targeting",
+  "config.option.toggle_treasure_targeting.description": "Optional keybind used to enable or disable fishing treasure targeting for this local player. Clear the binding to disable the shortcut.",
   "config.option.open_config": "Open configuration menu",
   "config.option.open_config.description": "The keybind used to open this custom configuration menu. Controller Back also opens it while no menu is active.",
   "config.option.warp_beach": "Warp to beach fishing spot",

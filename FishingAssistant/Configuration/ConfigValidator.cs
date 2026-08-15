@@ -40,6 +40,10 @@ internal static class ConfigValidator
             () => config.EnableAutomationButton, value => config.EnableAutomationButton = value, SButton.F5);
         NormalizeKeybind(report, nameof(config.OpenConfigMenuButton),
             () => config.OpenConfigMenuButton, value => config.OpenConfigMenuButton = value, SButton.F6);
+        NormalizeKeybind(report, nameof(config.ToggleTreasureTargetingButton),
+            () => config.ToggleTreasureTargetingButton,
+            value => config.ToggleTreasureTargetingButton = value,
+            SButton.None);
 
         NormalizeEnum(report, nameof(config.ModStatusPosition),
             () => config.ModStatusPosition, value => config.ModStatusPosition = value, HudPosition.Left);

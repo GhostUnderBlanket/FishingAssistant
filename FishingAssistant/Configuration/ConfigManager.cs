@@ -153,6 +153,14 @@ internal sealed class ConfigManager(
             profileKey);
     }
 
+    public bool ToggleTreasureTargeting()
+    {
+        ConfigEditSession session = this.CreateEditSession();
+        session.Draft.TreasureTargeting = !session.Draft.TreasureTargeting;
+        this.Apply(session);
+        return session.Draft.TreasureTargeting;
+    }
+
     public static ModConfig CreateDefaultDraft()
     {
         return new ModConfig();

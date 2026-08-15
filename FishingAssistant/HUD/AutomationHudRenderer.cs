@@ -12,6 +12,7 @@ namespace FishingAssistant.HUD;
 internal sealed class AutomationHudRenderer
 {
     private const string FallbackRodId = "(T)AdvancedIridiumRod";
+    private static readonly Rectangle TreasureHunterSource = new(137, 412, 10, 11);
 
     public void Draw(SpriteBatch batch, AutomationSession session, ModConfig config)
     {
@@ -48,6 +49,9 @@ internal sealed class AutomationHudRenderer
 
         if (visual.Badge != AutomationHudBadge.None)
             DrawBadge(batch, AutomationHudLayout.PlaceBadge(bounds), visual, opacity);
+
+        if (TreasureTargetingHudVisualPolicy.ShouldDraw(config.TreasureTargeting))
+            DrawTreasureTargeting(batch, AutomationHudLayout.PlaceTreasureIcon(bounds), opacity);
 
         return;
 
@@ -118,6 +122,42 @@ internal sealed class AutomationHudRenderer
         if (baseEmoteIndex < 0)
             return;
 
+        DrawEmote(batch, bounds, baseEmoteIndex, opacity);
+    }
+
+    private static void DrawTreasureTargeting(
+        SpriteBatch batch,
+        Rectangle iconBounds,
+        float opacity)
+    {
+        Rectangle shadowBounds = new(
+            iconBounds.X + 2,
+            iconBounds.Y + 2,
+            iconBounds.Width,
+            iconBounds.Height);
+        batch.Draw(
+            Game1.mouseCursors,
+            shadowBounds,
+            TreasureHunterSource,
+            Color.Black * (0.55f * opacity),
+            0f,
+            Vector2.Zero,
+            SpriteEffects.None,
+            1f);
+        batch.Draw(
+            Game1.mouseCursors,
+            iconBounds,
+            TreasureHunterSource,
+            Color.White * opacity,
+            0f,
+            Vector2.Zero,
+            SpriteEffects.None,
+            1f);
+
+    }
+
+    private static void DrawEmote(SpriteBatch batch, Rectangle bounds, int baseEmoteIndex, float opacity)
+    {
         const int sourceSize = 16;
         int emoteIndex = AutomationHudAnimation.GetEmoteFrame(
             baseEmoteIndex,
