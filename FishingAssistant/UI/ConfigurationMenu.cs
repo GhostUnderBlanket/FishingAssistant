@@ -276,8 +276,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
         base.draw(batch);
         string tooltip = string.IsNullOrEmpty(this.hoverText) ? this.statusText : this.hoverText;
-        if (!string.IsNullOrEmpty(tooltip))
-            drawHoverText(batch, tooltip, Game1.smallFont);
+        MenuTooltip.Draw(batch, tooltip);
 
         this.drawMouse(batch);
     }
