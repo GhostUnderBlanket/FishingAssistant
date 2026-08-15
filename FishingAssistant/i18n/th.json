@@ -127,6 +127,8 @@
   "config.option.remove_enchantments.description": "ลบมนตร์ที่ผู้ช่วยเพิ่มเมื่อถอดคันเบ็ด มนตร์จะถูกลบก่อนบันทึกเสมอและไม่เปิดใช้เมื่อมีผู้เล่นระยะไกล",
   "config.option.toggle_automation": "เปิดหรือปิดระบบอัตโนมัติ",
   "config.option.toggle_automation.description": "ปุ่มลัดสำหรับเปิดหรือปิดระบบตกปลาอัตโนมัติของผู้เล่นคนนี้",
+  "config.option.toggle_treasure_targeting": "เปิดหรือปิดการเล็งหาสมบัติ",
+  "config.option.toggle_treasure_targeting.description": "ปุ่มลัดเสริมสำหรับเปิดหรือปิดการเล็งหาสมบัติจากการตกปลาของผู้เล่นคนนี้ ล้างปุ่มที่กำหนดเพื่อปิดใช้งานปุ่มลัด",
   "config.option.open_config": "เปิดเมนูตั้งค่า",
   "config.option.open_config.description": "ปุ่มลัดสำหรับเปิดเมนูตั้งค่านี้ ปุ่ม Back ของจอยเปิดได้เช่นกันเมื่อไม่มีเมนูอื่น",
   "config.option.warp_beach": "ย้ายไปยังจุดตกปลาที่ชายหาด",
