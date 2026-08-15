@@ -129,6 +129,24 @@ internal sealed class ModEntry : Mod
             return;
         }
 
+        KeybindList treasureKeybind = this.configManager!.Active.ToggleTreasureTargetingButton;
+        if (Context.IsWorldReady && treasureKeybind.IsBound && treasureKeybind.JustPressed())
+        {
+            this.Helper.Input.SuppressActiveKeybinds(treasureKeybind);
+            try
+            {
+                bool enabled = this.configManager.ToggleTreasureTargeting();
+                Game1.playSound(enabled ? "coin" : "bigDeSelect");
+            }
+            catch (InvalidOperationException exception)
+            {
+                this.Monitor.Log(
+                    $"Treasure targeting couldn't be toggled: {exception.Message}",
+                    LogLevel.Warn);
+            }
+            return;
+        }
+
         KeybindList openConfigKeybind = this.configManager!.Active.OpenConfigMenuButton;
         bool configuredKeybindPressed = openConfigKeybind.JustPressed();
         if (!ConfigurationMenuInput.IsOpenRequested(configuredKeybindPressed, e.Pressed))

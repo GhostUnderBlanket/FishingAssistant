@@ -12,8 +12,9 @@ leaks, stuck automation, or a misleading release experience.
   local player. Verified in-game on `3.0.0-beta.1` (`ec87262`) on 2026-08-14.
 - [ ] Fix Fish Preview placement in horizontal and vertical local split-screen across
   representative UI-scale and zoom settings.
-- [ ] Re-test the remaining Fish Preview fix and update
-  [KNOWN-ISSUES.md](KNOWN-ISSUES.md).
+- [x] Re-test the originally reproduced local co-op Fish Preview offset and update
+  [KNOWN-ISSUES.md](KNOWN-ISSUES.md). Verified in-game on `3.0.0-beta.2` (`72eca69`)
+  on 2026-08-16; the broader horizontal/vertical scale matrix remains above.
 
 ## 2. Multiplayer safety gate
 

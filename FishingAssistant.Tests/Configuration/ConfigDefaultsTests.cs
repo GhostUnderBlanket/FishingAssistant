@@ -12,6 +12,7 @@ public sealed class ConfigDefaultsTests
         Assert.Equal(ModConfig.CurrentVersion, config.ConfigVersion);
         Assert.Equal("F5", config.EnableAutomationButton.ToString());
         Assert.Equal("F6", config.OpenConfigMenuButton.ToString());
+        Assert.False(config.ToggleTreasureTargetingButton.IsBound);
         Assert.Equal(AutomationProfile.Relaxed, config.AutomationProfile);
         Assert.True(config.AutoCastFishingRod);
         Assert.True(config.AutoHookFish);
@@ -61,5 +62,7 @@ public sealed class ConfigDefaultsTests
         Assert.Single(active.TreasureChestIgnoreList);
         Assert.Equal(active.EnableAutomationButton.ToString(), draft.EnableAutomationButton.ToString());
         Assert.NotSame(active.EnableAutomationButton, draft.EnableAutomationButton);
+        Assert.Equal(active.ToggleTreasureTargetingButton.ToString(), draft.ToggleTreasureTargetingButton.ToString());
+        Assert.NotSame(active.ToggleTreasureTargetingButton, draft.ToggleTreasureTargetingButton);
     }
 }

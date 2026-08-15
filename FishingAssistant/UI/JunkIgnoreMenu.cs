@@ -271,8 +271,7 @@ internal sealed class JunkListMenu : IClickableMenu
         }
 
         base.draw(batch);
-        if (this.hoverText.Length > 0)
-            drawHoverText(batch, this.hoverText, Game1.smallFont);
+        MenuTooltip.Draw(batch, this.hoverText);
         this.drawMouse(batch);
     }
 

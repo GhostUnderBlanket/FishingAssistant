@@ -186,8 +186,9 @@ Goal: restore advanced customization and make the assistant's decisions visible.
 - Bite timing, treasure chance, golden treasure, perfect catch, fish quality, fish size,
   and multi-catch rules.
 - Fish preview with caught/uncaught and legendary visibility rules.
-- Visual HUD status for automation, pause reason, and exceptional runtime state;
-  treasure targeting remains a config-only option.
+- Visual HUD status for automation, pause reason, and exceptional runtime state.
+  Treasure targeting also has an optional unbound-by-default toggle keybind; a small
+  Treasure Hunter tackle icon appears beside the rod HUD while targeting is on.
 - Responsive HUD placement that respects toolbar position, UI scale, menus, festivals,
   and each split-screen viewport.
 - Starter rod and auto-trash features, redesigned with explicit safeguards and item ID

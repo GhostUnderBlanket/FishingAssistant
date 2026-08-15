@@ -276,8 +276,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
         base.draw(batch);
         string tooltip = string.IsNullOrEmpty(this.hoverText) ? this.statusText : this.hoverText;
-        if (!string.IsNullOrEmpty(tooltip))
-            drawHoverText(batch, tooltip, Game1.smallFont);
+        MenuTooltip.Draw(batch, tooltip);
 
         this.drawMouse(batch);
     }
@@ -695,6 +694,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
             case ConfigCategory.Controls:
                 this.AddKeybindDefinition("toggle_automation", () => this.session.Draft.EnableAutomationButton,
                     value => this.session.Draft.EnableAutomationButton = value);
+                this.AddKeybindDefinition("toggle_treasure_targeting",
+                    () => this.session.Draft.ToggleTreasureTargetingButton,
+                    value => this.session.Draft.ToggleTreasureTargetingButton = value);
                 this.AddKeybindDefinition("open_config", () => this.session.Draft.OpenConfigMenuButton,
                     value => this.session.Draft.OpenConfigMenuButton = value);
                 break;

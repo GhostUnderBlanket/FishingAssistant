@@ -90,7 +90,8 @@ internal sealed class FishPreviewRenderer
         Rectangle bounds = FishPreviewLayout.Place(
             new Rectangle(0, 0, Game1.viewport.Width, Game1.viewport.Height),
             snapshot.BobberBounds,
-            new Point(desiredWidth, desiredHeight));
+            new Point(desiredWidth, desiredHeight),
+            forceLeft: drawClassic && snapshot.HasChallengeBait);
 
         // BobberBar is drawn outside UI mode so it scales with the world zoom and
         // the active split-screen viewport. Draw the preview in that same coordinate
