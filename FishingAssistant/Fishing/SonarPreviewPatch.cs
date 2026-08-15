@@ -81,8 +81,9 @@ internal static class SonarPreviewPatch
         }
 
         // Insert at the later site first so the earlier instruction index stays valid.
-        // The second Sonar check controls Challenge Bait placement; reserve that space
-        // for the mod's Sonar preview even when no physical Sonar Bobber is equipped.
+        // The second Sonar check controls Challenge Bait placement. Reserve Vanilla's
+        // Sonar space only for the mod's Sonar style. Classic handles the collision in
+        // its own layout by moving to the other side of BobberBar.
         codes.Insert(containsCalls[1] + 1,
             new CodeInstruction(OpCodes.Call,
                 AccessTools.Method(typeof(SonarPreviewPatch), nameof(ReserveSonarPreviewSpace))));
@@ -124,9 +125,10 @@ internal static class SonarPreviewPatch
         try
         {
             ModConfig? config = getConfig?.Invoke();
-            return hasVanillaSonarBobber
-                || (config?.DisplayFishPreview == true
-                    && config.FishPreviewStyle == FishPreviewStyle.Sonar);
+            return FishPreviewStylePolicy.ShouldReserveChallengeBaitSpace(
+                hasVanillaSonarBobber,
+                config?.DisplayFishPreview == true,
+                config?.FishPreviewStyle ?? FishPreviewStyle.Classic);
         }
         catch
         {

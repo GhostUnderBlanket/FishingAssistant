@@ -94,8 +94,10 @@ checks still need to be observed in-game before Milestone 2 can be marked comple
 - Repeat with a controller: verify A/B, D-pad/left stick navigation, Left/Right
   Shoulder and Left/Right Trigger category navigation, selector adjustment, and
   keybind capture/cancel.
-- The mouse/controller keybind capture regression passed on `ec87262`. Local co-op Fish
-  Preview placement remains open; see [KNOWN-ISSUES.md](KNOWN-ISSUES.md).
+- The mouse/controller keybind capture regression passed on `ec87262`. The reproduced
+  local co-op Fish Preview offset was verified fixed on `72eca69`; retain horizontal and
+  vertical split-screen coverage across representative zoom and UI-scale values. See
+  [KNOWN-ISSUES.md](KNOWN-ISSUES.md) for regression history.
 - While the menu is open, change UI scale, zoom, window size, and game language. Check
   that no option or snappy-navigation focus is left at stale bounds after the menu
   rebuilds.
