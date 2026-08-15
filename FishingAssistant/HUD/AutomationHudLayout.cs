@@ -21,6 +21,10 @@ internal static class AutomationHudLayout
     public const int BadgeLeftInset = 12;
     public const int BadgeTopInset = 20;
     public const int IconShadowOffset = 4;
+    public const int TreasureIconWidth = 20;
+    public const int TreasureIconHeight = 22;
+    public const int TreasureRightInset = 20;
+    public const int TreasureBottomInset = 20;
     public const int ScreenMargin = 8;
     public const int ToolbarGap = 2;
     public const float IconScale = 2f;
@@ -71,4 +75,16 @@ internal static class AutomationHudLayout
             size,
             size);
     }
+
+    public static Rectangle PlaceTreasureIcon(Rectangle panelBounds)
+    {
+        int width = Math.Min(TreasureIconWidth, panelBounds.Width);
+        int height = Math.Min(TreasureIconHeight, panelBounds.Height);
+        return new Rectangle(
+            Math.Max(panelBounds.Left, panelBounds.Right - TreasureRightInset - width),
+            Math.Max(panelBounds.Top, panelBounds.Bottom - TreasureBottomInset - height),
+            width,
+            height);
+    }
+
 }

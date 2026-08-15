@@ -14,6 +14,15 @@ internal sealed record FishPreviewStyleDecision(
 
 internal static class FishPreviewStylePolicy
 {
+    public static bool ShouldReserveChallengeBaitSpace(
+        bool hasVanillaSonarBobber,
+        bool fishPreviewEnabled,
+        FishPreviewStyle previewStyle)
+    {
+        return hasVanillaSonarBobber
+            || (fishPreviewEnabled && previewStyle == FishPreviewStyle.Sonar);
+    }
+
     public static FishPreviewStyleDecision Decide(FishPreviewStyleConditions conditions)
     {
         ArgumentNullException.ThrowIfNull(conditions);

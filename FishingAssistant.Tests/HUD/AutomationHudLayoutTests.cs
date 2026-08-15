@@ -139,4 +139,15 @@ public sealed class AutomationHudLayoutTests
 
         Assert.Equal(new Rectangle(120, 220, 56, 56), result);
     }
+
+    [Fact]
+    public void PlaceTreasureIcon_KeepsIconInsidePanelNearRod()
+    {
+        Rectangle panel = new(100, 200, 96, 96);
+
+        Rectangle icon = AutomationHudLayout.PlaceTreasureIcon(panel);
+
+        Assert.Equal(new Rectangle(156, 254, 20, 22), icon);
+        Assert.True(panel.Contains(icon));
+    }
 }

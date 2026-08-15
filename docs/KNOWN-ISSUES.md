@@ -5,13 +5,16 @@ remain recorded below as regression history.
 
 ## Local co-op Fish Preview offset
 
-- **Status:** Open; reproduced in local co-op on `3.0.0-alpha.1` (`c337268`).
+- **Status:** Resolved; verified in-game in local co-op on `3.0.0-beta.2`
+  (`72eca69`) on 2026-08-16.
 - **Symptom:** Fish Preview is rendered with a larger-than-normal offset from the fishing
   minigame bar in split-screen. The offset differs from the expected single-player
   placement even after converting between the game and UI viewport coordinate spaces.
-- **Follow-up:** Inspect the render-target/UI-scale transform active during
-  `RenderedActiveMenu`, then test horizontal and vertical split-screen layouts at several
-  UI scale and zoom values.
+- **Fix:** Fish Preview now renders in the same world-draw coordinate space as Vanilla's
+  `BobberBar` instead of converting only its anchor into UI coordinates. The game now
+  applies zoom, UI scale, and the active split-screen viewport consistently to both.
+- **Regression coverage:** Repeat horizontal and vertical split-screen checks at several
+  UI scale and zoom values before each release candidate.
 
 ## Mouse and controller keybind capture does not persist
 

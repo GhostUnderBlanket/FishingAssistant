@@ -16,6 +16,7 @@ internal sealed record FishPreviewSnapshot(
     bool HasTreasure,
     bool IsGoldenTreasure,
     bool HasSonarBobber,
+    bool HasChallengeBait,
     Rectangle BobberBounds);
 
 internal sealed class BobberBarAdapter(BobberBar bar)
@@ -107,6 +108,7 @@ internal sealed class BobberBarAdapter(BobberBar bar)
             bar.treasure && !bar.treasureCaught,
             bar.goldenTreasure,
             bar.bobbers.Contains("(O)SonarBobber"),
+            bar.challengeBaitFishes > -1,
             new Rectangle(bar.xPositionOnScreen, bar.yPositionOnScreen, bar.width, bar.height));
     }
 
