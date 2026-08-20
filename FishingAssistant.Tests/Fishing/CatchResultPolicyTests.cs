@@ -22,7 +22,7 @@ public sealed class CatchResultPolicyTests
             alwaysPerfect: true,
             alwaysMaximumSize: true));
 
-        Assert.Equal(new CatchResultDecision(55, 4, true, 3, true), decision);
+        Assert.Equal(new CatchResultDecision(56, 4, true, 3, true), decision);
     }
 
     [Theory]
@@ -77,6 +77,14 @@ public sealed class CatchResultPolicyTests
     {
         Assert.Equal(3, CatchResultPolicy.Decide(Conditions(preferredCount: 99)).FishCount);
         Assert.Equal(1, CatchResultPolicy.Decide(Conditions(preferredCount: -5)).FishCount);
+    }
+
+    [Theory]
+    [InlineData(55, 56)]
+    [InlineData(int.MaxValue, int.MaxValue)]
+    public void GetLargestFishSize_MatchesVanillaFullRoll(int maximumFishSize, int expected)
+    {
+        Assert.Equal(expected, CatchResultPolicy.GetLargestFishSize(maximumFishSize));
     }
 
     private static CatchResultConditions Conditions(
