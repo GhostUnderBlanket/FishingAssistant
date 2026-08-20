@@ -55,13 +55,13 @@ public sealed class AutoCastPolicyTests
     }
 
     [Fact]
-    public void Decide_AllowsSupportedFestivalFishingMinigame()
+    public void Decide_AllowsSupportedFestivalFishingActivity()
     {
         AutoCastConditions conditions = SafeConditions with
         {
             IsPlayerFree = false,
             IsFestival = true,
-            IsSupportedFishingMinigame = true
+            IsSupportedFestivalFishing = true
         };
 
         Assert.Equal(AutoCastDecision.Cast, AutoCastPolicy.Decide(conditions, 59, 60));
@@ -73,7 +73,7 @@ public sealed class AutoCastPolicyTests
         AutoCastConditions conditions = SafeConditions with
         {
             IsFestival = true,
-            IsSupportedFishingMinigame = false
+            IsSupportedFestivalFishing = false
         };
 
         Assert.Equal(AutoCastDecision.Reset, AutoCastPolicy.Decide(conditions, 59, 60));

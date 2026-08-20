@@ -28,6 +28,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly IConfigItemSource itemSource;
     private readonly Action warpToBeachFishingSpot;
     private readonly Action<int> createFishingBubble;
+    private readonly Action prepareIceFishingFestival;
+    private readonly Action prepareStardewValleyFair;
     private readonly ConfigResetWorkflow resetWorkflow;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
@@ -51,7 +53,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
         IConfigItemSource itemSource,
         ITranslationHelper translations,
         Action warpToBeachFishingSpot,
-        Action<int> createFishingBubble)
+        Action<int> createFishingBubble,
+        Action prepareIceFishingFestival,
+        Action prepareStardewValleyFair)
     {
         this.session = session;
         this.apply = apply;
@@ -59,6 +63,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
         this.translate = key => translations.Get(key);
         this.warpToBeachFishingSpot = warpToBeachFishingSpot;
         this.createFishingBubble = createFishingBubble;
+        this.prepareIceFishingFestival = prepareIceFishingFestival;
+        this.prepareStardewValleyFair = prepareStardewValleyFair;
         this.resetWorkflow = new ConfigResetWorkflow(createDefaults);
 
         this.RebuildComponents();
@@ -707,6 +713,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddActionDefinition("create_bubble",
                     () => this.translate("config.action.create"),
                     () => this.createFishingBubble(this.session.Draft.DefaultCastPower));
+                this.AddActionDefinition("ice_festival",
+                    () => this.translate("config.action.prepare"),
+                    this.prepareIceFishingFestival);
+                this.AddActionDefinition("stardew_valley_fair",
+                    () => this.translate("config.action.prepare"),
+                    this.prepareStardewValleyFair);
                 break;
         }
     }

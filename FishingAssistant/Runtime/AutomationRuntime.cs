@@ -202,7 +202,7 @@ internal sealed class AutomationRuntime(
             castPower
         );
         int requiredTicks = (int)Math.Ceiling(config.AutoCastDelaySeconds * 60f);
-        if (rod.IsSupportedFishingMinigame)
+        if (rod.IsSupportedFestivalFishing)
             requiredTicks = Math.Max(requiredTicks, 75);
         switch (AutoCastPolicy.Decide(conditions, screen.Pending.ReadyTicks, requiredTicks))
         {

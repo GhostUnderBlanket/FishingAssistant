@@ -63,12 +63,12 @@ public sealed class AutoHookPolicyTests
     }
 
     [Fact]
-    public void Decide_AllowsSupportedFestivalFishingMinigame()
+    public void Decide_AllowsSupportedFestivalFishingActivity()
     {
         AutoHookConditions conditions = SafeConditions with
         {
             IsFestival = true,
-            IsSupportedFishingMinigame = true
+            IsSupportedFestivalFishing = true
         };
 
         Assert.Equal(AutoHookDecision.Hook, AutoHookPolicy.Decide(conditions));
@@ -80,7 +80,7 @@ public sealed class AutoHookPolicyTests
         AutoHookConditions conditions = SafeConditions with
         {
             IsFestival = true,
-            IsSupportedFishingMinigame = false
+            IsSupportedFestivalFishing = false
         };
 
         Assert.Equal(AutoHookDecision.Wait, AutoHookPolicy.Decide(conditions));
