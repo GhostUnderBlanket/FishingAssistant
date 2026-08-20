@@ -4,8 +4,8 @@ Fishing Assistant 3 is a complete rewrite of Fishing Assistant 2, a configurable
 fishing automation and assistance mod for Stardew Valley.
 
 The project is currently in beta. Its core single-player and local split-screen
-behavior is usable, but remote multiplayer compatibility, deferred festival cases, and
-the remaining known issues still need verification before the release candidate.
+behavior is usable, but remote multiplayer compatibility, fishing-festival behavior,
+and special-case coverage still need verification before the release candidate.
 
 ## Goals
 

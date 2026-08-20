@@ -203,15 +203,10 @@ Exit criteria:
 
 ## Milestone 7: Multiplayer and split-screen hardening
 
-Before beginning this milestone, complete the
-[Pre-Milestone 7 remediation checklist](PRE-MILESTONE-7.md). It captures implementation,
-recovery, UI, documentation, and baseline in-game verification gaps found during the
-Milestones 1 through 6 audit.
-
-The gate was approved on 2026-08-13 after the local safety baseline passed. Fishing
-festival compatibility, exhaustive special-catch variants, remote reconnect behavior,
-and the two recorded UI known issues were deliberately transferred into Milestone 7 or
-the release-candidate matrix; they remain required before publication.
+The preparatory remediation and local-safety baseline are complete. The remaining
+festival, special-catch, remote reconnect, and mixed-topology work is maintained in
+the actionable [release-candidate verification plan](RELEASE-CANDIDATE.md), rather
+than in a second historical checklist.
 
 Goal: validate every retained feature in all supported play modes rather than treating
 multiplayer as a late compatibility patch.
@@ -274,9 +269,14 @@ that serves the same need, or none of them after compatibility and UX review.
 - Accessible minigame assistance levels between fully manual and fully automatic.
 - A compact on-screen control panel for changing the most common runtime toggles without
   opening the full configuration menu.
+- Full-inventory junk relief: when a new item cannot fit, optionally discard only an
+  explicitly selected Junk List item to free one slot, then retry the incoming item.
+  This is intentionally distinct from continuous auto-trash so ordinary junk can remain
+  in the inventory until capacity is actually needed.
 
-Version 3.0 is now feature-frozen. These candidates move to a 3.1 milestone and must
-not delay the release candidate.
+After the current release-candidate verification pass is complete, the owner will
+revisit these candidates for the next Milestone 8 iteration. They remain exploratory:
+each may be selected, redesigned, or declined after compatibility and UX review.
 
 ## Milestone 9: Beta, release candidate, and publication
 

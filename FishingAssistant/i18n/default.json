@@ -135,6 +135,10 @@
   "config.option.warp_beach.description": "Warp this local player near Willy's Fish Shop for quick ocean-fishing tests.",
   "config.option.create_bubble": "Create test fishing bubble",
   "config.option.create_bubble.description": "Create a reachable bubble near the current default cast landing point, offset sideways when possible to test steering.",
+  "config.option.ice_festival": "Prepare Ice Fishing Festival",
+  "config.option.ice_festival.description": "Test-only: on the host, use Stardew's debug command to change the season, day, time, and location for the Ice Fishing Festival. Use a disposable test save and do not save afterward.",
+  "config.option.stardew_valley_fair": "Prepare Stardew Valley Fair",
+  "config.option.stardew_valley_fair.description": "Test-only: on the host, use Stardew's debug command to change the season, day, time, and location for the Stardew Valley Fair. Use a disposable test save and do not save afterward.",
   "config.keybind.listening": "Press a key or button...",
   "config.value.left": "Left",
   "config.value.right": "Right",
@@ -172,6 +176,7 @@
   "config.action.add": "Add",
   "config.action.warp": "Warp",
   "config.action.create": "Create",
+  "config.action.prepare": "Prepare",
   "config.junk_picker.title": "Junk list editor",
   "config.junk_picker.search": "Search items...",
   "config.junk_picker.selected": "{0} junk",
@@ -230,5 +235,7 @@
   "debug.warp_beach.unavailable": "The beach warp is unavailable during an event or minigame.",
   "debug.bubble.unavailable": "A test fishing bubble can't be created during an event or minigame.",
   "debug.bubble.no_target": "No fishable tile was found near the current cast landing point.",
-  "debug.bubble.created": "Created a test fishing bubble at tile {0}, {1}."
+  "debug.bubble.created": "Created a test fishing bubble at tile {0}, {1}.",
+  "debug.festival.unavailable": "A festival test setup can only be prepared by the host while no event or minigame is active.",
+  "debug.festival.prepared": "Prepared the festival test setup. Use a disposable save; the game date and time changed."
 }

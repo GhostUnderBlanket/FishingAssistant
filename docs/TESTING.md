@@ -1,243 +1,62 @@
-# Testing Status
+# Test Record
 
-This file records manual verification which has actually been completed. Automated
-tests and successful builds do not count as in-game verification.
+This file records in-game behavior that has actually been observed. A successful build
+or automated test does not count as manual verification. Remaining release-candidate
+work is maintained in [RELEASE-CANDIDATE.md](RELEASE-CANDIDATE.md).
 
-## Current manual-test baseline
+## Current baseline
 
-Status updated on 2026-08-14:
+- **Game:** Stardew Valley 1.6.15
+- **SMAPI:** 4.5.2
+- **Current beta line:** 3.0.0-beta.2
+- **Automated verification:** 478 tests passed after the current performance and
+  maximum-fish-size fixes.
 
-- The project has entered `3.0.0-beta.2`. Beta status means the planned core and
-  approved Milestone 8 feature set is implemented; it does not mark the pending remote
-  multiplayer, festival, special-catch, or known-issue checks as passed.
+## Verified locally
 
-- Single-player and two-player local split-screen testing has now been completed for
-  the HUD matrix, player-scoped configuration, and ordinary cast-to-catch automation.
-  Multiplayer host/farmhand and mixed split-screen multiplayer remain untested.
-- HUD visibility and placement passed during a supported fishing festival. Complete
-  festival automation behavior and unrelated festival-event compatibility remain
-  untested.
-- Treasure targeting and the treasure chance overrides have not been tested in-game
-  yet. `TreasureChance` is now connected to gameplay, so the deferred repeatable test
-  can use `Always` to produce a treasure target.
-- Instant fishing-treasure capture has not been tested in-game yet.
-- Automatic catch-popup closing passed the ordinary cast-to-catch loop; special popup
-  cases such as first catches, records, fish ponds, secret notes, and full inventory
-  remain untested.
-- Instant fish bites have not been tested in-game yet.
-- Automatic fishing-treasure collection passed the ordinary loop and independent-stage
-  disable check; partial stacks, multiple rewards, and every full-inventory outcome
-  remain untested.
-- Fishing-minigame skipping has not been tested in-game yet.
-- Automatic bait/tackle attachment, refill, opt-in spawning, food selection/eating,
-  late-night boundaries, and low-energy protection passed in single-player and local
-  split-screen. Remote ownership checks remain Milestone 7 work.
-- Infinite attachment and temporary-enchantment consumption, option-disable, unequip,
-  warp, day-end, save/reload, and return-to-title checks passed locally. Remote
-  disconnect/reconnect remains Milestone 7 work.
-- Fish difficulty multiplier and additive adjustment have not been tested in-game yet.
-- Perfect catch, preferred base quality, maximum fish size, and preferred fish count
-  modifiers have not been tested in-game yet.
-- Fish preview visibility, responsive placement, and reveal options have not been
-  tested in-game yet.
-- Automatic junk disposal, visual Junk List membership, fish opt-in, stack-delta
-  safeguards, and full-inventory Stop/Drop/Discard behavior passed locally. Remote ownership checks
-  remain Milestone 7 work.
-- The visual automation status HUD and toolbar-relative placement passed the documented
-  single-player/local split-screen matrix on build `b7101f4`.
-- Local split-screen/co-op passed the scoped HUD, configuration-profile, and ordinary
-  cast-to-catch isolation checks described below. Other feature matrices remain pending.
-- Multiplayer host, farmhand, reconnect, and simultaneous-fishing scenarios have not
-  been tested yet.
-- Mixed split-screen multiplayer has not been tested yet.
-- Mouse and controller keybind capture now waits after activation and successfully
-  accepts a new binding in-game on `3.0.0-beta.1` (`ec87262`).
+- The normal single-player and two-player local split-screen cast-to-catch loop works
+  with every core automation stage independently enabled or disabled.
+- Disabling automation during a cast lets the Vanilla cast finish while preventing later
+  assistant actions; it no longer leaves reel audio or pending automation stuck.
+- Each local player has independent automation state, HUD, Fish Preview, and persisted
+  configuration. Applying one player's draft does not change the other player's profile.
+- The custom configuration UI has been exercised with mouse, keyboard, and controller,
+  including split-screen navigation, keybind capture, item pickers, and localized text.
+- Fish Preview placement is verified in local co-op after the world-coordinate fix; the
+  Sonar-style preview also scales with zoom and avoids Challenge Bait overlap.
+- Bait/tackle attachment and spawning, auto-eat, auto-trash, starter rod, late-night,
+  low-energy protection, infinite attachments, and temporary enchantment cleanup are
+  verified for the owning local player in single-player and local split-screen.
+- Fish difficulty, bite timing, treasure chance, perfect catch, quality, size,
+  multi-catch, Fish Preview, starter rod, and auto-trash have received local in-game
+  coverage. The corrected maximum-fish-size boundary still needs its targeted RC check.
 
-## Passed manual session: 2026-08-13
+## Still unverified in-game
 
-Environment: Stardew Valley 1.6.15, SMAPI 4.5.2, Fishing Assistant
-`3.0.0-alpha.1` at commit `b7101f4`, single-player and two-player local split-screen.
+- Remote multiplayer: host, farmhand, reconnect, simultaneous fishing, and mixed
+  split-screen/remote topology.
+- The complete Ice Fishing Festival automation loop and the guarantee that unrelated
+  festivals do not start fishing automation.
+- The exhaustive special-catch and inventory matrix: tutorial, fish pond, legendary,
+  first catch, record, secret note, Wild/Deluxe/Challenge Bait, golden treasure,
+  partial stacks, and every full-inventory action.
+- Targeted re-checks for the latest maximum-fish-size fix, treasure targeting and
+  golden/instant treasure combinations, skip-minigame combinations, bubble steering,
+  and temporary-enchantment behavior with a remote player connected.
 
-- HUD passed in small and large windows, non-default UI scale/zoom, toolbar top/bottom,
-  configured left/right placement, ordinary menus, active fishing, a supported fishing
-  festival, and both local viewports. Ordinary menus hide it; fishing contexts show it;
-  each screen stays within its own viewport and uses its own state.
-- Player-scoped config passed with visibly different settings on both local players,
-  Apply in both orders, runtime isolation, return to title, and reload persistence. Each
-  player retained only their own profile and one Apply did not change the other screen.
-- The ordinary cast-to-catch loop passed repeatedly with Automation on and off and with
-  Auto Cast, Auto Hook, Auto Minigame, Auto Close Popup, and Auto Collect Treasure each
-  disabled independently. Manual fishing remained under Vanilla control while disabled.
-- F5 passed during cast charging, bobber flight, waiting, hooking, minigame, catch popup,
-  and treasure handling. The cast already in progress completed through Vanilla, later
-  automatic stages stayed off, re-enabling resumed automation, fishing audio did not
-  stick, and toggling one local player did not interrupt or enable the other.
-- Equipment and inventory safety passed with both local players: bait/tackle attachment
-  and spawning changed only the owning rod/inventory, including both Advanced Iridium
-  Rod tackle slots; auto-eat and auto-trash changed only the owning inventory.
-- Infinite bait/tackle and temporary enchantments restored or were removed through the
-  tested local lifecycle without loss, duplication, cross-player state, or persistence.
-  Starter rod, low-energy/late-night boundaries, basic catch modifiers, and local
-  save/reload/return-to-title cleanup also passed.
-- Fishing-festival automation and unrelated-festival isolation were deliberately
-  deferred. Remote host/farmhand disconnect and reconnect remain Milestone 7 work.
+## Test utilities
 
-## Pending configuration-menu checks
+- **Create Test Fishing Bubble:** Debug page or `fa_bubble`. Creates a reachable bubble
+  beside the selected cast landing point for Bubble Steering tests.
+- **Prepare Ice Fishing Festival:** Debug page or `fa_ice_festival`. Host-only setup
+  using Stardew Valley's debug command. It changes the date, time, season, and location;
+  use a disposable save and do not save afterward.
+- **Prepare Stardew Valley Fair:** Debug page or `fa_stardew_valley_fair`. Host-only
+  setup under the same disposable-save rule, for the FishingGame festival minigame.
 
-The custom configuration menu's automated tests cover draft isolation, input mapping,
-inline warnings, unavailable controls, and layout-context detection. The following
-checks still need to be observed in-game before Milestone 2 can be marked complete:
+## Recording rule
 
-- In a normal fullscreen single-player session, open the menu with F6 and verify every
-  category, scrolling, Apply, Cancel, Reset confirmation, item picker, junk editor,
-  inline warning, and disabled-control explanation with mouse and keyboard.
-- Repeat with a controller: verify A/B, D-pad/left stick navigation, Left/Right
-  Shoulder and Left/Right Trigger category navigation, selector adjustment, and
-  keybind capture/cancel.
-- The mouse/controller keybind capture regression passed on `ec87262`. The reproduced
-  local co-op Fish Preview offset was verified fixed on `72eca69`; retain horizontal and
-  vertical split-screen coverage across representative zoom and UI-scale values. See
-  [KNOWN-ISSUES.md](KNOWN-ISSUES.md) for regression history.
-- While the menu is open, change UI scale, zoom, window size, and game language. Check
-  that no option or snappy-navigation focus is left at stale bounds after the menu
-  rebuilds.
-- In a small local split-screen viewport, verify long localized labels, scrolling,
-  tooltips, footer buttons, picker dialogs, and Reset confirmation remain reachable
-  and inside that player's viewport.
-- With a remote player connected, open Rod Enchantments and confirm every temporary
-  enchantment option is visibly disabled, explains why, ignores edits, and becomes
-  editable again after the remote player leaves.
-- In local split-screen, confirm a D-pad press advances exactly one config option,
-  Controller Back opens the menu for the controller-owning player, and Fish Preview
-  stays beside that same player's BobberBar rather than another screen's viewport.
-- In local split-screen, give the two players visibly different automation, HUD-side,
-  preview, and equipment settings. Apply each menu in either order, return to title,
-  reload, and confirm each player keeps only their own profile. Confirm the files under
-  `config.players` use stable player IDs and no Apply changes the other screen at runtime.
-  **Passed on `b7101f4`.**
-
-The festival support and multiplayer-safe architecture currently present in the code
-must therefore be treated as implemented but manually unverified until the matching
-release-matrix scenarios are completed.
-
-## Deferred manual checks
-
-### Automation cancellation and timeout recovery
-
-- Open a blocking menu during an assistant-owned cast, hook attempt, or catch-popup
-  close attempt. Confirm pending assistant work is cleared without cancelling a fishing
-  action that was started manually.
-- Leave an assistant-owned cast, hook, or catch-popup close in an unexpectedly stuck
-  state. Confirm automation disables after its bounded timeout and vanilla input remains
-  available.
-- During automatic fishing, test tool replacement, warp, saving, return to title, and a
-  remote peer disconnect. Confirm pending work does not resume from stale per-screen
-  flags afterward.
-- Verify automatic casting and hooking in each Stardew Valley fishing festival
-  minigame, including countdown, active play, timeout, results, and exit behavior.
-- Confirm unrelated festival events never start fishing automation.
-- With `TreasureChance` set to `Always`, verify the saved treasure-targeting checkbox,
-  start/abandon progress thresholds, completed treasure capture, and fallback to fish
-  tracking when no treasure is available. Confirm there is no targeting hotkey or HUD
-  icon. Also verify `Default` and `Never`, plus all three golden-treasure modes.
-- With treasure chance set to `Always`, verify instant treasure captures normal and
-  golden chests only after they fully appear, works with manual/automatic minigames and
-  both skip modes, still requires successfully catching the fish to receive rewards,
-  and does not alter festival results. Repeat with config targeting both on and off,
-  then as each split-screen player, multiplayer host, and farmhand.
-- Verify automatic catch-popup closing for normal fish, trash, first catches, records,
-  fish ponds, treasure catches, secret notes, and a full inventory. Confirm disabling
-  either automation or `AutoClosePopup` leaves the popup under manual control.
-- Verify `InstantFishBite` in normal fishing with F5 automation both enabled and
-  disabled. Confirm the game still chooses the catch normally and that supported
-  festival fishing minigames trigger bites without affecting unrelated festivals.
-- Verify automatic treasure collection with free slots, mergeable partial stacks,
-  special no-slot items, and multiple rewards. For a full inventory, separately verify
-  Stop leaves rewards in the menu, Drop places them on the ground, and Discard removes
-  them only when explicitly selected; all three should disable automation.
-- Verify `SkipAll` and `SkipOnlyCaught` with uncaught and previously caught fish,
-  Challenge Bait, legendary fish, fish ponds, treasure targeting on/off, and supported
-  festival minigames. Confirm `Off` preserves the normal minigame.
-- Verify automatic bait attachment with `Any` and a specific preference, refill across
-  multiple inventory stacks, rods without bait slots, manual bait already attached,
-  and the opt-in spawn fallback. Repeat for a multiplayer farmhand and local
-  split-screen player to confirm only the owning inventory is changed.
-- Verify tackle attachment with `Any` and specific preferences on Iridium and Advanced
-  Iridium Rods, including independent first/second slots, preserved durability, manual
-  tackle already attached, and the opt-in spawn fallback. Repeat ownership checks for
-  multiplayer farmhand and split-screen inventories.
-- Verify infinite bait at stack size one and larger stacks, and infinite tackle at 19
-  uses and lower durability. Cover successful catches, escaped fish, treasure, tool
-  switching, warps, day end, saving/reloading, farmhand play, and split-screen; confirm
-  no duplicate or temporary attachment is written into the save.
-- Verify automatic eating at, below, and above the configured energy threshold with
-  plain food, buff food, fish allowed/disallowed, a one-item stack, food/drink fullness
-  buffs, and no eligible food. Repeat for multiplayer farmhand and split-screen
-  inventories and confirm only the owning player's stack is consumed.
-- Verify `Off`, `WarnOnly`, and `WarnAndPause` at 24:00 with warning counts 1 and 3.
-  Let the threshold pass during a cast, minigame, catch popup, and treasure menu; the
-  current catch must finish before only that screen's automation disables. Repeat as
-  host, farmhand, and split-screen, confirming shared world time never pauses.
-- Verify automatic casting at energy just above, equal to, and below the vanilla cast
-  cost, both with and without automatic eating. Repeat with an Efficient rod and in a
-  fishing festival; only the owning player's automation should stop, and no valid
-  zero-cost cast should be blocked.
-- Verify each temporary rod enchantment alone and all four together, with an already
-  enchanted rod, option changes, rod switching, `RemoveWhenUnequipped` on/off, saving,
-  reloading, and return to title. Repeat in local split-screen. Connect a remote
-  farmhand while enchantments are active and confirm they are removed, a warning is
-  shown, and no assistant-added enchantment appears in the saved rod afterward.
-- Verify difficulty settings `1.0x/+0`, `0.0x/+0`, `0.5x/+10`, and `2.0x/-20` with
-  manual and automatic fishing, the first-catch tutorial, Blessing of Waters, legendary
-  fish, fish ponds, festival minigames, split-screen, host, and farmhand. Confirm each
-  local minigame is adjusted once and another player's fish behavior is unaffected.
-- Verify catch-result settings separately and together with manual fishing, automatic
-  play, and skipped minigames. Cover every quality choice (including vanilla quality
-  promotion on a perfect catch), maximum and reduced fish sizes, escaped fish, trash,
-  ordinary counts 1-3, Wild Bait, Challenge Bait losing zero/one/two fish, legendary
-  fish, first catches, fish ponds, and festival fishing. Confirm festival/fish-pond
-  results remain vanilla and only the owning local player's result changes. Repeat as
-  split-screen players, multiplayer host, and farmhand.
-- Verify the fish preview with caught and uncaught fish, trash, legendary fish, normal
-  and golden treasure, every preview sub-option, UI scales, zoom levels, window sizes,
-  both sides of the screen, and long localized item names. Confirm it disappears during
-  fade-out, never grants Sonar Bobber behavior, stays within each split-screen viewport,
-  and shows only the owning player's catch history and treasure state. Repeat in a
-  fishing festival as host and farmhand.
-- Verify automatic junk disposal with automation on/off, the option on/off, each five
-  default trash item, a newly created stack, an existing partial stack, multiple items
-  gained in one tick, treasure rewards, and inventory-full reward handling. Confirm the
-  only explicitly selected Junk items are removed, untrashable/quest items remain untouched,
-  fish require `AllowTrashFish`, only the newly gained quantity leaves an old stack,
-  and trash-can reclamation money matches vanilla. Repeat for both split-screen players
-  and as multiplayer host/farmhand, confirming only the event's owning inventory is
-  changed.
-- Verify the visual status HUD with F5 on/off, every automation state, and each badge:
-  active work, ordinary disabled, menu pause, late night, low energy, action timeout,
-  and recovery. Confirm enabled idle has no emote.
-  Verify the background-free rod sprite, drop shadow, and animated Vanilla emotes
-  remain readable over light and dark terrain. Test toolbar pinned and
-  automatic top/bottom movement,
-  configured left/right placement, UI scale and zoom settings, menus, festivals, and
-  small window sizes. Repeat for both split-screen players and confirm each panel uses
-  only that screen's session and remains inside its viewport.
-- Repeat the normal cast-and-hook loop in local split-screen with each player alone and
-  both players fishing simultaneously. **Passed on `b7101f4`.**
-- During an automatic cast, interrupt with a menu, tool swap, warp, save, return to
-  title, and local-player removal. Confirm the rod returns to Vanilla control, the next
-  session starts cleanly, and removing either split-screen player leaves no stale HUD or
-  automated input on the remaining screen.
-- Toggle Automation off once during each visible stage: cast delay, casting, waiting for
-  a bite, hooking, minigame, catch popup, and treasure menu. Confirm no later automatic
-  stage runs until Automation is explicitly enabled again. **Passed on `b7101f4`.**
-- Specifically toggle F5 while the automatic cast is charging and again while its
-  bobber is in flight. Confirm Vanilla finishes the cast and its sound normally, while
-  the assistant performs no hook, minigame, popup, treasure, or recast action until F5
-  is enabled again. Repeat with both local co-op players casting simultaneously and
-  confirm toggling one screen doesn't interrupt the other player's rod or audio.
-  **Passed on `b7101f4`.**
-- Repeat the normal and festival fishing checks as multiplayer host and farmhand.
-- Inspect the SMAPI log after each scenario for errors, recoveries, duplicated input,
-  or cross-player state leakage.
-
-Update this file only after the corresponding behavior has been observed in-game.
+When a release-candidate row passes, record the game, SMAPI, mod version, commit,
+topology, configuration, and SMAPI-log result in the matching entry of
+[RELEASE-CANDIDATE.md](RELEASE-CANDIDATE.md). Do not mark a row complete based only on
+automated tests or a related scenario.

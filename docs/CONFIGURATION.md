@@ -108,6 +108,13 @@ landing tile and its two sideways neighbors for fishable water, and prefers a si
 tile so steering is visible. It never changes the player position or creates a bubble
 during an event or minigame.
 
+The same page includes Prepare Ice Fishing Festival and Prepare Stardew Valley Fair,
+also available through the `fa_ice_festival` and `fa_stardew_valley_fair` console
+commands. On the host only, they invoke Stardew Valley's own `Festival winter8` and
+`Festival fall16` debug commands. This changes the current season, day, time, and
+location, so it is blocked during an event or minigame and must be used only with a
+disposable test save which is not saved afterward.
+
 The migration test fixture contains every public Fishing Assistant 2 configuration
 property. It verifies that every still-supported non-default choice survives and that
 both retired choices are reported deliberately.
