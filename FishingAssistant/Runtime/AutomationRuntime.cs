@@ -75,6 +75,11 @@ internal sealed class AutomationRuntime(
         this.ResetManualCastTracking(this.screens.Value, preserveSessionPower: false);
     }
 
+    public void InvalidateTreasureChestIgnoreCacheCurrent()
+    {
+        this.screens.Value.InvalidateTreasureChestIgnoreIds();
+    }
+
     public void ResetCurrent(AutomationTransitionReason reason)
     {
         AutomationScreenState screen = this.screens.Value;
@@ -504,8 +509,7 @@ internal sealed class AutomationRuntime(
         }
 
         ModConfig config = getConfig();
-        HashSet<string> ignoredItemIds = config.TreasureChestIgnoreList
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        IReadOnlySet<string> ignoredItemIds = screen.GetTreasureChestIgnoreIds(config);
         TreasureLootConditions conditions = new(
             screen.Session.IsEnabled,
             config.AutoLootTreasure,

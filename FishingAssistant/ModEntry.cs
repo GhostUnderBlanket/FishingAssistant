@@ -333,6 +333,7 @@ internal sealed class ModEntry : Mod
         {
             ConfigValidationReport report = this.configManager!.Apply(session);
             this.automationRuntime!.ResetSessionCastPowerCurrent();
+            this.automationRuntime.InvalidateTreasureChestIgnoreCacheCurrent();
             this.EnsureConfiguredStarterRod();
             return report;
         }

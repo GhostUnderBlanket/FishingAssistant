@@ -13,6 +13,17 @@ internal sealed class BaitAttachmentService(IMonitor monitor, Func<string, strin
         if (!Context.IsWorldReady || Game1.player.CurrentTool is not FishingRod rod)
             return;
 
+        if (!config.AutoAttachBait)
+            return;
+
+        bool isSafeToAttach = this.IsSafeToAttach(rod);
+        if (!isSafeToAttach)
+            return;
+
+        bool rodSupportsBait = rod.CanUseBait();
+        if (!rodSupportsBait)
+            return;
+
         SObject? attached = rod.GetBait();
         List<BaitInventoryCandidate> candidates = Game1.player.Items
             .Select((item, index) => (item, index))
@@ -21,8 +32,8 @@ internal sealed class BaitAttachmentService(IMonitor monitor, Func<string, strin
             .ToList();
         BaitAttachmentConditions conditions = new(
             config.AutoAttachBait,
-            this.IsSafeToAttach(rod),
-            rod.CanUseBait(),
+            isSafeToAttach,
+            rodSupportsBait,
             attached?.QualifiedItemId,
             attached?.getRemainingStackSpace() ?? 0,
             config.PreferredBait,
