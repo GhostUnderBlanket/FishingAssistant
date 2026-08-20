@@ -9,7 +9,8 @@ public sealed class AutomationHudVisibilityPolicyTests
         HasBlockingMenu: false,
         IsEvent: false,
         IsFestival: false,
-        HasUnsupportedMinigame: false);
+        HasUnsupportedMinigame: false,
+        IsSupportedFestivalFishing: false);
 
     [Fact]
     public void ShouldDraw_ShowsDuringOrdinaryWorldPlay()
@@ -34,7 +35,8 @@ public sealed class AutomationHudVisibilityPolicyTests
             hasBlockingMenu,
             isEvent,
             isFestival,
-            hasUnsupportedMinigame);
+            hasUnsupportedMinigame,
+            IsSupportedFestivalFishing: false);
 
         Assert.False(AutomationHudVisibilityPolicy.ShouldDraw(conditions));
     }
@@ -46,6 +48,20 @@ public sealed class AutomationHudVisibilityPolicyTests
         {
             IsEvent = true,
             IsFestival = true
+        };
+
+        Assert.True(AutomationHudVisibilityPolicy.ShouldDraw(conditions));
+    }
+
+    [Fact]
+    public void ShouldDraw_ShowsDuringSupportedFishingMinigameWhenVanillaHidesHud()
+    {
+        AutomationHudVisibilityConditions conditions = VisibleConditions with
+        {
+            DisplayHud = false,
+            IsEvent = true,
+            IsFestival = true,
+            IsSupportedFestivalFishing = true
         };
 
         Assert.True(AutomationHudVisibilityPolicy.ShouldDraw(conditions));

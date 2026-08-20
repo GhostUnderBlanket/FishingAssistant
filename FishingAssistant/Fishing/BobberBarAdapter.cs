@@ -175,7 +175,7 @@ internal sealed class BobberBarAdapter(BobberBar bar)
         }
 
         if (config.AlwaysMaxFishSize && bar.maxFishSize > 0)
-            bar.fishSize = bar.maxFishSize;
+            bar.fishSize = CatchResultPolicy.GetLargestFishSize(bar.maxFishSize);
     }
 
     public void SetBarSpeed(float speed)

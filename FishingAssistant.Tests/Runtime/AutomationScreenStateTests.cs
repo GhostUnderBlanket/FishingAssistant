@@ -1,3 +1,4 @@
+using FishingAssistant.Configuration;
 using FishingAssistant.Fishing;
 using FishingAssistant.Runtime;
 
@@ -104,6 +105,37 @@ public sealed class AutomationScreenStateTests
         Assert.Equal(AutomationState.Ready, transition.Current);
         Assert.Equal(AutomationTransitionReason.Observation, transition.Reason);
         Assert.False(transition.WasRecovery);
+    }
+
+    [Fact]
+    public void GetTreasureChestIgnoreIds_RefreshesWhenTheActiveProfileChanges()
+    {
+        AutomationScreenState state = new();
+        ModConfig firstProfile = new() { TreasureChestIgnoreList = ["(O)169"] };
+        ModConfig secondProfile = new() { TreasureChestIgnoreList = ["(O)170"] };
+
+        IReadOnlySet<string> first = state.GetTreasureChestIgnoreIds(firstProfile);
+        Assert.Contains("(O)169", first);
+
+        IReadOnlySet<string> second = state.GetTreasureChestIgnoreIds(secondProfile);
+
+        Assert.DoesNotContain("(O)169", second);
+        Assert.Contains("(O)170", second);
+    }
+
+    [Fact]
+    public void InvalidateTreasureChestIgnoreIds_RefreshesAnAppliedConfig()
+    {
+        AutomationScreenState state = new();
+        ModConfig config = new() { TreasureChestIgnoreList = ["(O)169"] };
+        _ = state.GetTreasureChestIgnoreIds(config);
+        config.TreasureChestIgnoreList = ["(O)170"];
+
+        state.InvalidateTreasureChestIgnoreIds();
+        IReadOnlySet<string> refreshed = state.GetTreasureChestIgnoreIds(config);
+
+        Assert.DoesNotContain("(O)169", refreshed);
+        Assert.Contains("(O)170", refreshed);
     }
 
     private static AutomationScreenState CreatePopulatedState()

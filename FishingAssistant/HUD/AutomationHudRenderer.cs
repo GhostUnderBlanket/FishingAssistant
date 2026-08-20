@@ -1,4 +1,5 @@
 using FishingAssistant.Configuration;
+using FishingAssistant.Fishing;
 using FishingAssistant.Runtime;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -17,6 +18,7 @@ internal sealed class AutomationHudRenderer
     public void Draw(SpriteBatch batch, AutomationSession session, ModConfig config)
     {
         bool isFishingMinigame = Game1.currentMinigame is FishingGame;
+        bool isSupportedFestivalFishing = FestivalFishingContext.IsSupportedFishingActivity;
         bool hasBlockingMenu = Game1.activeClickableMenu is not null
             && Game1.activeClickableMenu is not BobberBar;
         if (!AutomationHudVisibilityPolicy.ShouldDraw(new(
@@ -24,7 +26,8 @@ internal sealed class AutomationHudRenderer
                 hasBlockingMenu,
                 Game1.eventUp,
                 Game1.isFestival(),
-                Game1.currentMinigame is not null && !isFishingMinigame)))
+                Game1.currentMinigame is not null && !isFishingMinigame,
+                isSupportedFestivalFishing)))
         {
             return;
         }
@@ -39,7 +42,9 @@ internal sealed class AutomationHudRenderer
             IsFishingMinigame: isFishingMinigame,
             IsFestival: Game1.isFestival(),
             IsToolbarAtTop: IsToolbarAtTop()));
-        float opacity = toolbar is null ? 1f : Math.Clamp(toolbar.transparency, 0.33f, 1f);
+        float opacity = Game1.isFestival() || toolbar is null
+            ? 1f
+            : Math.Clamp(toolbar.transparency, 0.33f, 1f);
         AutomationHudVisual visual = AutomationHudVisualPolicy.GetVisual(
             session.IsEnabled,
             session.State,

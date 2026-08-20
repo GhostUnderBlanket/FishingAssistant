@@ -13,6 +13,17 @@ internal sealed class TackleAttachmentService(IMonitor monitor, Func<string, str
         if (!Context.IsWorldReady || Game1.player.CurrentTool is not FishingRod rod)
             return;
 
+        if (!config.AutoAttachTackles)
+            return;
+
+        bool isSafeToAttach = this.IsSafeToAttach(rod);
+        if (!isSafeToAttach)
+            return;
+
+        bool rodSupportsTackle = rod.CanUseTackle();
+        if (!rodSupportsTackle)
+            return;
+
         List<TackleSlotState> slots = [];
         for (int slot = FishingRod.TackleIndex; slot < rod.AttachmentSlotsCount; slot++)
         {
@@ -29,8 +40,8 @@ internal sealed class TackleAttachmentService(IMonitor monitor, Func<string, str
             .ToList();
         TackleAttachmentConditions conditions = new(
             config.AutoAttachTackles,
-            this.IsSafeToAttach(rod),
-            rod.CanUseTackle(),
+            isSafeToAttach,
+            rodSupportsTackle,
             config.SpawnTackleIfDontHave,
             slots,
             candidates

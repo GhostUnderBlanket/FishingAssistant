@@ -45,7 +45,7 @@ internal static class CatchResultPolicy
         if (conditions.IsFish)
         {
             if (conditions.AlwaysMaximumFishSize && conditions.MaximumFishSize > 0)
-                fishSize = conditions.MaximumFishSize;
+                fishSize = GetLargestFishSize(conditions.MaximumFishSize);
 
             if (conditions.PreferredFishQuality != FishQualityPreference.Any)
                 fishQuality = (int)conditions.PreferredFishQuality;
@@ -65,6 +65,16 @@ internal static class CatchResultPolicy
         }
 
         return CreateDecision(conditions, fishSize, fishQuality, isPerfect, fishCount);
+    }
+
+    internal static int GetLargestFishSize(int vanillaMaximumFishSize)
+    {
+        // BobberBar starts its size roll at min + (max - min) * roll and then adds
+        // one. At a full roll, that yields max + 1; using max itself can be reduced
+        // by vanilla as a near-perfect catch instead of being the largest possible fish.
+        return vanillaMaximumFishSize < int.MaxValue
+            ? vanillaMaximumFishSize + 1
+            : vanillaMaximumFishSize;
     }
 
     private static CatchResultDecision CreateDecision(

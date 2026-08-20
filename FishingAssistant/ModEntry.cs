@@ -24,6 +24,7 @@ internal sealed class ModEntry : Mod
     private StarterFishingRodService? starterFishingRod;
     private DebugWarpService? debugWarp;
     private DebugFishingBubbleService? debugFishingBubble;
+    private DebugFestivalService? debugFestival;
     private BaitAttachmentService? baitAttachment;
     private TackleAttachmentService? tackleAttachment;
     private InfiniteAttachmentService? infiniteAttachment;
@@ -49,6 +50,7 @@ internal sealed class ModEntry : Mod
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
         this.debugFishingBubble = new DebugFishingBubbleService(
             this.Monitor, key => helper.Translation.Get(key));
+        this.debugFestival = new DebugFestivalService(this.Monitor, key => helper.Translation.Get(key));
         this.baitAttachment = new BaitAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.tackleAttachment = new TackleAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
@@ -63,6 +65,12 @@ internal sealed class ModEntry : Mod
         SonarPreviewPatch.Apply(
             harmony,
             () => this.configManager.Active,
+            this.Monitor);
+        FishingGameHudPatch.Apply(
+            harmony,
+            this.automationHud,
+            () => this.automationRuntime!.Current,
+            () => this.configManager!.Active,
             this.Monitor);
 
         this.Monitor.Log(
@@ -91,6 +99,12 @@ internal sealed class ModEntry : Mod
             this.OnConfigCommand);
         helper.ConsoleCommands.Add("fa_bubble", "Create a reachable fishing bubble for testing.",
             this.OnBubbleCommand);
+        helper.ConsoleCommands.Add("fa_ice_festival",
+            "Prepare the Ice Fishing Festival on the host test save.",
+            this.OnIceFestivalCommand);
+        helper.ConsoleCommands.Add("fa_stardew_valley_fair",
+            "Prepare the Stardew Valley Fair on the host test save.",
+            this.OnStardewValleyFairCommand);
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -246,7 +260,7 @@ internal sealed class ModEntry : Mod
 
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
-        if (!Context.IsWorldReady)
+        if (!Context.IsWorldReady || Game1.currentMinigame is StardewValley.Minigames.FishingGame)
             return;
 
         this.automationHud!.Draw(e.SpriteBatch, this.automationRuntime!.Current, this.configManager!.Active);
@@ -273,6 +287,16 @@ internal sealed class ModEntry : Mod
     private void OnBubbleCommand(string command, string[] arguments)
     {
         this.debugFishingBubble!.Create(this.configManager!.Active.DefaultCastPower);
+    }
+
+    private void OnIceFestivalCommand(string command, string[] arguments)
+    {
+        this.debugFestival!.PrepareIceFishingFestival();
+    }
+
+    private void OnStardewValleyFairCommand(string command, string[] arguments)
+    {
+        this.debugFestival!.PrepareStardewValleyFair();
     }
 
     private bool TryOpenConfigMenu()
@@ -310,7 +334,9 @@ internal sealed class ModEntry : Mod
             this.itemCatalog!,
             this.Helper.Translation,
             this.debugWarp!.WarpToBeachFishingSpot,
-            castPower => this.debugFishingBubble!.Create(castPower)
+            castPower => this.debugFishingBubble!.Create(castPower),
+            this.debugFestival!.PrepareIceFishingFestival,
+            this.debugFestival!.PrepareStardewValleyFair
         );
         return true;
     }
@@ -333,6 +359,7 @@ internal sealed class ModEntry : Mod
         {
             ConfigValidationReport report = this.configManager!.Apply(session);
             this.automationRuntime!.ResetSessionCastPowerCurrent();
+            this.automationRuntime.InvalidateTreasureChestIgnoreCacheCurrent();
             this.EnsureConfiguredStarterRod();
             return report;
         }

@@ -4,8 +4,8 @@ Fishing Assistant 3 is a complete rewrite of Fishing Assistant 2, a configurable
 fishing automation and assistance mod for Stardew Valley.
 
 The project is currently in beta. Its core single-player and local split-screen
-behavior is usable, but remote multiplayer compatibility, deferred festival cases, and
-the remaining known issues still need verification before the release candidate.
+behavior is usable, but remote multiplayer compatibility, fishing-festival behavior,
+and special-case coverage still need verification before the release candidate.
 
 ## Goals
 
@@ -68,8 +68,8 @@ base quality using Stardew Valley's normal quality upgrade.
 The fish preview now renders beside each local player's fishing bar. It can conceal
 uncaught targets, reveal legendary targets independently, show localized fish names,
 and indicate normal or golden treasure without changing the player's equipped tackle.
-Automatic junk disposal now uses the visual junk and protected-item lists while that
-player's automation is enabled. It removes only the quantity received by the latest
+Automatic junk disposal now uses the visual Junk List while that player's automation
+is enabled. It removes only the quantity received by the latest
 inventory change, never an older matching stack, and refuses to discard fish unless
 the separate fish safeguard is enabled.
 Automatic treasure collection supports a visual Treasure Chest Ignore List and a

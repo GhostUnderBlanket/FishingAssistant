@@ -1,3 +1,4 @@
+using FishingAssistant.Configuration;
 using FishingAssistant.Fishing;
 using StardewValley;
 
@@ -5,6 +6,9 @@ namespace FishingAssistant.Runtime;
 
 internal sealed class AutomationScreenState
 {
+    private readonly HashSet<string> treasureChestIgnoreIds = new(StringComparer.OrdinalIgnoreCase);
+    private ModConfig? treasureChestIgnoreConfig;
+
     public AutomationSession Session { get; } = new();
 
     public Tool? LastTool { get; set; }
@@ -22,6 +26,27 @@ internal sealed class AutomationScreenState
     public bool TreasureCollectionStopped { get; set; }
 
     public HashSet<Item> BlockedTreasureItems { get; } = new(ReferenceEqualityComparer.Instance);
+
+    public IReadOnlySet<string> GetTreasureChestIgnoreIds(ModConfig config)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+
+        if (!ReferenceEquals(this.treasureChestIgnoreConfig, config))
+        {
+            this.treasureChestIgnoreConfig = config;
+            this.treasureChestIgnoreIds.Clear();
+            foreach (string itemId in config.TreasureChestIgnoreList)
+                this.treasureChestIgnoreIds.Add(itemId);
+        }
+
+        return this.treasureChestIgnoreIds;
+    }
+
+    public void InvalidateTreasureChestIgnoreIds()
+    {
+        this.treasureChestIgnoreConfig = null;
+        this.treasureChestIgnoreIds.Clear();
+    }
 
     public AutomationTransition? Cancel(AutomationTransitionReason reason, bool disable)
     {

@@ -5,7 +5,8 @@ internal sealed record AutomationHudVisibilityConditions(
     bool HasBlockingMenu,
     bool IsEvent,
     bool IsFestival,
-    bool HasUnsupportedMinigame);
+    bool HasUnsupportedMinigame,
+    bool IsSupportedFestivalFishing);
 
 internal static class AutomationHudVisibilityPolicy
 {
@@ -13,7 +14,7 @@ internal static class AutomationHudVisibilityPolicy
     {
         ArgumentNullException.ThrowIfNull(conditions);
 
-        return conditions.DisplayHud
+        return (conditions.DisplayHud || conditions.IsSupportedFestivalFishing)
             && !conditions.HasBlockingMenu
             && (!conditions.IsEvent || conditions.IsFestival)
             && !conditions.HasUnsupportedMinigame;

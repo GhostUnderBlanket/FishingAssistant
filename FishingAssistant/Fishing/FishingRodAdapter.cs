@@ -40,6 +40,8 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
 
     public bool IsSupportedFishingMinigame => Game1.currentMinigame is FishingGame { gameDone: false };
 
+    public bool IsSupportedFestivalFishing => FestivalFishingContext.IsSupportedFishingActivity;
+
     public AutoHookConditions ReadAutoHookConditions(
         bool automationEnabled,
         bool autoHookEnabled,
@@ -55,7 +57,7 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             rod.hasEnchantmentOfType<AutoHookEnchantment>(),
             Game1.activeClickableMenu is not null,
             Game1.isFestival(),
-            this.IsSupportedFishingMinigame,
+            this.IsSupportedFestivalFishing,
             rod is
             {
                 hit: false,
@@ -83,9 +85,12 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             player.isMoving(),
             !this.DoesCastConsumeStamina() || player.Stamina > staminaCost,
             Game1.isFestival(),
-            this.IsSupportedFishingMinigame,
+            this.IsSupportedFestivalFishing,
             IsCastInputReleased(),
-            this.IsCastTargetFishable(castPower)
+            // Ice Fishing uses small, isolated holes. Its event explicitly
+            // allows the rod, but this generic target projection can miss a
+            // hole before vanilla gets the chance to correct the bobber.
+            this.IsSupportedFestivalFishing || this.IsCastTargetFishable(castPower)
         );
     }
 

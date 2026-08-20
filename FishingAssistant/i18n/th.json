@@ -135,6 +135,10 @@
   "config.option.warp_beach.description": "ย้ายผู้เล่นคนนี้ไปใกล้ร้านขายปลาของ Willy เพื่อทดสอบตกปลาทะเลอย่างรวดเร็ว",
   "config.option.create_bubble": "สร้างฟองอากาศตกปลาสำหรับทดสอบ",
   "config.option.create_bubble.description": "สร้างฟองอากาศใกล้จุดตกของเบ็ดตามกำลังเริ่มต้น โดยเยื้องด้านข้างเมื่อทำได้เพื่อทดสอบการบังคับ",
+  "config.option.ice_festival": "เตรียมเทศกาลตกปลาน้ำแข็ง",
+  "config.option.ice_festival.description": "ใช้เพื่อทดสอบเท่านั้น: สำหรับ host จะใช้คำสั่ง debug ของ Stardew เพื่อเปลี่ยนฤดูกาล วัน เวลา และตำแหน่งไปยังเทศกาลตกปลาน้ำแข็ง ใช้กับเซฟทดสอบและอย่าบันทึกเกมหลังใช้",
+  "config.option.stardew_valley_fair": "เตรียมงานมหกรรม Stardew Valley",
+  "config.option.stardew_valley_fair.description": "ใช้เพื่อทดสอบเท่านั้น: สำหรับ host จะใช้คำสั่ง debug ของ Stardew เพื่อเปลี่ยนฤดูกาล วัน เวลา และตำแหน่งไปยังงานมหกรรม Stardew Valley ใช้กับเซฟทดสอบและอย่าบันทึกเกมหลังใช้",
   "config.keybind.listening": "กดปุ่มบนคีย์บอร์ด เมาส์ หรือจอย...",
   "config.value.left": "ซ้าย",
   "config.value.right": "ขวา",
@@ -172,6 +176,7 @@
   "config.action.add": "เพิ่ม",
   "config.action.warp": "ย้าย",
   "config.action.create": "สร้าง",
+  "config.action.prepare": "เตรียม",
   "config.junk_picker.title": "แก้ไขรายการขยะ",
   "config.junk_picker.search": "ค้นหาไอเท็ม...",
   "config.junk_picker.selected": "ขยะ {0} ชิ้น",
@@ -230,5 +235,7 @@
   "debug.warp_beach.unavailable": "ไม่สามารถย้ายไปชายหาดได้ระหว่างกิจกรรมหรือมินิเกม",
   "debug.bubble.unavailable": "ไม่สามารถสร้างฟองอากาศทดสอบได้ระหว่างกิจกรรมหรือมินิเกม",
   "debug.bubble.no_target": "ไม่พบช่องน้ำที่ตกปลาได้ใกล้จุดตกของเบ็ดปัจจุบัน",
-  "debug.bubble.created": "สร้างฟองอากาศทดสอบที่ช่อง {0}, {1} แล้ว"
+  "debug.bubble.created": "สร้างฟองอากาศทดสอบที่ช่อง {0}, {1} แล้ว",
+  "debug.festival.unavailable": "เตรียมการทดสอบเทศกาลได้เฉพาะ host เมื่อไม่มีกิจกรรมหรือมินิเกมทำงานอยู่",
+  "debug.festival.prepared": "เตรียมการทดสอบเทศกาลแล้ว ใช้กับเซฟทดสอบเพราะวันและเวลาในเกมถูกเปลี่ยน"
 }
