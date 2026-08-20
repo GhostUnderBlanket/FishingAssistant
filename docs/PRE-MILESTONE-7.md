@@ -55,7 +55,7 @@ Completed on 2026-08-13. Release verification passed with 265 automated tests.
   deliberate replacement if the final menu design no longer needs them.
 - [x] Add focused tests for Reset confirmation, inline validation feedback, Cancel draft
   isolation, disabled controls, and navigation rebuilding.
-- [ ] Verify the complete menu with mouse, keyboard, and controller in fullscreen and a
+- [x] Verify the complete menu with mouse, keyboard, and controller in fullscreen and a
   small local split-screen viewport. Include long translated labels and non-default UI
   scale. Player profiles and draft revisions are now isolated by stable multiplayer ID;
   automated tests verify cross-screen Apply cannot mutate or stale another profile.
@@ -148,7 +148,7 @@ state and disconnecting or disabling the mod leaves every affected rod valid.
   supports all five Vanilla fishing rods, and the superseded debug rod action is gone.
 - [x] Correct stale testing text which still calls the visual panel an
   "automation/treasure status HUD" after the treasure icon was retired.
-- [ ] Verify difficulty, bite timing, treasure chances, perfect catch, quality, size,
+- [x] Verify difficulty, bite timing, treasure chances, perfect catch, quality, size,
   multi-catch, fish preview, starter rod, and auto-trash behavior in Stardew Valley
   1.6.15.
 - [x] Verify potentially destructive behavior remains opt-in and clearly explained in

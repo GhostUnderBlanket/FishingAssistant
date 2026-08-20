@@ -252,6 +252,21 @@ Implemented for the first beta:
   new automation option can be included in the profile mapping once.
 
 Deferred candidates for a later version:
+
+The following gameplay-assistance ideas are exploratory only. They are not committed
+scope: a future version may implement all of them, selected parts, a different design
+that serves the same need, or none of them after compatibility and UX review.
+
+- Minigame assist tuning: independently adjust fish movement, catch-progress gain and
+  loss, and treasure-catch speed without taking over the minigame.
+- Bubble marker and steering range: show whether the current cast can reach a fishing
+  bubble, and optionally offer a wider sideways steering mode without extending cast
+  distance.
+- Bait-aware multi-catch: offer vanilla-flavored double-catch rules tied to Wild Bait
+  or an opt-in chance on other bait, alongside the existing explicit fish-count choice.
+- Fish-condition assistance: explore season/location bypass and rare-fish assistance.
+  This requires a multiplayer-safe design that does not temporarily mutate
+  network-synchronized rod attachments.
 - Context-aware pause rules for stamina, time, inventory capacity, weather, festivals,
   player movement, and nearby hazards.
 - Session statistics: casts, catches, perfect catches, treasure, time spent, and stop

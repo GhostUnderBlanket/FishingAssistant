@@ -10,7 +10,7 @@ leaks, stuck automation, or a misleading release experience.
 - [x] Fix mouse and controller keybind capture so the activation input is ignored until
   released and the next keyboard, mouse, or controller input persists for the correct
   local player. Verified in-game on `3.0.0-beta.1` (`ec87262`) on 2026-08-14.
-- [ ] Fix Fish Preview placement in horizontal and vertical local split-screen across
+- [x] Fix Fish Preview placement in horizontal and vertical local split-screen across
   representative UI-scale and zoom settings.
 - [x] Re-test the originally reproduced local co-op Fish Preview offset and update
   [KNOWN-ISSUES.md](KNOWN-ISSUES.md). Verified in-game on `3.0.0-beta.2` (`72eca69`)

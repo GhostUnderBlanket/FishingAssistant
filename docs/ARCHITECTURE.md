@@ -150,8 +150,8 @@ Automatic junk disposal consumes SMAPI's local-player `InventoryChanged` delta i
 of rescanning or removing matching inventory stacks. A pure policy requires automation,
 the opt-in setting, explicit junk membership, vanilla trashability, and the fish safety
 setting. The service removes only the added stack or positive quantity delta from that
-exact item instance; the protected-item list always wins. Vanilla trash reclamation is
-then applied to a copy containing only the discarded quantity.
+exact item instance. Vanilla trash reclamation is then applied to a copy containing
+only the discarded quantity.
 
 Late-night warnings and their pending stop request are per-screen runtime state. The
 assistant disables automation only after the current rod, minigame, and reward menu are

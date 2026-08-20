@@ -40,8 +40,8 @@ Status updated on 2026-08-14:
   modifiers have not been tested in-game yet.
 - Fish preview visibility, responsive placement, and reveal options have not been
   tested in-game yet.
-- Automatic junk disposal, protected items, fish opt-in, stack-delta safeguards, and
-  full-inventory Stop/Drop/Discard behavior passed locally. Remote ownership checks
+- Automatic junk disposal, visual Junk List membership, fish opt-in, stack-delta
+  safeguards, and full-inventory Stop/Drop/Discard behavior passed locally. Remote ownership checks
   remain Milestone 7 work.
 - The visual automation status HUD and toolbar-relative placement passed the documented
   single-player/local split-screen matrix on build `b7101f4`.
