@@ -182,7 +182,8 @@ Exit criteria:
 
 Goal: restore advanced customization and make the assistant's decisions visible.
 
-- Fish difficulty multiplier and additive adjustment.
+- Minigame Assistance presets and percentage tuning for fish movement, progress gain
+  and loss, treasure collection, and the vanilla-calculated fishing-bar size.
 - Bite timing, treasure chance, golden treasure, perfect catch, fish quality, fish size,
   and multi-catch rules.
 - Fish preview with caught/uncaught and legendary visibility rules.
@@ -252,8 +253,9 @@ The following gameplay-assistance ideas are exploratory only. They are not commi
 scope: a future version may implement all of them, selected parts, a different design
 that serves the same need, or none of them after compatibility and UX review.
 
-- Minigame assist tuning: independently adjust fish movement, catch-progress gain and
-  loss, and treasure-catch speed without taking over the minigame.
+- Minigame assist tuning was selected for the 3.1 development line. Phase 1 adds
+  presets plus independent fish movement, catch-progress gain/loss, treasure-progress,
+  and bar-size percentages without taking control away from the player.
 - Bubble marker and steering range: show whether the current cast can reach a fishing
   bubble, and optionally offer a wider sideways steering mode without extending cast
   distance.
@@ -266,7 +268,6 @@ that serves the same need, or none of them after compatibility and UX review.
   player movement, and nearby hazards.
 - Session statistics: casts, catches, perfect catches, treasure, time spent, and stop
   reasons, stored locally and resettable.
-- Accessible minigame assistance levels between fully manual and fully automatic.
 - A compact on-screen control panel for changing the most common runtime toggles without
   opening the full configuration menu.
 - Ordered bait and tackle preferences were selected for the 3.1 development line.
@@ -327,7 +328,7 @@ implementation detail.
 | Auto attach bait/tackle | Keep with 1.6.15 rods, two tackle slots, and multiplayer safety. |
 | Spawn bait/tackle | Reassess as an opt-in convenience/cheat setting. |
 | Skip minigame and instant bite | Keep with explicit compatibility tests. |
-| Quality, size, difficulty, perfect, multi-catch | Keep behind isolated catch-rule services. |
+| Quality, size, minigame assistance, perfect, multi-catch | Keep behind isolated policy and adapter services. |
 | Treasure/golden treasure chance | Keep while preserving vanilla mastery behavior. |
 | Fish preview and status HUD | Keep and rebuild as responsive per-screen UI. |
 | Starter rod | Reassess to avoid progression and multiplayer surprises. |

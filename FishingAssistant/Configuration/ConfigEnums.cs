@@ -49,6 +49,16 @@ internal enum AutomationProfile
     Custom
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<MinigameAssistancePreset>))]
+internal enum MinigameAssistancePreset
+{
+    Off,
+    Light,
+    Comfortable,
+    Relaxed,
+    Custom
+}
+
 [JsonConverter(typeof(SafeStringEnumConverter<PauseFishingBehavior>))]
 internal enum PauseFishingBehavior
 {

@@ -197,10 +197,32 @@ public sealed class InlineConfigValidationTests
             SkipFishingMiniGame = SkipMinigameBehavior.SkipAll
         };
 
-        InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
+        InlineConfigMessage message = Assert.Single(
+            InlineConfigValidation.Evaluate(config),
+            message => message.OptionKey == "auto_minigame");
 
         Assert.Equal("auto_minigame", message.OptionKey);
         Assert.Equal("config.warning.auto_minigame_overridden", message.TranslationKey);
+    }
+
+    [Fact]
+    public void Evaluate_AttachesSkipMessageToEveryMinigameAssistanceOption()
+    {
+        ModConfig config = new()
+        {
+            FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
+            AutoPlayMiniGame = false,
+            SkipFishingMiniGame = SkipMinigameBehavior.SkipAll
+        };
+
+        IReadOnlyList<InlineConfigMessage> messages = InlineConfigValidation.Evaluate(config);
+
+        Assert.Equal(
+            ["minigame_assistance", "fish_speed", "progress_gain", "progress_loss", "treasure_speed", "bar_size"],
+            messages.Select(message => message.OptionKey));
+        Assert.All(messages,
+            message => Assert.Equal("config.info.minigame_assistance_skipped", message.TranslationKey));
     }
 
     [Fact]
@@ -220,8 +242,11 @@ public sealed class InlineConfigValidationTests
 
         IReadOnlyList<InlineConfigMessage> messages = InlineConfigValidation.Evaluate(config);
 
-        Assert.Equal(3, messages.Count);
-        Assert.Equal(["spawn_bait", "spawn_tackle", "auto_minigame"],
+        Assert.Equal(9, messages.Count);
+        Assert.Equal([
+                "spawn_bait", "spawn_tackle", "auto_minigame", "minigame_assistance", "fish_speed",
+                "progress_gain", "progress_loss", "treasure_speed", "bar_size"
+            ],
             messages.Select(message => message.OptionKey));
     }
 }

@@ -589,12 +589,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
             case ConfigCategory.Equipment:
                 this.AddDefinition("attach_bait", () => this.session.Draft.AutoAttachBait,
                     value => this.session.Draft.AutoAttachBait = value);
+                this.AddOrderedItemDefinition("preferred_bait", ConfigItemKind.Bait,
+                    this.session.Draft.PreferredBaits);
                 this.AddDefinition("spawn_bait", () => this.session.Draft.SpawnBaitIfDontHave,
                     value => this.session.Draft.SpawnBaitIfDontHave = value);
                 this.AddNumberDefinition("bait_amount", () => this.session.Draft.BaitAmountToSpawn,
                     value => this.session.Draft.BaitAmountToSpawn = Convert.ToInt32(value), 1, 999, 1);
-                this.AddOrderedItemDefinition("preferred_bait", ConfigItemKind.Bait,
-                    this.session.Draft.PreferredBaits);
                 this.AddDefinition("attach_tackle", () => this.session.Draft.AutoAttachTackles,
                     value => this.session.Draft.AutoAttachTackles = value);
                 this.AddOrderedItemDefinition("preferred_tackle", ConfigItemKind.Tackle,
@@ -609,8 +609,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.InfiniteTackle = value);
                 break;
             case ConfigCategory.Fishing:
-                this.AddEnumDefinition("skip_minigame", () => this.session.Draft.SkipFishingMiniGame,
-                    value => this.session.Draft.SkipFishingMiniGame = value);
                 this.AddDefinition("instant_bite", () => this.session.Draft.InstantFishBite,
                     value => this.session.Draft.InstantFishBite = value);
                 this.AddDefinition("bubble_steering", () => this.session.Draft.AutomaticBubbleSteering,
@@ -623,12 +621,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.AlwaysPerfect = value);
                 this.AddDefinition("max_fish_size", () => this.session.Draft.AlwaysMaxFishSize,
                     value => this.session.Draft.AlwaysMaxFishSize = value);
-                this.AddNumberDefinition("difficulty_multiplier", () => this.session.Draft.FishDifficultyMultiplier,
-                    value => this.session.Draft.FishDifficultyMultiplier = (float)value, 0, 10, 0.1,
-                    value => $"{value:0.0}x");
-                this.AddNumberDefinition("difficulty_additive", () => this.session.Draft.FishDifficultyAdditive,
-                    value => this.session.Draft.FishDifficultyAdditive = Convert.ToInt32(value), -100, 100, 5,
-                    value => $"{value:+0;-0;0}");
                 this.AddDefinition("treasure_targeting", () => this.session.Draft.TreasureTargeting,
                     value => this.session.Draft.TreasureTargeting = value);
                 this.AddDefinition("instant_treasure", () => this.session.Draft.InstantCatchTreasure,
@@ -668,6 +660,38 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     () => this.session.Draft.StartWithFishingRod,
                     value => this.session.Draft.StartWithFishingRod = value,
                     "config.value.no_starter_rod");
+                break;
+            case ConfigCategory.Minigame:
+                this.AddEnumDefinition("minigame_assistance",
+                    () => this.session.Draft.MinigameAssistance,
+                    value => MinigameAssistancePresets.Apply(this.session.Draft, value));
+                this.AddAssistancePercentDefinition("fish_speed",
+                    () => this.session.Draft.FishSpeedPercent,
+                    value => this.session.Draft.FishSpeedPercent = value,
+                    MinigameAssistancePolicy.FishSpeedMinimum,
+                    MinigameAssistancePolicy.FishSpeedMaximum);
+                this.AddAssistancePercentDefinition("progress_gain",
+                    () => this.session.Draft.ProgressGainPercent,
+                    value => this.session.Draft.ProgressGainPercent = value,
+                    MinigameAssistancePolicy.ProgressGainMinimum,
+                    MinigameAssistancePolicy.ProgressGainMaximum);
+                this.AddAssistancePercentDefinition("progress_loss",
+                    () => this.session.Draft.ProgressLossPercent,
+                    value => this.session.Draft.ProgressLossPercent = value,
+                    MinigameAssistancePolicy.ProgressLossMinimum,
+                    MinigameAssistancePolicy.ProgressLossMaximum);
+                this.AddAssistancePercentDefinition("treasure_speed",
+                    () => this.session.Draft.TreasureSpeedPercent,
+                    value => this.session.Draft.TreasureSpeedPercent = value,
+                    MinigameAssistancePolicy.TreasureSpeedMinimum,
+                    MinigameAssistancePolicy.TreasureSpeedMaximum);
+                this.AddAssistancePercentDefinition("bar_size",
+                    () => this.session.Draft.BarSizePercent,
+                    value => this.session.Draft.BarSizePercent = value,
+                    MinigameAssistancePolicy.BarSizeMinimum,
+                    MinigameAssistancePolicy.BarSizeMaximum);
+                this.AddEnumDefinition("skip_minigame", () => this.session.Draft.SkipFishingMiniGame,
+                    value => this.session.Draft.SkipFishingMiniGame = value);
                 break;
             case ConfigCategory.Display:
                 this.AddEnumDefinition("hud_position", () => this.session.Draft.ModStatusPosition,
@@ -787,6 +811,27 @@ internal sealed class ConfigurationMenu : IClickableMenu
             (current, direction) => OptionAdjustment.Step(current, direction, increment, minimum, maximum),
             format ?? (value => value.ToString("0.##"))
         ), () => ConfigControlState.Enabled));
+    }
+
+    private void AddAssistancePercentDefinition(
+        string key,
+        Func<int> getValue,
+        Action<int> setValue,
+        int minimum,
+        int maximum)
+    {
+        this.AddNumberDefinition(
+            key,
+            () => getValue(),
+            value =>
+            {
+                setValue(Convert.ToInt32(value));
+                MinigameAssistancePresets.DetectAndSet(this.session.Draft);
+            },
+            minimum,
+            maximum,
+            5,
+            value => $"{value:0}%");
     }
 
     private void AddItemDefinition(

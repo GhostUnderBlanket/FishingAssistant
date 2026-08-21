@@ -15,21 +15,33 @@ public sealed class ConfigProfileIsolationTests
         currentProfile = "player-100";
         ConfigEditSession firstSession = manager.CreateEditSession();
         firstSession.Draft.AutoCastFishingRod = false;
+        firstSession.Draft.FishSpeedPercent = 70;
+        firstSession.Draft.ProgressGainPercent = 135;
         manager.Apply(firstSession);
 
         currentProfile = "player-200";
         Assert.True(manager.Active.AutoCastFishingRod);
         ConfigEditSession secondSession = manager.CreateEditSession();
         secondSession.Draft.AutoHookFish = false;
+        secondSession.Draft.ProgressLossPercent = 25;
+        secondSession.Draft.BarSizePercent = 150;
         manager.Apply(secondSession);
 
         currentProfile = "player-100";
         Assert.False(manager.Active.AutoCastFishingRod);
         Assert.True(manager.Active.AutoHookFish);
+        Assert.Equal(70, manager.Active.FishSpeedPercent);
+        Assert.Equal(135, manager.Active.ProgressGainPercent);
+        Assert.Equal(100, manager.Active.ProgressLossPercent);
+        Assert.Equal(100, manager.Active.BarSizePercent);
 
         currentProfile = "player-200";
         Assert.True(manager.Active.AutoCastFishingRod);
         Assert.False(manager.Active.AutoHookFish);
+        Assert.Equal(100, manager.Active.FishSpeedPercent);
+        Assert.Equal(100, manager.Active.ProgressGainPercent);
+        Assert.Equal(25, manager.Active.ProgressLossPercent);
+        Assert.Equal(150, manager.Active.BarSizePercent);
         Assert.Equal(2, profiles.Writes.Count);
     }
 

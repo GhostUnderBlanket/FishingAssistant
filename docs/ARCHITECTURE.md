@@ -177,9 +177,20 @@ all tracked rods before saving and restored afterward for the session. Local
 split-screen is supported in-process; remote multiplayer disables this feature because
 the rod enchantment list is network-synchronized and could otherwise race the host save.
 
-Fish difficulty adjustment is a one-time mutation of the current local screen's
-`BobberBar`, after its constructor has applied vanilla tutorial and blessing rules. It
-does not patch fish data or synchronize a modified value to another player's minigame.
+Minigame Assistance keeps preset/value mapping and percentage math in pure policy
+classes. A small Harmony integration patches `BobberBar.update(GameTime)` because SMAPI
+does not expose the per-frame fish, catch-progress, or treasure-progress calculations.
+The transpiler scales the final vanilla fish movement and the two vanilla gain values;
+a prefix/postfix temporarily scales and restores the current screen's vanilla progress-
+loss modifier. It does not replace fish AI, change RNG, or mutate shared fish data.
+
+Bar Size is applied once by `BobberBarAdapter` after the constructor has accumulated
+vanilla fishing-level, bait, tackle, buff, tutorial, and compatible modded effects. The
+height is clamped to valid minigame bounds and its bottom edge is preserved. Runtime
+configuration is obtained from the active per-screen player profile on every patched
+frame, so local split-screen players do not share assistance values. There is no
+reflection-based game-state adapter; Harmony's `AccessTools` resolves only the patch
+method and field metadata.
 
 ## Automation lifecycle
 

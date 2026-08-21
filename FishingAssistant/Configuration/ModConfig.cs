@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 15;
+    internal const int CurrentVersion = 16;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -115,9 +115,25 @@ internal sealed class ModConfig
 
     public bool AlwaysMaxFishSize { get; set; }
 
+    public MinigameAssistancePreset MinigameAssistance { get; set; } = MinigameAssistancePreset.Off;
+
+    public int FishSpeedPercent { get; set; } = 100;
+
+    public int ProgressGainPercent { get; set; } = 100;
+
+    public int ProgressLossPercent { get; set; } = 100;
+
+    public int TreasureSpeedPercent { get; set; } = 100;
+
+    public int BarSizePercent { get; set; } = 100;
+
     public float FishDifficultyMultiplier { get; set; } = 1f;
 
+    public bool ShouldSerializeFishDifficultyMultiplier() => false;
+
     public int FishDifficultyAdditive { get; set; }
+
+    public bool ShouldSerializeFishDifficultyAdditive() => false;
 
     public bool InstantCatchTreasure { get; set; }
 

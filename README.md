@@ -57,9 +57,10 @@ Optional rod enchantments are session-only: the assistant remembers the exact in
 it added, removes them before every save, and never removes a player's existing
 enchantments. They support single-player and local split-screen, but are disabled while
 remote players are connected to prevent synchronized temporary state entering a save.
-Fish difficulty can be multiplied and then adjusted by a fixed amount for each local
-fishing minigame. The modifier preserves vanilla setup rules, supports manual and
-automatic fishing, and never edits shared fish data.
+Minigame Assistance offers presets and individual percentage controls for fish speed,
+catch-progress gain and loss, treasure speed, and fishing-bar size. At 100% every
+control is an identity transformation over the vanilla calculation. The assistance is
+configured per player and remains separate from automatic minigame play.
 Catch-result preferences now support perfect catches, maximum fish size, base fish
 quality, and ordinary multi-catches during manual or automatic fishing. Festival and
 fish-pond results stay fully vanilla; legendary fish, Wild Bait, and Challenge Bait

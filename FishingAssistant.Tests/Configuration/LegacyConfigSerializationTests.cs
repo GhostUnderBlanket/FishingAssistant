@@ -116,7 +116,8 @@ public sealed class LegacyConfigSerializationTests
 
         foreach (string property in FishingAssistant2Properties.Except(
                      ["CatchTreasureButton", "AutoTrashJunk", "JunkHighestPrice", "JunkIgnoreList",
-                         "PreferredBait", "PreferredTackle", "PreferredAdvIridiumTackle"]))
+                         "PreferredBait", "PreferredTackle", "PreferredAdvIridiumTackle",
+                         "FishDifficultyMultiplier", "FishDifficultyAdditive"]))
         {
             Assert.True(JToken.DeepEquals(legacy[property], migrated[property]),
                 $"Legacy property '{property}' changed from {legacy[property]} to {migrated[property]}.");
@@ -129,6 +130,10 @@ public sealed class LegacyConfigSerializationTests
         Assert.Null(migrated["PreferredBait"]);
         Assert.Null(migrated["PreferredTackle"]);
         Assert.Null(migrated["PreferredAdvIridiumTackle"]);
+        Assert.Null(migrated["FishDifficultyMultiplier"]);
+        Assert.Null(migrated["FishDifficultyAdditive"]);
+        Assert.Equal("Off", migrated[nameof(ModConfig.MinigameAssistance)]!.Value<string>());
+        Assert.Equal(100, migrated[nameof(ModConfig.FishSpeedPercent)]!.Value<int>());
         Assert.Equal(["(O)774"], migrated[nameof(ModConfig.PreferredBaits)]!.Values<string>());
         Assert.Equal(["(O)686"], migrated[nameof(ModConfig.PreferredTackles)]!.Values<string>());
         Assert.Equal(["(O)687"], migrated[nameof(ModConfig.PreferredSecondTackles)]!.Values<string>());
@@ -145,8 +150,10 @@ public sealed class LegacyConfigSerializationTests
 
         IReadOnlyList<ConfigPropertySnapshot> retired = ConfigSchemaInspector.FindRetiredProperties(json);
 
-        Assert.Equal(["CatchTreasureButton", "JunkHighestPrice"], retired.Select(property => property.Name));
-        Assert.Equal(["\"F2\"", "75"], retired.Select(property => property.DisplayValue));
+        Assert.Equal(
+            ["CatchTreasureButton", "FishDifficultyAdditive", "FishDifficultyMultiplier", "JunkHighestPrice"],
+            retired.Select(property => property.Name));
+        Assert.Equal(["\"F2\"", "-10", "0.5", "75"], retired.Select(property => property.DisplayValue));
         Assert.Empty(ConfigSchemaInspector.FindUnknownProperties(json));
     }
 

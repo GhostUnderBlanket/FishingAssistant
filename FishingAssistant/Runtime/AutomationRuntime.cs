@@ -433,14 +433,14 @@ internal sealed class AutomationRuntime(
         bar.ApplyLiveCatchModifiers(config);
         if (!ReferenceEquals(screen.Pending.ConfiguredBobberBar, bar.Identity))
         {
-            FishDifficultyDecision difficulty = bar.ApplyDifficulty(config);
+            (int vanillaBarHeight, int finalBarHeight) = bar.ApplyBarSizeAssistance(config);
             TreasureChanceDecision chance = TreasureChancePolicy.Decide(
                 bar.ReadTreasureChanceConditions(config));
             bar.ApplyTreasureChance(chance);
             screen.Pending.ConfiguredBobberBar = bar.Identity;
             monitor.Log(
                 $"Configured fishing minigame for local screen {Context.ScreenId}: " +
-                $"difficulty={difficulty.VanillaDifficulty:0.##}->{difficulty.AdjustedDifficulty:0.##}, " +
+                $"assistance={config.MinigameAssistance}, bar={vanillaBarHeight}->{finalBarHeight}, " +
                 $"treasure={chance.HasTreasure}, golden={chance.IsGoldenTreasure}.",
                 LogLevel.Trace);
         }

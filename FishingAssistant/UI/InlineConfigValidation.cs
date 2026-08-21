@@ -101,6 +101,24 @@ internal static class InlineConfigValidation
                 "config.warning.auto_minigame_overridden"));
         }
 
+        if (config.SkipFishingMiniGame != SkipMinigameBehavior.Off)
+        {
+            foreach (string optionKey in new[]
+                     {
+                         "minigame_assistance",
+                         "fish_speed",
+                         "progress_gain",
+                         "progress_loss",
+                         "treasure_speed",
+                         "bar_size"
+                     })
+            {
+                messages.Add(new InlineConfigMessage(
+                    optionKey,
+                    "config.info.minigame_assistance_skipped"));
+            }
+        }
+
         return messages;
     }
 }

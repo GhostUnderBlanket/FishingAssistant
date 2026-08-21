@@ -39,6 +39,12 @@ public sealed class ConfigDefaultsTests
         Assert.False(config.InfiniteBait);
         Assert.False(config.InfiniteTackle);
         Assert.Equal(SkipMinigameBehavior.Off, config.SkipFishingMiniGame);
+        Assert.Equal(MinigameAssistancePreset.Off, config.MinigameAssistance);
+        Assert.Equal(100, config.FishSpeedPercent);
+        Assert.Equal(100, config.ProgressGainPercent);
+        Assert.Equal(100, config.ProgressLossPercent);
+        Assert.Equal(100, config.TreasureSpeedPercent);
+        Assert.Equal(100, config.BarSizePercent);
         Assert.True(config.AutomaticBubbleSteering);
         Assert.Equal(TreasureChanceBehavior.Default, config.TreasureChance);
         Assert.Equal(TreasureChanceBehavior.Default, config.GoldenTreasureChance);
@@ -53,6 +59,12 @@ public sealed class ConfigDefaultsTests
     {
         ModConfig active = new()
         {
+            MinigameAssistance = MinigameAssistancePreset.Comfortable,
+            FishSpeedPercent = 70,
+            ProgressGainPercent = 135,
+            ProgressLossPercent = 60,
+            TreasureSpeedPercent = 160,
+            BarSizePercent = 125,
             JunkList = ["(O)167"],
             TreasureChestIgnoreList = ["(O)169"],
             PreferredBaits = ["(O)685"],
@@ -77,6 +89,12 @@ public sealed class ConfigDefaultsTests
         Assert.NotSame(active.PreferredBaits, draft.PreferredBaits);
         Assert.NotSame(active.PreferredTackles, draft.PreferredTackles);
         Assert.NotSame(active.PreferredSecondTackles, draft.PreferredSecondTackles);
+        Assert.Equal(active.MinigameAssistance, draft.MinigameAssistance);
+        Assert.Equal(active.FishSpeedPercent, draft.FishSpeedPercent);
+        Assert.Equal(active.ProgressGainPercent, draft.ProgressGainPercent);
+        Assert.Equal(active.ProgressLossPercent, draft.ProgressLossPercent);
+        Assert.Equal(active.TreasureSpeedPercent, draft.TreasureSpeedPercent);
+        Assert.Equal(active.BarSizePercent, draft.BarSizePercent);
         Assert.Equal(active.EnableAutomationButton.ToString(), draft.EnableAutomationButton.ToString());
         Assert.NotSame(active.EnableAutomationButton, draft.EnableAutomationButton);
         Assert.Equal(active.ToggleTreasureTargetingButton.ToString(), draft.ToggleTreasureTargetingButton.ToString());
