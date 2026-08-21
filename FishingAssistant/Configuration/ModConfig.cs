@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 14;
+    internal const int CurrentVersion = 15;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -77,6 +77,10 @@ internal sealed class ModConfig
 
     public string PreferredBait { get; set; } = "Any";
 
+    public bool ShouldSerializePreferredBait() => false;
+
+    public List<string> PreferredBaits { get; set; } = [];
+
     public bool SpawnBaitIfDontHave { get; set; }
 
     public int BaitAmountToSpawn { get; set; } = 10;
@@ -85,7 +89,15 @@ internal sealed class ModConfig
 
     public string PreferredTackle { get; set; } = "Any";
 
+    public bool ShouldSerializePreferredTackle() => false;
+
+    public List<string> PreferredTackles { get; set; } = [];
+
     public string PreferredAdvIridiumTackle { get; set; } = "Any";
+
+    public bool ShouldSerializePreferredAdvIridiumTackle() => false;
+
+    public List<string> PreferredSecondTackles { get; set; } = [];
 
     public bool SpawnTackleIfDontHave { get; set; }
 
@@ -158,6 +170,9 @@ internal sealed class ModConfig
         draft.JunkList = [.. this.JunkList];
         draft.JunkIgnoreList = [.. this.JunkIgnoreList];
         draft.TreasureChestIgnoreList = [.. this.TreasureChestIgnoreList];
+        draft.PreferredBaits = [.. this.PreferredBaits];
+        draft.PreferredTackles = [.. this.PreferredTackles];
+        draft.PreferredSecondTackles = [.. this.PreferredSecondTackles];
         return draft;
     }
 }

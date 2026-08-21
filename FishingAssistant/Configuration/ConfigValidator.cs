@@ -18,6 +18,7 @@ internal static class ConfigValidator
         NormalizeVersion(config, report);
         RetireJunkIgnoreList(config, originalVersion, report);
         MigrateJunkDisposalMode(config, originalVersion, report);
+        MigrateOrderedEquipmentPreferences(config, originalVersion, report);
         if (originalVersion < 12)
         {
             config.FishPreviewStyle = FishPreviewStyle.Classic;
@@ -94,12 +95,6 @@ internal static class ConfigValidator
         NormalizeFloatRange(report, nameof(config.UnlockCastPowerTime),
             () => config.UnlockCastPowerTime, value => config.UnlockCastPowerTime = value, 0f, 3f);
 
-        NormalizeString(report, nameof(config.PreferredBait),
-            () => config.PreferredBait, value => config.PreferredBait = value, "Any");
-        NormalizeString(report, nameof(config.PreferredTackle),
-            () => config.PreferredTackle, value => config.PreferredTackle = value, "Any");
-        NormalizeString(report, nameof(config.PreferredAdvIridiumTackle),
-            () => config.PreferredAdvIridiumTackle, value => config.PreferredAdvIridiumTackle = value, "Any");
         NormalizeString(report, nameof(config.StartWithFishingRod),
             () => config.StartWithFishingRod, value => config.StartWithFishingRod = value,
             ModConfig.DefaultStarterRod);
@@ -107,6 +102,12 @@ internal static class ConfigValidator
             () => config.JunkList, value => config.JunkList = value);
         NormalizeItemList(report, nameof(config.TreasureChestIgnoreList),
             () => config.TreasureChestIgnoreList, value => config.TreasureChestIgnoreList = value);
+        NormalizeItemList(report, nameof(config.PreferredBaits),
+            () => config.PreferredBaits, value => config.PreferredBaits = value);
+        NormalizeItemList(report, nameof(config.PreferredTackles),
+            () => config.PreferredTackles, value => config.PreferredTackles = value);
+        NormalizeItemList(report, nameof(config.PreferredSecondTackles),
+            () => config.PreferredSecondTackles, value => config.PreferredSecondTackles = value);
         NormalizeDependencies(config, report);
 
         if (itemCatalog is not null)
@@ -275,6 +276,40 @@ internal static class ConfigValidator
         }
     }
 
+    private static void MigrateOrderedEquipmentPreferences(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        config.PreferredBaits ??= [];
+        config.PreferredTackles ??= [];
+        config.PreferredSecondTackles ??= [];
+
+        MigratePreference(config.PreferredBait, config.PreferredBaits, nameof(config.PreferredBaits), report);
+        MigratePreference(config.PreferredTackle, config.PreferredTackles, nameof(config.PreferredTackles), report);
+        MigratePreference(config.PreferredAdvIridiumTackle, config.PreferredSecondTackles,
+            nameof(config.PreferredSecondTackles), report);
+    }
+
+    private static void MigratePreference(
+        string? legacyValue,
+        List<string> preferences,
+        string property,
+        ConfigValidationReport report)
+    {
+        if (preferences.Count > 0 || string.IsNullOrWhiteSpace(legacyValue)
+            || string.Equals(legacyValue.Trim(), "Any", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        string migrated = legacyValue.Trim();
+        preferences.Add(migrated);
+        report.Add(property, legacyValue, migrated,
+            "The single-item preference was migrated to an ordered preference list.");
+    }
+
     private static void NormalizeDependencies(ModConfig config, ConfigValidationReport report)
     {
         if (config.SpawnBaitIfDontHave && !config.AutoAttachBait)
@@ -302,15 +337,13 @@ internal static class ConfigValidator
         ArgumentNullException.ThrowIfNull(catalog);
 
         ConfigValidationReport report = new();
-        NormalizeItemPreference(report, nameof(config.PreferredBait),
-            () => config.PreferredBait, value => config.PreferredBait = value,
-            "Any", ConfigItemKind.Bait, catalog);
-        NormalizeItemPreference(report, nameof(config.PreferredTackle),
-            () => config.PreferredTackle, value => config.PreferredTackle = value,
-            "Any", ConfigItemKind.Tackle, catalog);
-        NormalizeItemPreference(report, nameof(config.PreferredAdvIridiumTackle),
-            () => config.PreferredAdvIridiumTackle, value => config.PreferredAdvIridiumTackle = value,
-            "Any", ConfigItemKind.Tackle, catalog);
+        NormalizeItemIds(report, nameof(config.PreferredBaits),
+            () => config.PreferredBaits, value => config.PreferredBaits = value, catalog, ConfigItemKind.Bait);
+        NormalizeItemIds(report, nameof(config.PreferredTackles),
+            () => config.PreferredTackles, value => config.PreferredTackles = value, catalog, ConfigItemKind.Tackle);
+        NormalizeItemIds(report, nameof(config.PreferredSecondTackles),
+            () => config.PreferredSecondTackles, value => config.PreferredSecondTackles = value, catalog,
+            ConfigItemKind.Tackle);
         NormalizeItemPreference(report, nameof(config.StartWithFishingRod),
             () => config.StartWithFishingRod, value => config.StartWithFishingRod = value,
             ModConfig.DefaultStarterRod, ConfigItemKind.FishingRod, catalog);
@@ -328,12 +361,13 @@ internal static class ConfigValidator
         string property,
         Func<List<string>> getValue,
         Action<List<string>> setValue,
-        IItemCatalog catalog)
+        IItemCatalog catalog,
+        ConfigItemKind? expectedKind = null)
     {
         List<string> original = getValue();
         List<string> corrected = original
             .Select(catalog.Find)
-            .Where(item => item is not null)
+            .Where(item => item is not null && (expectedKind is null || item.Kind == expectedKind))
             .Select(item => item!.QualifiedItemId)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();

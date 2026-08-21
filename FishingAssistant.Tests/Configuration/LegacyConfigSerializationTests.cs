@@ -97,7 +97,7 @@ public sealed class LegacyConfigSerializationTests
 
         Assert.Equal(HudPosition.Left, config.ModStatusPosition);
         Assert.False(config.AutoCastFishingRod);
-        Assert.Equal("(O)685", config.PreferredBait);
+        Assert.Equal(["(O)685"], config.PreferredBaits);
         Assert.Contains(report.Corrections,
             correction => correction.Property == nameof(config.ModStatusPosition));
     }
@@ -115,7 +115,8 @@ public sealed class LegacyConfigSerializationTests
         JObject migrated = JObject.Parse(JsonConvert.SerializeObject(config, SmapiCompatibleSettings));
 
         foreach (string property in FishingAssistant2Properties.Except(
-                     ["CatchTreasureButton", "AutoTrashJunk", "JunkHighestPrice", "JunkIgnoreList"]))
+                     ["CatchTreasureButton", "AutoTrashJunk", "JunkHighestPrice", "JunkIgnoreList",
+                         "PreferredBait", "PreferredTackle", "PreferredAdvIridiumTackle"]))
         {
             Assert.True(JToken.DeepEquals(legacy[property], migrated[property]),
                 $"Legacy property '{property}' changed from {legacy[property]} to {migrated[property]}.");
@@ -125,6 +126,12 @@ public sealed class LegacyConfigSerializationTests
         Assert.Null(migrated["AutoTrashJunk"]);
         Assert.Null(migrated["JunkHighestPrice"]);
         Assert.Null(migrated["JunkIgnoreList"]);
+        Assert.Null(migrated["PreferredBait"]);
+        Assert.Null(migrated["PreferredTackle"]);
+        Assert.Null(migrated["PreferredAdvIridiumTackle"]);
+        Assert.Equal(["(O)774"], migrated[nameof(ModConfig.PreferredBaits)]!.Values<string>());
+        Assert.Equal(["(O)686"], migrated[nameof(ModConfig.PreferredTackles)]!.Values<string>());
+        Assert.Equal(["(O)687"], migrated[nameof(ModConfig.PreferredSecondTackles)]!.Values<string>());
         Assert.Equal("Immediately", migrated[nameof(ModConfig.JunkDisposalMode)]!.Value<string>());
         Assert.Equal(ModConfig.CurrentVersion, migrated[nameof(ModConfig.ConfigVersion)]!.Value<int>());
         Assert.DoesNotContain(report.Warnings, warning =>

@@ -36,7 +36,7 @@ internal sealed class BaitAttachmentService(IMonitor monitor, Func<string, strin
             rodSupportsBait,
             attached?.QualifiedItemId,
             attached?.getRemainingStackSpace() ?? 0,
-            config.PreferredBait,
+            config.PreferredBaits,
             config.SpawnBaitIfDontHave,
             candidates
         );

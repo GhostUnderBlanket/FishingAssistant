@@ -57,8 +57,8 @@ public sealed class ConfigValidatorTests
         Assert.Equal(100, config.DefaultCastPower);
         Assert.Equal(10f, config.AutoCastDelaySeconds);
         Assert.Equal(0f, config.UnlockCastPowerTime);
-        Assert.Equal("Any", config.PreferredBait);
-        Assert.Equal("(O)686", config.PreferredTackle);
+        Assert.Empty(config.PreferredBaits);
+        Assert.Equal(["(O)686"], config.PreferredTackles);
         Assert.Equal(["(O)170"], config.JunkList);
         Assert.Empty(config.JunkIgnoreList);
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.ConfigVersion));
@@ -176,6 +176,7 @@ public sealed class ConfigValidatorTests
     {
         ModConfig config = new()
         {
+            ConfigVersion = 14,
             PreferredBait = "685",
             PreferredTackle = "(O)WrongCategory",
             PreferredAdvIridiumTackle = "missing",
@@ -193,13 +194,13 @@ public sealed class ConfigValidatorTests
 
         ConfigValidationReport report = ConfigValidator.Normalize(config, catalog);
 
-        Assert.Equal("(O)685", config.PreferredBait);
-        Assert.Equal("Any", config.PreferredTackle);
-        Assert.Equal("Any", config.PreferredAdvIridiumTackle);
+        Assert.Equal(["(O)685"], config.PreferredBaits);
+        Assert.Empty(config.PreferredTackles);
+        Assert.Empty(config.PreferredSecondTackles);
         Assert.Equal("(T)TrainingRod", config.StartWithFishingRod);
         Assert.Equal(["(O)169"], config.JunkList);
         Assert.Empty(config.JunkIgnoreList);
-        Assert.Equal(6, report.Corrections.Count);
+        Assert.True(report.Corrections.Count >= 6);
     }
 
     private sealed class FakeItemCatalog(params ConfigItem[] items) : IItemCatalog

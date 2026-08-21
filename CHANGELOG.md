@@ -15,6 +15,14 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Full-inventory cleanup discards all eligible Junk List stacks as one batch with one
   sound and one summary message, without an inventory-add patch. New configurations
   default to When Inventory Is Full.
+- Ordered bait and tackle preference lists with visual add/remove controls and explicit
+  priority ordering for the bait slot and both tackle slots.
+
+### Changed
+
+- Existing single-item bait and tackle preferences migrate to ordered lists. Automatic
+  attachment uses the first available configured item; optional spawning keeps the
+  first configured item authoritative instead of falling through to a lower priority.
 
 ## [3.0.0-rc.1] - 2026-08-21
 

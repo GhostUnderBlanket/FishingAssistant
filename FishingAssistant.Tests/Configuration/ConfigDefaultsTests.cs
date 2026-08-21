@@ -30,8 +30,11 @@ public sealed class ConfigDefaultsTests
         Assert.False(config.AutoEatFood);
         Assert.False(config.AllowEatingFish);
         Assert.False(config.AutoAttachBait);
+        Assert.Empty(config.PreferredBaits);
         Assert.False(config.SpawnBaitIfDontHave);
         Assert.False(config.AutoAttachTackles);
+        Assert.Empty(config.PreferredTackles);
+        Assert.Empty(config.PreferredSecondTackles);
         Assert.False(config.SpawnTackleIfDontHave);
         Assert.False(config.InfiniteBait);
         Assert.False(config.InfiniteTackle);
@@ -51,17 +54,29 @@ public sealed class ConfigDefaultsTests
         ModConfig active = new()
         {
             JunkList = ["(O)167"],
-            TreasureChestIgnoreList = ["(O)169"]
+            TreasureChestIgnoreList = ["(O)169"],
+            PreferredBaits = ["(O)685"],
+            PreferredTackles = ["(O)686"],
+            PreferredSecondTackles = ["(O)687"]
         };
 
         ModConfig draft = active.CreateDraft();
         draft.JunkList.Add("(O)170");
         draft.TreasureChestIgnoreList.Add("(O)170");
+        draft.PreferredBaits.Add("(O)774");
+        draft.PreferredTackles.Clear();
+        draft.PreferredSecondTackles.Add("(O)694");
 
         Assert.NotSame(active.JunkList, draft.JunkList);
         Assert.Single(active.JunkList);
         Assert.NotSame(active.TreasureChestIgnoreList, draft.TreasureChestIgnoreList);
         Assert.Single(active.TreasureChestIgnoreList);
+        Assert.Single(active.PreferredBaits);
+        Assert.Single(active.PreferredTackles);
+        Assert.Single(active.PreferredSecondTackles);
+        Assert.NotSame(active.PreferredBaits, draft.PreferredBaits);
+        Assert.NotSame(active.PreferredTackles, draft.PreferredTackles);
+        Assert.NotSame(active.PreferredSecondTackles, draft.PreferredSecondTackles);
         Assert.Equal(active.EnableAutomationButton.ToString(), draft.EnableAutomationButton.ToString());
         Assert.NotSame(active.EnableAutomationButton, draft.EnableAutomationButton);
         Assert.Equal(active.ToggleTreasureTargetingButton.ToString(), draft.ToggleTreasureTargetingButton.ToString());
