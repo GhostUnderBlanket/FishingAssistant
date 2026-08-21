@@ -71,12 +71,15 @@ and indicate normal or golden treasure without changing the player's equipped ta
 Automatic junk disposal now uses the visual Junk List while that player's automation
 is enabled. It removes only the quantity received by the latest
 inventory change, never an older matching stack, and refuses to discard fish unless
-the separate fish safeguard is enabled.
+the separate fish safeguard is enabled. Junk disposal can be turned off, retain junk
+until the inventory becomes full and then clear all eligible stacks as one batch, or
+preserve the original immediate behavior.
 Automatic treasure collection supports a visual Treasure Chest Ignore List and a
-configurable action when only ignored rewards remain. Manual and automatic casts can
-steer toward a reachable fishing bubble without moving the player or extending the
-cast; automatic casts can reuse cast power selected manually during the current
-session.
+configurable action when only ignored rewards remain. Players may also treat Junk List
+items as ignored treasure without copying entries between the two lists. Manual and
+automatic casts can steer toward a reachable fishing bubble without moving the player
+or extending the cast; automatic casts can reuse cast power selected manually during
+the current session.
 Development happens incrementally on the `development` branch.
 
 ## Requirements

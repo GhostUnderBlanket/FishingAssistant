@@ -269,10 +269,17 @@ that serves the same need, or none of them after compatibility and UX review.
 - Accessible minigame assistance levels between fully manual and fully automatic.
 - A compact on-screen control panel for changing the most common runtime toggles without
   opening the full configuration menu.
-- Full-inventory junk relief: when a new item cannot fit, optionally discard only an
-  explicitly selected Junk List item to free one slot, then retry the incoming item.
-  This is intentionally distinct from continuous auto-trash so ordinary junk can remain
-  in the inventory until capacity is actually needed.
+- Ordered bait and tackle preferences: replace each single-item selector with a
+  reorderable multi-item list. Automatic attachment should try entries from top to
+  bottom and use the first available eligible item; spawning, when enabled, should
+  follow the same priority order without falling through to a lower choice first.
+- Batched junk disposal was selected for the 3.1 development line. The player can keep
+  the original immediate behavior or retain junk until the inventory becomes full, then
+  clear all eligible Junk List stacks with one sound and one summary notification. The
+  full-inventory mode uses SMAPI inventory events and requires no inventory-add patch.
+- The 3.1 development line also adds an optional one-way Treasure Chest integration:
+  Junk List items can be treated as ignored treasure without copying or synchronizing
+  entries between the two visual editors.
 
 After the current release-candidate verification pass is complete, the owner will
 revisit these candidates for the next Milestone 8 iteration. They remain exploratory:

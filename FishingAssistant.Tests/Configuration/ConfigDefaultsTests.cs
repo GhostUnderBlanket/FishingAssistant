@@ -21,7 +21,9 @@ public sealed class ConfigDefaultsTests
         Assert.True(config.AutoLootTreasure);
         Assert.Equal(InventoryFullAction.Stop, config.ActionIfInventoryFull);
         Assert.Empty(config.TreasureChestIgnoreList);
+        Assert.False(config.IgnoreJunkListItemsInTreasureChests);
         Assert.Equal(IgnoredTreasureAction.KeepOpen, config.ActionIfOnlyIgnoredTreasureRemains);
+        Assert.Equal(JunkDisposalMode.WhenInventoryFull, config.JunkDisposalMode);
         Assert.False(config.AutoTrashJunk);
         Assert.False(config.AllowTrashFish);
         Assert.Equal(["(O)168", "(O)169", "(O)170", "(O)171", "(O)172"], config.JunkList);

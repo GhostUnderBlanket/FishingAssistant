@@ -8,7 +8,11 @@ public sealed class InlineConfigValidationTests
     [Fact]
     public void Evaluate_ReturnsNoMessagesForSafeDefaults()
     {
-        ModConfig config = new() { FishPreviewStyle = FishPreviewStyle.Classic };
+        ModConfig config = new()
+        {
+            FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off
+        };
 
         Assert.Empty(InlineConfigValidation.Evaluate(config));
     }
@@ -16,7 +20,11 @@ public sealed class InlineConfigValidationTests
     [Fact]
     public void Evaluate_ExplainsThatFishNameIsClassicOnlyForSonarStyle()
     {
-        ModConfig config = new() { FishPreviewStyle = FishPreviewStyle.Sonar };
+        ModConfig config = new()
+        {
+            FishPreviewStyle = FishPreviewStyle.Sonar,
+            JunkDisposalMode = JunkDisposalMode.Off
+        };
 
         InlineConfigMessage message = Assert.Single(InlineConfigValidation.Evaluate(config));
 
@@ -34,6 +42,7 @@ public sealed class InlineConfigValidationTests
         ModConfig config = new()
         {
             FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
             ActionIfInventoryFull = (InventoryFullAction)action
         };
 
@@ -49,6 +58,7 @@ public sealed class InlineConfigValidationTests
         ModConfig config = new()
         {
             FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
             ActionIfOnlyIgnoredTreasureRemains = IgnoredTreasureAction.Discard
         };
 
@@ -59,17 +69,21 @@ public sealed class InlineConfigValidationTests
     }
 
     [Theory]
-    [InlineData("auto_trash", "config.warning.auto_trash")]
+    [InlineData("junk_disposal", "config.warning.junk_disposal")]
     [InlineData("trash_fish", "config.warning.trash_fish")]
     [InlineData("auto_eat", "config.warning.auto_eat")]
     [InlineData("eat_fish", "config.warning.eat_fish")]
     public void Evaluate_AttachesOptInConsumptionMessage(string optionKey, string translationKey)
     {
-        ModConfig config = new() { FishPreviewStyle = FishPreviewStyle.Classic };
+        ModConfig config = new()
+        {
+            FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off
+        };
         switch (optionKey)
         {
-            case "auto_trash":
-                config.AutoTrashJunk = true;
+            case "junk_disposal":
+                config.JunkDisposalMode = JunkDisposalMode.WhenInventoryFull;
                 break;
             case "trash_fish":
                 config.AllowTrashFish = true;
@@ -94,6 +108,7 @@ public sealed class InlineConfigValidationTests
         ModConfig config = new()
         {
             FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
             StartWithFishingRod = "(T)IridiumRod"
         };
 
@@ -109,6 +124,7 @@ public sealed class InlineConfigValidationTests
         ModConfig config = new()
         {
             FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
             AutoAttachBait = false,
             SpawnBaitIfDontHave = true
         };
@@ -125,6 +141,7 @@ public sealed class InlineConfigValidationTests
         ModConfig config = new()
         {
             FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
             AutoAttachBait = true,
             SpawnBaitIfDontHave = true
         };
@@ -141,6 +158,7 @@ public sealed class InlineConfigValidationTests
         ModConfig config = new()
         {
             FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
             AutoAttachTackles = false,
             SpawnTackleIfDontHave = true
         };
@@ -157,6 +175,7 @@ public sealed class InlineConfigValidationTests
         ModConfig config = new()
         {
             FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
             AutoAttachTackles = true,
             SpawnTackleIfDontHave = true
         };
@@ -173,6 +192,7 @@ public sealed class InlineConfigValidationTests
         ModConfig config = new()
         {
             FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
             AutoPlayMiniGame = true,
             SkipFishingMiniGame = SkipMinigameBehavior.SkipAll
         };
@@ -189,6 +209,7 @@ public sealed class InlineConfigValidationTests
         ModConfig config = new()
         {
             FishPreviewStyle = FishPreviewStyle.Classic,
+            JunkDisposalMode = JunkDisposalMode.Off,
             AutoAttachBait = false,
             SpawnBaitIfDontHave = true,
             AutoAttachTackles = false,

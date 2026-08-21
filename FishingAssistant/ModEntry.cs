@@ -140,6 +140,8 @@ internal sealed class ModEntry : Mod
         {
             this.Helper.Input.SuppressActiveKeybinds(this.configManager.Active.EnableAutomationButton);
             this.automationRuntime!.ToggleCurrent();
+            if (this.automationRuntime.Current.IsEnabled)
+                this.autoTrash!.TryDiscardBatchIfFull(Game1.player, this.configManager.Active, true);
             return;
         }
 
@@ -361,6 +363,10 @@ internal sealed class ModEntry : Mod
             this.automationRuntime!.ResetSessionCastPowerCurrent();
             this.automationRuntime.InvalidateTreasureChestIgnoreCacheCurrent();
             this.EnsureConfiguredStarterRod();
+            this.autoTrash!.TryDiscardBatchIfFull(
+                Game1.player,
+                this.configManager.Active,
+                this.automationRuntime.Current.IsEnabled);
             return report;
         }
         catch (InvalidOperationException exception)

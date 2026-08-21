@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 13;
+    internal const int CurrentVersion = 14;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -43,9 +43,15 @@ internal sealed class ModConfig
 
     public List<string> TreasureChestIgnoreList { get; set; } = [];
 
+    public bool IgnoreJunkListItemsInTreasureChests { get; set; }
+
     public IgnoredTreasureAction ActionIfOnlyIgnoredTreasureRemains { get; set; } = IgnoredTreasureAction.KeepOpen;
 
+    public JunkDisposalMode JunkDisposalMode { get; set; } = JunkDisposalMode.WhenInventoryFull;
+
     public bool AutoTrashJunk { get; set; }
+
+    public bool ShouldSerializeAutoTrashJunk() => false;
 
     public bool AllowTrashFish { get; set; }
 

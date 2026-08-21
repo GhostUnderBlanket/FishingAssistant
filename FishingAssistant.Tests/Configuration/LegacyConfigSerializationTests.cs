@@ -110,19 +110,22 @@ public sealed class LegacyConfigSerializationTests
         Assert.Equal(FishingAssistant2Properties.Order(), legacy.Properties().Select(property => property.Name).Order());
 
         ModConfig config = JsonConvert.DeserializeObject<ModConfig>(json, SmapiCompatibleSettings)!;
+        config.ConfigVersion = 2;
         ConfigValidationReport report = ConfigValidator.Normalize(config);
         JObject migrated = JObject.Parse(JsonConvert.SerializeObject(config, SmapiCompatibleSettings));
 
         foreach (string property in FishingAssistant2Properties.Except(
-                     ["CatchTreasureButton", "JunkHighestPrice", "JunkIgnoreList"]))
+                     ["CatchTreasureButton", "AutoTrashJunk", "JunkHighestPrice", "JunkIgnoreList"]))
         {
             Assert.True(JToken.DeepEquals(legacy[property], migrated[property]),
                 $"Legacy property '{property}' changed from {legacy[property]} to {migrated[property]}.");
         }
 
         Assert.Null(migrated["CatchTreasureButton"]);
+        Assert.Null(migrated["AutoTrashJunk"]);
         Assert.Null(migrated["JunkHighestPrice"]);
         Assert.Null(migrated["JunkIgnoreList"]);
+        Assert.Equal("Immediately", migrated[nameof(ModConfig.JunkDisposalMode)]!.Value<string>());
         Assert.Equal(ModConfig.CurrentVersion, migrated[nameof(ModConfig.ConfigVersion)]!.Value<int>());
         Assert.DoesNotContain(report.Warnings, warning =>
             FishingAssistant2Properties.Contains(warning.Property, StringComparer.OrdinalIgnoreCase));

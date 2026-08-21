@@ -130,6 +130,25 @@ public sealed class ConfigValidatorTests
             correction => correction.Property == nameof(config.FishPreviewStyle));
     }
 
+    [Theory]
+    [InlineData(false, (int)JunkDisposalMode.Off)]
+    [InlineData(true, (int)JunkDisposalMode.Immediately)]
+    public void Normalize_MigratesLegacyAutomaticTrashToSelector(
+        bool legacyEnabled,
+        int expectedValue)
+    {
+        ModConfig config = new()
+        {
+            ConfigVersion = 13,
+            AutoTrashJunk = legacyEnabled
+        };
+
+        ConfigValidator.Normalize(config);
+
+        Assert.Equal((JunkDisposalMode)expectedValue, config.JunkDisposalMode);
+        Assert.False(config.AutoTrashJunk);
+    }
+
     [Fact]
     public void Normalize_ReportsInactiveAndOverriddenSettings()
     {

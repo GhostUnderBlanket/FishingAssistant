@@ -56,7 +56,7 @@ public sealed class AutomationProfilesTests
     {
         ModConfig config = new()
         {
-            AutoTrashJunk = true,
+            JunkDisposalMode = JunkDisposalMode.WhenInventoryFull,
             InstantFishBite = true,
             TreasureChance = TreasureChanceBehavior.Always,
             AlwaysPerfect = true
@@ -64,7 +64,7 @@ public sealed class AutomationProfilesTests
 
         AutomationProfiles.Apply(config, AutomationProfile.Training);
 
-        Assert.True(config.AutoTrashJunk);
+        Assert.Equal(JunkDisposalMode.WhenInventoryFull, config.JunkDisposalMode);
         Assert.True(config.InstantFishBite);
         Assert.Equal(TreasureChanceBehavior.Always, config.TreasureChance);
         Assert.True(config.AlwaysPerfect);
