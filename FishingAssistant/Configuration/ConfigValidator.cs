@@ -1,3 +1,4 @@
+using FishingAssistant.Fishing;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
@@ -19,6 +20,7 @@ internal static class ConfigValidator
         RetireJunkIgnoreList(config, originalVersion, report);
         MigrateJunkDisposalMode(config, originalVersion, report);
         MigrateOrderedEquipmentPreferences(config, originalVersion, report);
+        MigrateFishDifficultySettings(config, originalVersion, report);
         if (originalVersion < 12)
         {
             config.FishPreviewStyle = FishPreviewStyle.Classic;
@@ -53,6 +55,9 @@ internal static class ConfigValidator
             () => config.FishPreviewStyle, value => config.FishPreviewStyle = value, FishPreviewStyle.Classic);
         NormalizeEnum(report, nameof(config.AutomationProfile),
             () => config.AutomationProfile, value => config.AutomationProfile = value, AutomationProfile.Custom);
+        NormalizeEnum(report, nameof(config.MinigameAssistance),
+            () => config.MinigameAssistance, value => config.MinigameAssistance = value,
+            MinigameAssistancePreset.Off);
         NormalizeEnum(report, nameof(config.ActionIfInventoryFull),
             () => config.ActionIfInventoryFull, value => config.ActionIfInventoryFull = value, InventoryFullAction.Stop);
         NormalizeEnum(report, nameof(config.ActionIfOnlyIgnoredTreasureRemains),
@@ -84,10 +89,21 @@ internal static class ConfigValidator
             () => config.BaitAmountToSpawn, value => config.BaitAmountToSpawn = value, 1, 999);
         NormalizeRange(report, nameof(config.PreferFishAmount),
             () => config.PreferFishAmount, value => config.PreferFishAmount = value, 1, 3);
-        NormalizeFloatRange(report, nameof(config.FishDifficultyMultiplier),
-            () => config.FishDifficultyMultiplier, value => config.FishDifficultyMultiplier = value, 0f, 10f);
-        NormalizeRange(report, nameof(config.FishDifficultyAdditive),
-            () => config.FishDifficultyAdditive, value => config.FishDifficultyAdditive = value, -100, 100);
+        NormalizeRange(report, nameof(config.FishSpeedPercent),
+            () => config.FishSpeedPercent, value => config.FishSpeedPercent = value,
+            MinigameAssistancePolicy.FishSpeedMinimum, MinigameAssistancePolicy.FishSpeedMaximum);
+        NormalizeRange(report, nameof(config.ProgressGainPercent),
+            () => config.ProgressGainPercent, value => config.ProgressGainPercent = value,
+            MinigameAssistancePolicy.ProgressGainMinimum, MinigameAssistancePolicy.ProgressGainMaximum);
+        NormalizeRange(report, nameof(config.ProgressLossPercent),
+            () => config.ProgressLossPercent, value => config.ProgressLossPercent = value,
+            MinigameAssistancePolicy.ProgressLossMinimum, MinigameAssistancePolicy.ProgressLossMaximum);
+        NormalizeRange(report, nameof(config.TreasureSpeedPercent),
+            () => config.TreasureSpeedPercent, value => config.TreasureSpeedPercent = value,
+            MinigameAssistancePolicy.TreasureSpeedMinimum, MinigameAssistancePolicy.TreasureSpeedMaximum);
+        NormalizeRange(report, nameof(config.BarSizePercent),
+            () => config.BarSizePercent, value => config.BarSizePercent = value,
+            MinigameAssistancePolicy.BarSizeMinimum, MinigameAssistancePolicy.BarSizeMaximum);
         NormalizeRange(report, nameof(config.DefaultCastPower),
             () => config.DefaultCastPower, value => config.DefaultCastPower = value, 0, 100);
         NormalizeFloatRange(report, nameof(config.AutoCastDelaySeconds),
@@ -108,6 +124,7 @@ internal static class ConfigValidator
             () => config.PreferredTackles, value => config.PreferredTackles = value);
         NormalizeItemList(report, nameof(config.PreferredSecondTackles),
             () => config.PreferredSecondTackles, value => config.PreferredSecondTackles = value);
+        NormalizeAssistancePreset(config, report);
         NormalizeDependencies(config, report);
 
         if (itemCatalog is not null)
@@ -292,6 +309,47 @@ internal static class ConfigValidator
         MigratePreference(config.PreferredTackle, config.PreferredTackles, nameof(config.PreferredTackles), report);
         MigratePreference(config.PreferredAdvIridiumTackle, config.PreferredSecondTackles,
             nameof(config.PreferredSecondTackles), report);
+    }
+
+    private static void MigrateFishDifficultySettings(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        bool hadObsoleteCustomization = !config.FishDifficultyMultiplier.Equals(1f)
+            || config.FishDifficultyAdditive != 0;
+        if (originalVersion < 16)
+        {
+            config.MinigameAssistance = MinigameAssistancePreset.Off;
+            config.FishSpeedPercent = MinigameAssistancePolicy.VanillaPercent;
+            config.ProgressGainPercent = MinigameAssistancePolicy.VanillaPercent;
+            config.ProgressLossPercent = MinigameAssistancePolicy.VanillaPercent;
+            config.TreasureSpeedPercent = MinigameAssistancePolicy.VanillaPercent;
+            config.BarSizePercent = MinigameAssistancePolicy.VanillaPercent;
+        }
+
+        config.FishDifficultyMultiplier = 1f;
+        config.FishDifficultyAdditive = 0;
+        if (hadObsoleteCustomization)
+        {
+            report.Add("FishDifficultyMultiplier/FishDifficultyAdditive", "customized", "retired",
+                "The old difficulty controls affected fish behavior as well as speed and couldn't be converted reliably; Minigame Assistance starts at Vanilla.");
+        }
+    }
+
+    private static void NormalizeAssistancePreset(ModConfig config, ConfigValidationReport report)
+    {
+        MinigameAssistancePreset configured = config.MinigameAssistance;
+        MinigameAssistancePreset detected = MinigameAssistancePresets.Detect(config);
+        if (configured == detected)
+            return;
+
+        config.MinigameAssistance = detected;
+        report.Add(nameof(config.MinigameAssistance), configured, detected,
+            "The assistance preset was resolved from its modifier values.");
     }
 
     private static void MigratePreference(

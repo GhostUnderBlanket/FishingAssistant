@@ -12,8 +12,8 @@ work is maintained in [RELEASE-CANDIDATE.md](RELEASE-CANDIDATE.md).
 - **Current post-RC development build:** 3.1.0-alpha.1; its new Junk List integrations
   have completed automated and in-game verification.
 - **RC automated verification:** 478 tests passed for the published RC baseline.
-- **Post-RC automated verification:** 489 tests pass in both Debug and Release for the
-  3.1.0-alpha.1 development build, including the new policy and per-screen cache cases.
+- **Post-RC automated verification:** the current 3.1.0-alpha.1 development line is
+  verified by the complete Debug and Release suites after each selected feature.
 - **RC gameplay pass:** 2026-08-21, commit `f5ab2d7`, using the single-player,
   local split-screen, remote host, and remote farmhand test instances. The SMAPI logs
   were inspected without finding errors, repeated recovery, duplicated input, stale
@@ -120,6 +120,27 @@ work is maintained in [RELEASE-CANDIDATE.md](RELEASE-CANDIDATE.md).
   protected fish untouched.
 - [x] Verify applying the full-inventory mode or enabling automation while already full
   performs one batch cleanup, with split-screen and remote players remaining isolated.
+
+## Minigame Assistance Phase 1 manual verification
+
+- [x] Compare Off with a vanilla manual minigame and confirm all five values at 100%
+  have no observable effect.
+- [x] Exercise Light Assist, Comfortable, and Relaxed presets with easy, difficult,
+  smooth, dart, and mixed-movement fish.
+- [x] Change each percentage and confirm the selector becomes Custom; restore an exact
+  preset value set and confirm the matching preset is detected again.
+- [x] Verify Fish Speed changes final movement without flattening fish-specific patterns.
+- [x] Verify Progress Gain and Progress Loss independently, including 0% loss.
+- [x] Verify Treasure Speed changes only chest collection progress, not appearance,
+  golden status, or contents.
+- [x] Verify Bar Size at multiple fishing levels with Training Rod, Cork Bobber, Deluxe
+  Bait, food buffs, and relevant 1.6 effects; confirm the bar stays within valid bounds.
+- [x] Test Auto Play both with assistance Off and enabled, without changing its steering
+  algorithm or leaving the minigame stuck.
+- [ ] In local split-screen, give players visibly different assistance values and verify
+  each BobberBar uses only its owning profile.
+- [ ] Repeat isolation checks with a remote host and farmhand and inspect both SMAPI logs
+  for patch errors, repeated recovery, or cross-player effects.
 
 ## Recording rule
 

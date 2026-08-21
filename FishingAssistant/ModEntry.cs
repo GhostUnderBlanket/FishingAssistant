@@ -66,6 +66,10 @@ internal sealed class ModEntry : Mod
             harmony,
             () => this.configManager.Active,
             this.Monitor);
+        MinigameAssistancePatch.Apply(
+            harmony,
+            () => this.configManager.Active,
+            this.Monitor);
         FishingGameHudPatch.Apply(
             harmony,
             this.automationHud,

@@ -52,8 +52,10 @@ public sealed class ConfigValidatorTests
         Assert.Equal(5, config.EnergyPercentToEat);
         Assert.Equal(999, config.BaitAmountToSpawn);
         Assert.Equal(1, config.PreferFishAmount);
-        Assert.Equal(0f, config.FishDifficultyMultiplier);
-        Assert.Equal(100, config.FishDifficultyAdditive);
+        Assert.Equal(1f, config.FishDifficultyMultiplier);
+        Assert.Equal(0, config.FishDifficultyAdditive);
+        Assert.Equal(MinigameAssistancePreset.Off, config.MinigameAssistance);
+        Assert.Equal(100, config.FishSpeedPercent);
         Assert.Equal(100, config.DefaultCastPower);
         Assert.Equal(10f, config.AutoCastDelaySeconds);
         Assert.Equal(0f, config.UnlockCastPowerTime);
@@ -64,6 +66,53 @@ public sealed class ConfigValidatorTests
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.ConfigVersion));
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.EnableAutomationButton));
         Assert.Contains(report.Corrections, correction => correction.Property == nameof(config.ToggleTreasureTargetingButton));
+    }
+
+    [Fact]
+    public void Normalize_ClampsMinigameAssistanceValuesAndDetectsCustom()
+    {
+        ModConfig config = new()
+        {
+            FishSpeedPercent = -1,
+            ProgressGainPercent = 999,
+            ProgressLossPercent = 999,
+            TreasureSpeedPercent = 0,
+            BarSizePercent = 999
+        };
+
+        ConfigValidationReport report = ConfigValidator.Normalize(config);
+
+        Assert.Equal(0, config.FishSpeedPercent);
+        Assert.Equal(300, config.ProgressGainPercent);
+        Assert.Equal(200, config.ProgressLossPercent);
+        Assert.Equal(25, config.TreasureSpeedPercent);
+        Assert.Equal(200, config.BarSizePercent);
+        Assert.Equal(MinigameAssistancePreset.Custom, config.MinigameAssistance);
+        Assert.True(report.WasChanged);
+    }
+
+    [Fact]
+    public void Normalize_RetiresOldDifficultyCustomizationWithoutGuessingFishSpeed()
+    {
+        ModConfig config = new()
+        {
+            ConfigVersion = 15,
+            FishDifficultyMultiplier = 0.5f,
+            FishDifficultyAdditive = -10
+        };
+
+        ConfigValidationReport report = ConfigValidator.Normalize(config);
+
+        Assert.Equal(MinigameAssistancePreset.Off, config.MinigameAssistance);
+        Assert.Equal(100, config.FishSpeedPercent);
+        Assert.Equal(100, config.ProgressGainPercent);
+        Assert.Equal(100, config.ProgressLossPercent);
+        Assert.Equal(100, config.TreasureSpeedPercent);
+        Assert.Equal(100, config.BarSizePercent);
+        Assert.Equal(1f, config.FishDifficultyMultiplier);
+        Assert.Equal(0, config.FishDifficultyAdditive);
+        Assert.Contains(report.Corrections,
+            correction => correction.Property == "FishDifficultyMultiplier/FishDifficultyAdditive");
     }
 
     [Fact]

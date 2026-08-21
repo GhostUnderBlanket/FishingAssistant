@@ -2,7 +2,7 @@
 
 Fishing Assistant 3 loads SMAPI's standard `config.json` as the migration-compatible
 base template. Once a player is loaded, that player's settings are stored separately in
-`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `15`.
+`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `16`.
 Saved configuration, the active validated player profile, and an editable menu draft
 are treated as separate objects.
 
@@ -25,7 +25,7 @@ Unknown top-level properties are reported in the SMAPI log before a migrated fil
 written. Reports include a bounded representation of the original JSON value so the
 setting can be identified; values with credential-like property names are redacted.
 They are not silently treated as supported options. A file whose `ConfigVersion` is
-newer than 15 is loaded read-only: its schema version is not
+newer than 16 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
@@ -222,3 +222,16 @@ configured item remains authoritative and is spawned when missing instead of fal
 through to a lower priority. An empty list retains the previous `Any` behavior. Existing
 single-item preferences migrate to one-item lists, including legacy files without an
 explicit `ConfigVersion`.
+
+Schema version 16 replaces the user-facing `FishDifficultyMultiplier` and
+`FishDifficultyAdditive` controls with Minigame Assistance. The old controls changed
+multiple fish-AI decisions in addition to movement, so they cannot be converted into a
+single Fish Speed percentage without inventing a misleading approximation. Migration
+therefore retires both properties, reports customized legacy values, and initializes
+the assistance preset and all five percentages to Off/100%. The obsolete properties
+remain readable only for migration and are never written back.
+
+Minigame Assistance is per-player and independent from Auto Play. Its preset selector
+populates Fish Speed, Progress Gain, Progress Loss, Treasure Speed, and Bar Size; editing
+one percentage makes the preset Custom unless the complete value set exactly matches a
+known preset.

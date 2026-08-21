@@ -17,12 +17,19 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   default to When Inventory Is Full.
 - Ordered bait and tackle preference lists with visual add/remove controls and explicit
   priority ordering for the bait slot and both tackle slots.
+- Minigame Assistance presets and individual percentages for fish speed, progress gain,
+  progress loss, treasure speed, and the vanilla-calculated fishing-bar size.
 
 ### Changed
 
 - Existing single-item bait and tackle preferences migrate to ordered lists. Automatic
   attachment uses the first available configured item; optional spawning keeps the
   first configured item authoritative instead of falling through to a lower priority.
+- Fish Difficulty Multiplier and Additive are retired from the active schema and menu.
+  Because they changed several fish-AI decisions and cannot map reliably to Fish Speed,
+  schema 16 migrates customized values to the vanilla Off/100% assistance baseline.
+- Reordered the configuration pages, moved Minigame Assistance into its own page, and
+  show inline guidance on its controls when Skip Minigame takes priority.
 
 ## [3.0.0-rc.1] - 2026-08-21
 

@@ -112,25 +112,17 @@ internal sealed class BobberBarAdapter(BobberBar bar)
             new Rectangle(bar.xPositionOnScreen, bar.yPositionOnScreen, bar.width, bar.height));
     }
 
-    public FishDifficultyDecision ApplyDifficulty(ModConfig config)
+    public (int VanillaHeight, int FinalHeight) ApplyBarSizeAssistance(ModConfig config)
     {
-        FishDifficultyDecision decision = FishDifficultyPolicy.Decide(new FishDifficultyConditions(
-            bar.difficulty,
-            config.FishDifficultyMultiplier,
-            config.FishDifficultyAdditive));
-        bar.difficulty = decision.AdjustedDifficulty;
+        int vanillaHeight = bar.bobberBarHeight;
+        int finalHeight = MinigameAssistancePolicy.ScaleBarSize(vanillaHeight, config.BarSizePercent);
+        if (finalHeight == vanillaHeight)
+            return (vanillaHeight, finalHeight);
 
-        // The constructor derives the initial target from difficulty. Keep it aligned
-        // while the menu is still fading in, before normal fish motion begins.
-        if (decision.WasChanged && bar.fadeIn)
-        {
-            bar.bobberTargetPosition = Math.Clamp(
-                (100f - decision.AdjustedDifficulty) / 100f * 548f,
-                -1f,
-                548f);
-        }
-
-        return decision;
+        float previousBottom = bar.bobberBarPos + vanillaHeight;
+        bar.bobberBarHeight = finalHeight;
+        bar.bobberBarPos = Math.Clamp(previousBottom - finalHeight, 0f, 568f - finalHeight);
+        return (vanillaHeight, finalHeight);
     }
 
     public SkipMinigameConditions ReadSkipMinigameConditions(SkipMinigameBehavior behavior)
