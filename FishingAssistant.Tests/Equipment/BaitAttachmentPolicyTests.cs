@@ -8,7 +8,7 @@ public sealed class BaitAttachmentPolicyTests
     private static readonly BaitInventoryCandidate BasicBait = new(4, "(O)685");
 
     private static BaitAttachmentConditions SafeConditions => new(
-        true, true, true, null, 0, BaitAttachmentPolicy.AnyPreference, false,
+        true, true, true, null, 0, [], false,
         [WildBait, BasicBait]);
 
     [Fact]
@@ -23,7 +23,7 @@ public sealed class BaitAttachmentPolicyTests
     [Fact]
     public void Decide_SpecificPreferenceUsesMatchingBait()
     {
-        BaitAttachmentConditions conditions = SafeConditions with { PreferredBaitId = BasicBait.QualifiedItemId };
+        BaitAttachmentConditions conditions = SafeConditions with { PreferredBaitIds = [BasicBait.QualifiedItemId] };
 
         BaitAttachmentDecision result = BaitAttachmentPolicy.Decide(conditions);
 
@@ -38,7 +38,7 @@ public sealed class BaitAttachmentPolicyTests
         {
             AttachedBaitId = BasicBait.QualifiedItemId,
             AttachedBaitSpace = 20,
-            PreferredBaitId = WildBait.QualifiedItemId
+            PreferredBaitIds = [WildBait.QualifiedItemId]
         };
 
         BaitAttachmentDecision result = BaitAttachmentPolicy.Decide(conditions);
@@ -80,11 +80,39 @@ public sealed class BaitAttachmentPolicyTests
         BaitAttachmentConditions conditions = SafeConditions with
         {
             Candidates = [],
-            PreferredBaitId = WildBait.QualifiedItemId,
+            PreferredBaitIds = [WildBait.QualifiedItemId],
             SpawnIfMissing = true
         };
 
         Assert.Equal(WildBait.QualifiedItemId, BaitAttachmentPolicy.Decide(conditions).SpawnItemId);
+    }
+
+    [Fact]
+    public void Decide_UsesFirstAvailableBaitInPreferenceOrder()
+    {
+        BaitAttachmentConditions conditions = SafeConditions with
+        {
+            PreferredBaitIds = ["(O)Missing", BasicBait.QualifiedItemId, WildBait.QualifiedItemId]
+        };
+
+        BaitAttachmentDecision result = BaitAttachmentPolicy.Decide(conditions);
+
+        Assert.Equal(BasicBait.InventoryIndex, result.InventoryIndex);
+    }
+
+    [Fact]
+    public void Decide_SpawningPreservesFirstPreferencePriority()
+    {
+        BaitAttachmentConditions conditions = SafeConditions with
+        {
+            PreferredBaitIds = ["(O)Missing", WildBait.QualifiedItemId],
+            SpawnIfMissing = true
+        };
+
+        BaitAttachmentDecision result = BaitAttachmentPolicy.Decide(conditions);
+
+        Assert.Equal(BaitAttachmentAction.Spawn, result.Action);
+        Assert.Equal("(O)Missing", result.SpawnItemId);
     }
 
     [Theory]

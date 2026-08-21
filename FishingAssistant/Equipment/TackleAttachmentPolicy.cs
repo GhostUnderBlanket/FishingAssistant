@@ -9,7 +9,10 @@ internal enum TackleAttachmentAction
 
 internal sealed record TackleInventoryCandidate(int InventoryIndex, string QualifiedItemId);
 
-internal sealed record TackleSlotState(int SlotIndex, bool IsOccupied, string PreferredTackleId);
+internal sealed record TackleSlotState(
+    int SlotIndex,
+    bool IsOccupied,
+    IReadOnlyList<string> PreferredTackleIds);
 
 internal sealed record TackleAttachmentConditions(
     bool AutoAttachEnabled,
@@ -27,7 +30,6 @@ internal sealed record TackleAttachmentDecision(
 
 internal static class TackleAttachmentPolicy
 {
-    public const string AnyPreference = "Any";
     public const string DefaultSpawnTackleId = "(O)686";
 
     public static TackleAttachmentDecision Decide(TackleAttachmentConditions conditions)
@@ -46,10 +48,11 @@ internal static class TackleAttachmentPolicy
 
         foreach (TackleSlotState target in emptySlots)
         {
-            bool useAny = IsAny(target.PreferredTackleId);
-            TackleInventoryCandidate? selected = conditions.Candidates.FirstOrDefault(candidate =>
-                useAny || string.Equals(candidate.QualifiedItemId, target.PreferredTackleId,
-                    StringComparison.OrdinalIgnoreCase));
+            string? firstPreference = target.PreferredTackleIds.FirstOrDefault();
+            TackleInventoryCandidate? selected = conditions.SpawnIfMissing && firstPreference is not null
+                ? conditions.Candidates.FirstOrDefault(candidate =>
+                    string.Equals(candidate.QualifiedItemId, firstPreference, StringComparison.OrdinalIgnoreCase))
+                : SelectFirstAvailable(target.PreferredTackleIds, conditions.Candidates);
             if (selected is not null)
             {
                 return new TackleAttachmentDecision(
@@ -63,17 +66,28 @@ internal static class TackleAttachmentPolicy
             return new TackleAttachmentDecision(TackleAttachmentAction.None);
 
         TackleSlotState spawnTarget = emptySlots[0];
-        string spawnItemId = IsAny(spawnTarget.PreferredTackleId)
-            ? DefaultSpawnTackleId
-            : spawnTarget.PreferredTackleId;
+        string spawnItemId = spawnTarget.PreferredTackleIds.FirstOrDefault() ?? DefaultSpawnTackleId;
         return new TackleAttachmentDecision(
             TackleAttachmentAction.Spawn,
             spawnTarget.SlotIndex,
             SpawnItemId: spawnItemId);
     }
 
-    private static bool IsAny(string preference)
+    private static TackleInventoryCandidate? SelectFirstAvailable(
+        IReadOnlyList<string> preferences,
+        IReadOnlyList<TackleInventoryCandidate> candidates)
     {
-        return string.Equals(preference, AnyPreference, StringComparison.OrdinalIgnoreCase);
+        if (preferences.Count == 0)
+            return candidates.FirstOrDefault();
+
+        foreach (string preference in preferences)
+        {
+            TackleInventoryCandidate? candidate = candidates.FirstOrDefault(item =>
+                string.Equals(item.QualifiedItemId, preference, StringComparison.OrdinalIgnoreCase));
+            if (candidate is not null)
+                return candidate;
+        }
+
+        return null;
     }
 }

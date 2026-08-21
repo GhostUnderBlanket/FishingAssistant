@@ -593,15 +593,14 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.SpawnBaitIfDontHave = value);
                 this.AddNumberDefinition("bait_amount", () => this.session.Draft.BaitAmountToSpawn,
                     value => this.session.Draft.BaitAmountToSpawn = Convert.ToInt32(value), 1, 999, 1);
-                this.AddItemDefinition("preferred_bait", ConfigItemKind.Bait, "Any",
-                    () => this.session.Draft.PreferredBait, value => this.session.Draft.PreferredBait = value);
+                this.AddOrderedItemDefinition("preferred_bait", ConfigItemKind.Bait,
+                    this.session.Draft.PreferredBaits);
                 this.AddDefinition("attach_tackle", () => this.session.Draft.AutoAttachTackles,
                     value => this.session.Draft.AutoAttachTackles = value);
-                this.AddItemDefinition("preferred_tackle", ConfigItemKind.Tackle, "Any",
-                    () => this.session.Draft.PreferredTackle, value => this.session.Draft.PreferredTackle = value);
-                this.AddItemDefinition("second_tackle", ConfigItemKind.Tackle, "Any",
-                    () => this.session.Draft.PreferredAdvIridiumTackle,
-                    value => this.session.Draft.PreferredAdvIridiumTackle = value);
+                this.AddOrderedItemDefinition("preferred_tackle", ConfigItemKind.Tackle,
+                    this.session.Draft.PreferredTackles);
+                this.AddOrderedItemDefinition("second_tackle", ConfigItemKind.Tackle,
+                    this.session.Draft.PreferredSecondTackles);
                 this.AddDefinition("spawn_tackle", () => this.session.Draft.SpawnTackleIfDontHave,
                     value => this.session.Draft.SpawnTackleIfDontHave = value);
                 this.AddDefinition("infinite_bait", () => this.session.Draft.InfiniteBait,
@@ -822,6 +821,41 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 labels[sentinel],
                 getValue,
                 setValue,
+                this.translate))
+        ), () => ConfigControlState.Enabled));
+    }
+
+    private void AddOrderedItemDefinition(
+        string key,
+        ConfigItemKind kind,
+        List<string> preferences)
+    {
+        ConfigItem[] items = this.itemSource.GetAll(kind).ToArray();
+        Dictionary<string, string> labels = items.ToDictionary(
+            item => item.QualifiedItemId,
+            item => item.DisplayName,
+            StringComparer.OrdinalIgnoreCase);
+
+        string GetSummary(string value)
+        {
+            if (preferences.Count == 0)
+                return this.translate("config.value.any");
+            if (preferences.Count == 1)
+                return labels.GetValueOrDefault(value, value);
+            return string.Format(this.translate("config.item_picker.selected_count"), preferences.Count);
+        }
+
+        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigItemPicker(
+            id,
+            bounds,
+            this.translate($"config.option.{key}"),
+            this.translate($"config.option.{key}.description"),
+            () => preferences.FirstOrDefault() ?? "Any",
+            GetSummary,
+            () => this.SetChildMenu(new SingleItemPickerMenu(
+                this.translate($"config.option.{key}"),
+                items,
+                preferences,
                 this.translate))
         ), () => ConfigControlState.Enabled));
     }

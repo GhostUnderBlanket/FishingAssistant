@@ -12,7 +12,7 @@ public sealed class TackleAttachmentPolicyTests
         true,
         true,
         false,
-        [new TackleSlotState(1, false, TackleAttachmentPolicy.AnyPreference)],
+        [new TackleSlotState(1, false, [])],
         [TrapBobber, Spinner]);
 
     [Fact]
@@ -30,7 +30,7 @@ public sealed class TackleAttachmentPolicyTests
     {
         TackleAttachmentConditions conditions = SafeConditions with
         {
-            Slots = [new TackleSlotState(1, false, Spinner.QualifiedItemId)]
+            Slots = [new TackleSlotState(1, false, [Spinner.QualifiedItemId])]
         };
 
         TackleAttachmentDecision result = TackleAttachmentPolicy.Decide(conditions);
@@ -45,8 +45,8 @@ public sealed class TackleAttachmentPolicyTests
         {
             Slots =
             [
-                new TackleSlotState(1, true, TrapBobber.QualifiedItemId),
-                new TackleSlotState(2, false, Spinner.QualifiedItemId)
+                new TackleSlotState(1, true, [TrapBobber.QualifiedItemId]),
+                new TackleSlotState(2, false, [Spinner.QualifiedItemId])
             ]
         };
 
@@ -63,8 +63,8 @@ public sealed class TackleAttachmentPolicyTests
         {
             Slots =
             [
-                new TackleSlotState(1, false, "(O)MissingTackle"),
-                new TackleSlotState(2, false, Spinner.QualifiedItemId)
+                new TackleSlotState(1, false, ["(O)MissingTackle"]),
+                new TackleSlotState(2, false, [Spinner.QualifiedItemId])
             ]
         };
 
@@ -80,7 +80,7 @@ public sealed class TackleAttachmentPolicyTests
     {
         TackleAttachmentConditions conditions = SafeConditions with
         {
-            Slots = [new TackleSlotState(1, true, TackleAttachmentPolicy.AnyPreference)]
+            Slots = [new TackleSlotState(1, true, [])]
         };
 
         Assert.Equal(TackleAttachmentAction.None, TackleAttachmentPolicy.Decide(conditions).Action);
@@ -106,12 +106,41 @@ public sealed class TackleAttachmentPolicyTests
     {
         TackleAttachmentConditions conditions = SafeConditions with
         {
-            Slots = [new TackleSlotState(1, false, TrapBobber.QualifiedItemId)],
+            Slots = [new TackleSlotState(1, false, [TrapBobber.QualifiedItemId])],
             Candidates = [],
             SpawnIfMissing = true
         };
 
         Assert.Equal(TrapBobber.QualifiedItemId, TackleAttachmentPolicy.Decide(conditions).SpawnItemId);
+    }
+
+    [Fact]
+    public void Decide_UsesFirstAvailableTackleInPreferenceOrder()
+    {
+        TackleAttachmentConditions conditions = SafeConditions with
+        {
+            Slots = [new TackleSlotState(1, false,
+                ["(O)Missing", Spinner.QualifiedItemId, TrapBobber.QualifiedItemId])]
+        };
+
+        TackleAttachmentDecision result = TackleAttachmentPolicy.Decide(conditions);
+
+        Assert.Equal(Spinner.InventoryIndex, result.InventoryIndex);
+    }
+
+    [Fact]
+    public void Decide_SpawningPreservesFirstPreferencePriority()
+    {
+        TackleAttachmentConditions conditions = SafeConditions with
+        {
+            Slots = [new TackleSlotState(1, false, ["(O)Missing", TrapBobber.QualifiedItemId])],
+            SpawnIfMissing = true
+        };
+
+        TackleAttachmentDecision result = TackleAttachmentPolicy.Decide(conditions);
+
+        Assert.Equal(TackleAttachmentAction.Spawn, result.Action);
+        Assert.Equal("(O)Missing", result.SpawnItemId);
     }
 
     [Theory]

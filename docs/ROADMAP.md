@@ -269,10 +269,9 @@ that serves the same need, or none of them after compatibility and UX review.
 - Accessible minigame assistance levels between fully manual and fully automatic.
 - A compact on-screen control panel for changing the most common runtime toggles without
   opening the full configuration menu.
-- Ordered bait and tackle preferences: replace each single-item selector with a
-  reorderable multi-item list. Automatic attachment should try entries from top to
-  bottom and use the first available eligible item; spawning, when enabled, should
-  follow the same priority order without falling through to a lower choice first.
+- Ordered bait and tackle preferences were selected for the 3.1 development line.
+  Each attachment slot has a reorderable multi-item list; automatic attachment tries
+  entries from top to bottom, while spawning preserves the first configured priority.
 - Batched junk disposal was selected for the 3.1 development line. The player can keep
   the original immediate behavior or retain junk until the inventory becomes full, then
   clear all eligible Junk List stacks with one sound and one summary notification. The

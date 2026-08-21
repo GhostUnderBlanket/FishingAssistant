@@ -20,6 +20,7 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
     private readonly PickerItem[] allItems;
     private readonly Func<string> getValue;
     private readonly Action<string> setValue;
+    private readonly List<string>? orderedValues;
     private readonly Func<string, string> translate;
     private readonly List<ItemCard> visibleCards = [];
     private readonly List<int> visibleSeparatorYs = [];
@@ -51,6 +52,25 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         this.filteredItems = this.allItems;
         this.getValue = getValue;
         this.setValue = setValue;
+        this.translate = translate;
+        this.RebuildComponents();
+        Game1.playSound("bigSelect");
+    }
+
+    public SingleItemPickerMenu(
+        string title,
+        IReadOnlyList<ConfigItem> items,
+        List<string> orderedValues,
+        Func<string, string> translate)
+    {
+        this.title = title;
+        this.allItems = items
+            .Select(item => new PickerItem(item.QualifiedItemId, item.DisplayName, item))
+            .ToArray();
+        this.filteredItems = this.allItems;
+        this.orderedValues = orderedValues;
+        this.getValue = () => orderedValues.FirstOrDefault() ?? "Any";
+        this.setValue = _ => { };
         this.translate = translate;
         this.RebuildComponents();
         Game1.playSound("bigSelect");
@@ -101,7 +121,21 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         ItemCard? card = this.visibleCards.FirstOrDefault(item => item.Component.containsPoint(x, y));
         if (card is not null)
         {
-            this.setValue(card.Item.Id);
+            if (this.orderedValues is not null && this.IsSelected(card.Item.Id))
+            {
+                Rectangle up = this.GetOrderButtonBounds(card.Component.bounds, moveUp: true);
+                Rectangle down = this.GetOrderButtonBounds(card.Component.bounds, moveUp: false);
+                if (up.Contains(x, y))
+                    this.MovePreference(card.Item.Id, -1);
+                else if (down.Contains(x, y))
+                    this.MovePreference(card.Item.Id, 1);
+                else
+                    this.orderedValues.RemoveAll(id => string.Equals(id, card.Item.Id, StringComparison.OrdinalIgnoreCase));
+            }
+            else if (this.orderedValues is not null)
+                this.orderedValues.Add(card.Item.Id);
+            else
+                this.setValue(card.Item.Id);
             Game1.playSound("coin");
             this.RebuildItemRows();
             this.topRow = 0;
@@ -193,10 +227,12 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
                 this.exitThisMenu();
                 break;
             case Buttons.LeftShoulder:
-                this.Scroll(-this.layout.Rows);
+                if (!this.MoveSnappedPreference(-1))
+                    this.Scroll(-this.layout.Rows);
                 break;
             case Buttons.RightShoulder:
-                this.Scroll(this.layout.Rows);
+                if (!this.MoveSnappedPreference(1))
+                    this.Scroll(this.layout.Rows);
                 break;
         }
     }
@@ -361,12 +397,18 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
 
     private void RebuildItemRows()
     {
-        string selectedId = this.getValue();
-        PickerItem[] selected = this.filteredItems
-            .Where(item => string.Equals(item.Id, selectedId, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
+        PickerItem[] selected = this.orderedValues is null
+            ? this.filteredItems
+                .Where(item => string.Equals(item.Id, this.getValue(), StringComparison.OrdinalIgnoreCase))
+                .ToArray()
+            : this.orderedValues
+                .Select(id => this.filteredItems.FirstOrDefault(item =>
+                    string.Equals(item.Id, id, StringComparison.OrdinalIgnoreCase)))
+                .Where(item => item is not null)
+                .Cast<PickerItem>()
+                .ToArray();
         PickerItem[] normal = this.filteredItems
-            .Where(item => !string.Equals(item.Id, selectedId, StringComparison.OrdinalIgnoreCase))
+            .Where(item => !this.IsSelected(item.Id))
             .ToArray();
         List<ItemRow> rows = [];
         this.AddRows(rows, selected, startsNormalGroup: false);
@@ -460,7 +502,7 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
 
     private void DrawCard(SpriteBatch batch, ItemCard card, bool highlighted)
     {
-        bool selected = string.Equals(card.Item.Id, this.getValue(), StringComparison.OrdinalIgnoreCase);
+        bool selected = this.IsSelected(card.Item.Id);
         Rectangle bounds = card.Component.bounds;
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
             bounds.X, bounds.Y, bounds.Width, bounds.Height,
@@ -494,16 +536,77 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
             new Vector2(textLeft, nameY), Game1.textColor);
         if (selected)
         {
-            string selectedLabel = this.translate("config.item_picker.state_selected");
+            int order = this.orderedValues?.FindIndex(id =>
+                string.Equals(id, card.Item.Id, StringComparison.OrdinalIgnoreCase)) ?? -1;
+            string selectedLabel = order >= 0
+                ? string.Format(this.translate("config.item_picker.priority"), order + 1)
+                : this.translate("config.item_picker.state_selected");
             float availableWidth = Math.Max(1f, bounds.Right - textLeft - 8);
             selectedLabel = MenuText.Fit(selectedLabel, Game1.smallFont, availableWidth / CardStateScale);
             batch.DrawString(Game1.smallFont, selectedLabel,
                 new Vector2(textLeft, bounds.Center.Y + 1), MenuVisualMetrics.ItemStateText,
                 0f, Vector2.Zero, CardStateScale, SpriteEffects.None, 0.91f);
-            batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
-                OptionsCheckbox.sourceRectChecked, Color.White, 0f, Vector2.Zero, 2f,
-                SpriteEffects.None, 0.95f);
+            if (this.orderedValues is null)
+            {
+                batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
+                    OptionsCheckbox.sourceRectChecked, Color.White, 0f, Vector2.Zero, 2f,
+                    SpriteEffects.None, 0.95f);
+            }
+            else
+            {
+                this.DrawOrderButton(batch, this.GetOrderButtonBounds(bounds, true), true,
+                    order > 0);
+                this.DrawOrderButton(batch, this.GetOrderButtonBounds(bounds, false), false,
+                    order >= 0 && order < this.orderedValues.Count - 1);
+            }
         }
+    }
+
+    private bool IsSelected(string id)
+    {
+        return this.orderedValues?.Any(value => string.Equals(value, id, StringComparison.OrdinalIgnoreCase))
+            ?? string.Equals(id, this.getValue(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private Rectangle GetOrderButtonBounds(Rectangle cardBounds, bool moveUp)
+    {
+        const int size = 24;
+        return new Rectangle(cardBounds.Right - size - 7,
+            moveUp ? cardBounds.Y + 6 : cardBounds.Bottom - size - 6, size, size);
+    }
+
+    private void DrawOrderButton(SpriteBatch batch, Rectangle bounds, bool moveUp, bool enabled)
+    {
+        Rectangle source = MenuVisualMetrics.ArrowSource;
+        batch.Draw(Game1.mouseCursors, bounds.Center.ToVector2(), source,
+            enabled ? Color.White : Color.Gray * 0.55f,
+            moveUp ? 0f : MathF.PI, new Vector2(source.Width / 2f, source.Height / 2f),
+            Math.Min(MenuVisualMetrics.ArrowScale, 1.5f), SpriteEffects.None, 0.96f);
+    }
+
+    private bool MoveSnappedPreference(int direction)
+    {
+        if (this.orderedValues is null)
+            return false;
+        ItemCard? card = this.visibleCards.FirstOrDefault(item => item.Component == this.currentlySnappedComponent);
+        return card is not null && this.MovePreference(card.Item.Id, direction);
+    }
+
+    private bool MovePreference(string id, int direction)
+    {
+        if (this.orderedValues is null)
+            return false;
+        int index = this.orderedValues.FindIndex(value => string.Equals(value, id, StringComparison.OrdinalIgnoreCase));
+        int target = index + direction;
+        if (index < 0 || target < 0 || target >= this.orderedValues.Count)
+            return false;
+        (this.orderedValues[index], this.orderedValues[target]) =
+            (this.orderedValues[target], this.orderedValues[index]);
+        this.RebuildItemRows();
+        this.RebuildVisibleCards();
+        this.BuildNavigation();
+        Game1.playSound("shwip");
+        return true;
     }
 
     private void DrawButton(SpriteBatch batch, ClickableComponent button, bool highlighted)

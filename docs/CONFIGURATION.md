@@ -2,7 +2,7 @@
 
 Fishing Assistant 3 loads SMAPI's standard `config.json` as the migration-compatible
 base template. Once a player is loaded, that player's settings are stored separately in
-`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `14`.
+`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `15`.
 Saved configuration, the active validated player profile, and an editable menu draft
 are treated as separate objects.
 
@@ -25,7 +25,7 @@ Unknown top-level properties are reported in the SMAPI log before a migrated fil
 written. Reports include a bounded representation of the original JSON value so the
 setting can be identified; values with credential-like property names are redacted.
 They are not silently treated as supported options. A file whose `ConfigVersion` is
-newer than 14 is loaded read-only: its schema version is not
+newer than 15 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
@@ -213,3 +213,12 @@ localized item names and sprites, support search and scrolling, and preserve the
 Apply/Cancel draft behavior. Every current setting can be edited without manually
 changing `config.json`. Starter rod defaults to `No starter rod`; selecting a rod is an
 explicit opt-in and never replaces a rod the local player already owns.
+
+Schema version 15 replaces each single bait and tackle preference with an ordered list.
+Selected items are grouped first in priority order and can be moved with the visible
+arrow controls or controller shoulder buttons. With spawning disabled, automatic
+attachment uses the first available configured item. With spawning enabled, the first
+configured item remains authoritative and is spawned when missing instead of falling
+through to a lower priority. An empty list retains the previous `Any` behavior. Existing
+single-item preferences migrate to one-item lists, including legacy files without an
+explicit `ConfigVersion`.
