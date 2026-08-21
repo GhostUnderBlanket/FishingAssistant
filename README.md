@@ -99,6 +99,16 @@ dotnet build FishingAssistant.slnx --configuration Debug
 Normal development builds do not deploy into the game's `Mods` directory and do not
 create release ZIP files.
 
+Create the deterministic release package with:
+
+```powershell
+pwsh ./scripts/Build-ReleasePackage.ps1
+```
+
+The package is written to `artifacts/`. Its entries are sorted and use a fixed
+timestamp, so identical source and build inputs produce an identical ZIP. The archive
+contains only the mod DLL, resolved manifest, and translations.
+
 ## Branch workflow
 
 - `main` stays release-ready and is updated only through reviewed pull requests.

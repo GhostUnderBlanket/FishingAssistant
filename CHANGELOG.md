@@ -7,6 +7,69 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.0-rc.1] - 2026-08-21
+
+### Added
+
+- Complete Thai localization for the configuration UI, inline messages, preview
+  settings, and optional treasure-targeting control.
+- A Vanilla Sonar Fish Preview style which replaces the original Sonar Bobber drawing
+  when compatible and falls back to the Classic preview when suppression is
+  unavailable.
+- An optional treasure-targeting keybind with a compact Treasure Hunter tackle HUD
+  indicator that appears only while targeting is enabled.
+- Automatic casting, hooking, and automation-status HUD support in the Ice Fishing and
+  Stardew Valley Fair fishing minigames, with host-only debug setup actions for both
+  festivals.
+- Deterministic release packaging with a resolved manifest, sorted entries, fixed ZIP
+  timestamps, and package-content validation.
+
+### Changed
+
+- Promoted the multiplayer- and festival-verified beta line to the first release
+  candidate.
+- Avoided unnecessary per-tick bait, tackle, and treasure-ignore allocations when the
+  corresponding work is disabled or its configuration is unchanged.
+
+### Fixed
+
+- Opening the configuration menu during a cast now waits for the cast to finish,
+  preventing the reel sound from remaining active.
+- Fish Preview no longer overlaps Challenge Bait's remaining-fish display, and Classic
+  previews move to the opposite side only when Challenge Bait requires the space.
+- Long localized tooltips wrap and remain inside the active viewport.
+- Maximum fish size now includes the game's upper boundary instead of stopping one
+  value early.
+- Fishing-festival detection now works for both event fishing and the dedicated
+  `FishingGame` minigame without enabling automation in unrelated festivals.
+
+## [3.0.0-beta.2] - 2026-08-14
+
+### Changed
+
+- Retired the redundant Junk Ignore/protected-item list. Auto-trash now uses only the
+  explicit visual Junk List, and migration removes obsolete ignored entries.
+- Junk and treasure-ignore editors now group the active selection first, followed by a
+  clearly spaced separator and all unassigned items.
+- Item pickers and list editors now share the same Vanilla-style headers, cards,
+  spacing, typography, pagination, and scrollbar treatment.
+
+### Fixed
+
+- Keybind capture now waits for the mouse, keyboard, or controller activation input to
+  be released before accepting the next input, preventing an immediate return to the
+  previous binding.
+- Configuration-menu rebuilds now retain their current layout signature instead of
+  rebuilding every tick and cancelling active keybind capture.
+- Added Vanilla-style backing panels to editor titles and selection counts, separated
+  search and mode controls from the upper frame, and replaced tiny-font item states
+  with scaled small-font labels.
+- Added clear gutters between configuration options, pagination, and the scrollbar,
+  plus sufficient header and category padding to keep text away from menu frames.
+- Tightened two-line item-card labels and improved selected-card label contrast.
+- Replaced the oversized Vanilla partition sprite between editor groups with a thin
+  separator confined to the row gap.
+
 ## [3.0.0-beta.1] - 2026-08-13
 
 ### Added
@@ -133,24 +196,6 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- Keybind capture now waits for the mouse, keyboard, or controller activation input to
-  be released before accepting the next input, preventing an immediate return to the
-  previous binding.
-- Configuration-menu rebuilds now retain their current layout signature instead of
-  rebuilding every tick and cancelling active keybind capture.
-- Added Vanilla-style backing panels to the Junk List Editor title and selection
-  counts, separated its search and mode controls from the upper frame, and replaced
-  tiny-font item states with scaled small-font labels.
-- Refined picker spacing and header padding, added the missing item-picker title panel,
-  and tightened two-line item-card labels.
-- Added clear gutters between configuration options, pagination, and the scrollbar.
-- Added top spacing above the category selector so its label and navigation buttons no
-  longer touch the menu frame.
-- Tightened the vertical spacing between item names and Junk/Ignored state labels.
-- Junk, protected-item, and treasure-ignore editors now group the active mode's selected
-  items first, followed by a separator and all unassigned items.
-- Replaced the oversized Vanilla partition sprite between editor groups with a thin
-  separator confined to the row gap, and improved selected-card label contrast.
 - Disabling Automation with F5 no longer cancels a cast already in progress. Vanilla
   finishes that cast normally while every later automatic action remains disabled,
   avoiding stuck rod state or shared fishing audio in local co-op.
