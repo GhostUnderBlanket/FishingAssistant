@@ -17,6 +17,7 @@ internal static class ConfigValidator
         int originalVersion = config.ConfigVersion;
         NormalizeVersion(config, report);
         RetireJunkIgnoreList(config, originalVersion, report);
+        MigrateJunkDisposalMode(config, originalVersion, report);
         if (originalVersion < 12)
         {
             config.FishPreviewStyle = FishPreviewStyle.Classic;
@@ -57,6 +58,10 @@ internal static class ConfigValidator
             () => config.ActionIfOnlyIgnoredTreasureRemains,
             value => config.ActionIfOnlyIgnoredTreasureRemains = value,
             IgnoredTreasureAction.KeepOpen);
+        NormalizeEnum(report, nameof(config.JunkDisposalMode),
+            () => config.JunkDisposalMode,
+            value => config.JunkDisposalMode = value,
+            JunkDisposalMode.Off);
         NormalizeEnum(report, nameof(config.AutoPauseFishing),
             () => config.AutoPauseFishing, value => config.AutoPauseFishing = value, PauseFishingBehavior.WarnAndPause);
         NormalizeEnum(report, nameof(config.SkipFishingMiniGame),
@@ -248,6 +253,26 @@ internal static class ConfigValidator
         config.JunkIgnoreList = [];
         report.Add(nameof(config.JunkIgnoreList), string.Join(", ", ignored), "retired",
             "The obsolete junk ignore list was retired; protected items were removed from the explicit junk list.");
+    }
+
+    private static void MigrateJunkDisposalMode(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 14 || originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        bool legacyEnabled = config.AutoTrashJunk;
+        config.JunkDisposalMode = legacyEnabled
+            ? JunkDisposalMode.Immediately
+            : JunkDisposalMode.Off;
+        config.AutoTrashJunk = false;
+        if (legacyEnabled)
+        {
+            report.Add(nameof(config.AutoTrashJunk), true, config.JunkDisposalMode,
+                "The legacy automatic-trash toggle was migrated to the immediate junk disposal mode.");
+        }
     }
 
     private static void NormalizeDependencies(ModConfig config, ConfigValidationReport report)

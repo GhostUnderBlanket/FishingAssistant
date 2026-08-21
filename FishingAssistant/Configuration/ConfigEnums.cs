@@ -32,6 +32,14 @@ internal enum IgnoredTreasureAction
     Discard
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<JunkDisposalMode>))]
+internal enum JunkDisposalMode
+{
+    Off,
+    WhenInventoryFull,
+    Immediately
+}
+
 [JsonConverter(typeof(SafeStringEnumConverter<AutomationProfile>))]
 internal enum AutomationProfile
 {

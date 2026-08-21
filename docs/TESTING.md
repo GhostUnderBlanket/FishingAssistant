@@ -9,8 +9,11 @@ work is maintained in [RELEASE-CANDIDATE.md](RELEASE-CANDIDATE.md).
 - **Game:** Stardew Valley 1.6.15
 - **SMAPI:** 4.5.2
 - **Current release-candidate build:** 3.0.0-rc.1
-- **Automated verification:** 478 tests passed after the current performance and
-  maximum-fish-size fixes.
+- **Current post-RC development build:** 3.1.0-alpha.1; its new Junk List integrations
+  have completed automated and in-game verification.
+- **RC automated verification:** 478 tests passed for the published RC baseline.
+- **Post-RC automated verification:** 489 tests pass in both Debug and Release for the
+  3.1.0-alpha.1 development build, including the new policy and per-screen cache cases.
 - **RC gameplay pass:** 2026-08-21, commit `f5ab2d7`, using the single-player,
   local split-screen, remote host, and remote farmhand test instances. The SMAPI logs
   were inspected without finding errors, repeated recovery, duplicated input, stale
@@ -101,6 +104,22 @@ work is maintained in [RELEASE-CANDIDATE.md](RELEASE-CANDIDATE.md).
   use a disposable save and do not save afterward.
 - **Prepare Stardew Valley Fair:** Debug page or `fa_stardew_valley_fair`. Host-only
   setup under the same disposable-save rule, for the FishingGame festival minigame.
+
+## Verified 3.1 development features
+
+- [x] With `Ignore Junk List items in treasure chests` enabled, verify ordinary and
+  golden treasure leave Junk List items in the chest while collecting other rewards.
+- [x] Verify disabling that option restores the explicit Treasure Chest Ignore List as
+  the only source, and that edits remain isolated between local split-screen profiles.
+- [x] Verify Junk Disposal Off retains all junk and Immediately removes only newly
+  acquired quantities with the established behavior.
+- [x] Verify When Inventory Is Full retains junk while space remains, then removes all
+  eligible Junk List stacks together after the last slot is filled.
+- [x] Verify one batch produces one sound and one summary message, applies Vanilla
+  trash-can reclamation to every discarded stack, and leaves non-trashable items and
+  protected fish untouched.
+- [x] Verify applying the full-inventory mode or enabling automation while already full
+  performs one batch cleanup, with split-screen and remote players remaining isolated.
 
 ## Recording rule
 

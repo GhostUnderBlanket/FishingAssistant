@@ -7,6 +7,15 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- An optional `Ignore Junk List items in treasure chests` setting which derives the
+  effective treasure-ignore set without modifying either visual list.
+- A Junk Disposal selector with Off, When Inventory Is Full, and Immediately modes.
+  Full-inventory cleanup discards all eligible Junk List stacks as one batch with one
+  sound and one summary message, without an inventory-add patch. New configurations
+  default to When Inventory Is Full.
+
 ## [3.0.0-rc.1] - 2026-08-21
 
 ### Added

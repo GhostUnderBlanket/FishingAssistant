@@ -2,7 +2,7 @@
 
 Fishing Assistant 3 loads SMAPI's standard `config.json` as the migration-compatible
 base template. Once a player is loaded, that player's settings are stored separately in
-`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `13`.
+`config.players/player-<UniqueMultiplayerID>.json`. The current schema version is `14`.
 Saved configuration, the active validated player profile, and an editable menu draft
 are treated as separate objects.
 
@@ -24,8 +24,8 @@ SMAPI.
 Unknown top-level properties are reported in the SMAPI log before a migrated file is
 written. Reports include a bounded representation of the original JSON value so the
 setting can be identified; values with credential-like property names are redacted.
-They are not silently treated as supported options. A file whose
-`ConfigVersion` is newer than 13 is loaded read-only: its schema version is not
+They are not silently treated as supported options. A file whose `ConfigVersion` is
+newer than 14 is loaded read-only: its schema version is not
 downgraded, the file is not automatically rewritten, and applying a draft is blocked
 to avoid discarding future data.
 
@@ -82,6 +82,13 @@ is stored per player like the other controls. A small Vanilla Treasure Hunter ta
 icon appears beside the rod HUD whenever targeting is on and disappears when targeting is off,
 whether the setting was changed through the optional keybind or the configuration menu.
 
+Schema version 14 adds two opt-in Junk List integrations. `IgnoreJunkListItemsInTreasureChests`
+derives an effective treasure-ignore set from the player's explicit Treasure Chest Ignore List
+plus their Junk List without copying entries between either editor. `JunkDisposalMode` replaces
+the legacy `AutoTrashJunk` boolean with Off, When Inventory Is Full, and Immediately choices.
+An enabled legacy toggle migrates to Immediately so existing behavior is preserved; disabled
+legacy configurations use Off, while new configurations default to When Inventory Is Full.
+
 `UnlockCastPowerTime` extends the Fishing Assistant 2 smart-cast behavior with a
 per-screen session value. A session starts at `DefaultCastPower`. While automation is
 enabled, starting a manual cast marks player input and briefly holds the current session
@@ -98,9 +105,18 @@ the catch cycle therefore cannot leave a new automatic cast stuck on the power b
 send it into recovery timeout; a new press after release is treated as manual input.
 
 In Catch Assistance, treasure controls are ordered as Target Fishing Treasure,
-Collect Treasure During the Minigame Instantly, Treasure Chest Ignore List, then When
-Only Ignored Treasure Remains. The ignore-list controls no longer appear under
-Inventory & Food.
+Collect Treasure During the Minigame Instantly, Treasure Chest Ignore List, Ignore Junk
+List Items in Treasure Chests, then When Only Ignored Treasure Remains. The ignore-list
+controls no longer appear under Inventory & Food.
+
+Junk Disposal is local to the current player and runs only while that player's automation
+is enabled. Immediately preserves the earlier behavior by removing only each newly acquired
+quantity. When Inventory Is Full retains junk until a successful inventory change fills the
+last slot, then discards every eligible Junk List stack in one batch. It also checks an
+already-full inventory when the player enables automation or applies that mode. The batch
+plays one trash sound and shows one summary message regardless of stack count. Both modes
+require Vanilla trashability and preserve fish unless `AllowTrashFish` is enabled. Vanilla
+trash-can reclamation is calculated for every discarded stack.
 
 The Debug page includes Create Test Fishing Bubble, also available through the
 `fa_bubble` console command. It uses the current `DefaultCastPower`, searches the

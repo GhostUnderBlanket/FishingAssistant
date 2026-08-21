@@ -32,11 +32,11 @@ internal static class InlineConfigValidation
                 "config.warning.ignored_treasure_discard"));
         }
 
-        if (config.AutoTrashJunk)
+        if (config.JunkDisposalMode != JunkDisposalMode.Off)
         {
             messages.Add(new InlineConfigMessage(
-                "auto_trash",
-                "config.warning.auto_trash"));
+                "junk_disposal",
+                "config.warning.junk_disposal"));
         }
 
         if (config.AllowTrashFish)

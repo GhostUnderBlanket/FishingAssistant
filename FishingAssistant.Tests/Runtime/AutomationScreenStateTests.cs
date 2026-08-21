@@ -138,6 +138,30 @@ public sealed class AutomationScreenStateTests
         Assert.Contains("(O)170", refreshed);
     }
 
+    [Fact]
+    public void GetTreasureChestIgnoreIds_IncludesJunkOnlyWhenConfigured()
+    {
+        AutomationScreenState state = new();
+        ModConfig config = new()
+        {
+            TreasureChestIgnoreList = ["(O)169"],
+            JunkList = ["(O)170"],
+            IgnoreJunkListItemsInTreasureChests = true
+        };
+
+        IReadOnlySet<string> ignored = state.GetTreasureChestIgnoreIds(config);
+
+        Assert.Contains("(O)169", ignored);
+        Assert.Contains("(O)170", ignored);
+
+        config.IgnoreJunkListItemsInTreasureChests = false;
+        state.InvalidateTreasureChestIgnoreIds();
+        ignored = state.GetTreasureChestIgnoreIds(config);
+
+        Assert.Contains("(O)169", ignored);
+        Assert.DoesNotContain("(O)170", ignored);
+    }
+
     private static AutomationScreenState CreatePopulatedState()
     {
         AutomationScreenState state = new()

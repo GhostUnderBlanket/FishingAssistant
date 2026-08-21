@@ -566,8 +566,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
             case ConfigCategory.Inventory:
                 this.AddEnumDefinition("inventory_full_action", () => this.session.Draft.ActionIfInventoryFull,
                     value => this.session.Draft.ActionIfInventoryFull = value);
-                this.AddDefinition("auto_trash", () => this.session.Draft.AutoTrashJunk,
-                    value => this.session.Draft.AutoTrashJunk = value);
+                this.AddEnumDefinition("junk_disposal",
+                    () => this.session.Draft.JunkDisposalMode,
+                    value => this.session.Draft.JunkDisposalMode = value);
                 this.AddActionDefinition("junk_lists",
                     () => string.Format(this.translate("config.junk_picker.selected"),
                         this.session.Draft.JunkList.Count),
@@ -640,6 +641,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
                         this.session.Draft.TreasureChestIgnoreList,
                         this.itemSource,
                         this.translate)));
+                this.AddDefinition("ignore_junk_in_treasure",
+                    () => this.session.Draft.IgnoreJunkListItemsInTreasureChests,
+                    value => this.session.Draft.IgnoreJunkListItemsInTreasureChests = value);
                 this.AddEnumDefinition("ignored_treasure_action",
                     () => this.session.Draft.ActionIfOnlyIgnoredTreasureRemains,
                     value => this.session.Draft.ActionIfOnlyIgnoredTreasureRemains = value);

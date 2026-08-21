@@ -146,12 +146,22 @@ the session returns to title. Save loading restores any surviving snapshot and r
 tracked temporary enchantments before discarding runtime tracking, so assistant-owned
 state cannot be silently orphaned on a rod.
 
-Automatic junk disposal consumes SMAPI's local-player `InventoryChanged` delta instead
-of rescanning or removing matching inventory stacks. A pure policy requires automation,
-the opt-in setting, explicit junk membership, vanilla trashability, and the fish safety
-setting. The service removes only the added stack or positive quantity delta from that
-exact item instance. Vanilla trash reclamation is then applied to a copy containing
-only the discarded quantity.
+Junk disposal consumes SMAPI's local-player `InventoryChanged` delta and does not patch
+Vanilla inventory insertion. Immediately mode passes only the added stack or positive
+quantity delta to a pure policy, then removes that exact quantity. When Inventory Is Full
+mode waits for a successful change to occupy the last slot and passes the current inventory
+to a separate batch policy. Every eligible Junk List stack is removed together, Vanilla
+trash-can reclamation is totaled per stack, and the adapter emits one sound and one summary
+message. Enabling automation or applying configuration performs the same full-inventory
+check so a pre-existing full inventory is not stranded. Both policies require automation,
+explicit junk membership, Vanilla trashability, and the fish safety setting, and all work
+is restricted to the owning local screen.
+
+Automatic treasure collection derives its effective ignore set per screen. It always
+includes the player's Treasure Chest Ignore List and, when the opt-in integration is
+enabled, adds that same player's Junk List. The source lists remain independent and the
+derived set is invalidated when an applied configuration changes, preventing edits from
+leaking between profiles or split-screen players.
 
 Late-night warnings and their pending stop request are per-screen runtime state. The
 assistant disables automation only after the current rod, minigame, and reward menu are
