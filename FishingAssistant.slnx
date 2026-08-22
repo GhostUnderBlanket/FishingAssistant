@@ -1,4 +1,3 @@
 <Solution>
   <Project Path="FishingAssistant/FishingAssistant.csproj" />
-  <Project Path="FishingAssistant.Tests/FishingAssistant.Tests.csproj" />
 </Solution>

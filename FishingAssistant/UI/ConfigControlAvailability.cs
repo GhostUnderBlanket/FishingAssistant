@@ -9,6 +9,13 @@ internal static class ConfigControlAvailability
             : ConfigControlState.Disabled("config.unavailable.fish_preview_style");
     }
 
+
+    public static ConfigControlState BubbleSteering(bool steeringEnabled)
+    {
+        return steeringEnabled
+            ? ConfigControlState.Enabled
+            : ConfigControlState.Disabled("config.unavailable.bubble_steering");
+    }
     public static ConfigControlState TemporaryEnchantments(bool hasRemotePlayers)
     {
         return hasRemotePlayers

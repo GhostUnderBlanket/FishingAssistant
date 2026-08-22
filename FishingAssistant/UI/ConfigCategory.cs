@@ -9,6 +9,5 @@ internal enum ConfigCategory
     Inventory,
     Equipment,
     Enchantments,
-    Controls,
-    Debug
+    Controls
 }

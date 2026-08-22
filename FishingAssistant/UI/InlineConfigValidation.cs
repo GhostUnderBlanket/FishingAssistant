@@ -11,6 +11,7 @@ internal static class InlineConfigValidation
         ArgumentNullException.ThrowIfNull(config);
 
         List<InlineConfigMessage> messages = [];
+
         if (config.FishPreviewStyle == FishPreviewStyle.Sonar)
         {
             messages.Add(new InlineConfigMessage(

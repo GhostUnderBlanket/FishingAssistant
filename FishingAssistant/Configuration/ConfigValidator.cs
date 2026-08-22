@@ -19,6 +19,7 @@ internal static class ConfigValidator
         NormalizeVersion(config, report);
         RetireJunkIgnoreList(config, originalVersion, report);
         MigrateJunkDisposalMode(config, originalVersion, report);
+        MigrateCastPowerAdjustmentMode(config, originalVersion, report);
         MigrateOrderedEquipmentPreferences(config, originalVersion, report);
         MigrateFishDifficultySettings(config, originalVersion, report);
         if (originalVersion < 12)
@@ -58,6 +59,12 @@ internal static class ConfigValidator
         NormalizeEnum(report, nameof(config.MinigameAssistance),
             () => config.MinigameAssistance, value => config.MinigameAssistance = value,
             MinigameAssistancePreset.Off);
+        NormalizeEnum(report, nameof(config.SteeringEffort),
+            () => config.SteeringEffort, value => config.SteeringEffort = value,
+            SteeringEffort.Normal);
+        NormalizeEnum(report, nameof(config.AutomaticCastPowerAdjustmentMode),
+            () => config.AutomaticCastPowerAdjustmentMode,
+            value => config.AutomaticCastPowerAdjustmentMode = value, CastPowerAdjustmentMode.Off);
         NormalizeEnum(report, nameof(config.ActionIfInventoryFull),
             () => config.ActionIfInventoryFull, value => config.ActionIfInventoryFull = value, InventoryFullAction.Stop);
         NormalizeEnum(report, nameof(config.ActionIfOnlyIgnoredTreasureRemains),
@@ -273,6 +280,26 @@ internal static class ConfigValidator
             "The obsolete junk ignore list was retired; protected items were removed from the explicit junk list.");
     }
 
+
+    private static void MigrateCastPowerAdjustmentMode(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 18 || originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        config.AutomaticCastPowerAdjustmentMode = config.AutomaticCastPowerAdjustment
+            ? CastPowerAdjustmentMode.AutomaticOnly
+            : CastPowerAdjustmentMode.Off;
+        config.AutomaticCastPowerAdjustment = false;
+        if (config.AutomaticCastPowerAdjustmentMode == CastPowerAdjustmentMode.AutomaticOnly)
+        {
+            report.Add(nameof(config.AutomaticCastPowerAdjustment), true,
+                config.AutomaticCastPowerAdjustmentMode,
+                "The automatic-cast power adjustment toggle was migrated to the automatic-casts mode.");
+        }
+    }
     private static void MigrateJunkDisposalMode(
         ModConfig config,
         int originalVersion,

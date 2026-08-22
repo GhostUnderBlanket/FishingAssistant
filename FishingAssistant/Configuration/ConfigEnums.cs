@@ -16,6 +16,33 @@ internal enum FishPreviewStyle
     Sonar
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<SteeringEffort>))]
+internal enum SteeringEffort
+{
+    Low,
+    Normal,
+    High
+}
+
+[JsonConverter(typeof(SafeStringEnumConverter<CastPowerAdjustmentMode>))]
+internal enum CastPowerAdjustmentMode
+{
+    Off,
+    AutomaticAndManual,
+    AutomaticOnly,
+    ManualOnly
+}
+
+internal static class CastPowerAdjustmentModeExtensions
+{
+    public static bool AppliesToAutomatic(this CastPowerAdjustmentMode mode)
+        => mode is CastPowerAdjustmentMode.AutomaticAndManual or CastPowerAdjustmentMode.AutomaticOnly;
+
+    public static bool AppliesToManual(this CastPowerAdjustmentMode mode)
+        => mode is CastPowerAdjustmentMode.AutomaticAndManual or CastPowerAdjustmentMode.ManualOnly;
+}
+
+
 [JsonConverter(typeof(SafeStringEnumConverter<InventoryFullAction>))]
 internal enum InventoryFullAction
 {

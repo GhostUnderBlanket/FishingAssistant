@@ -26,10 +26,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly Func<ConfigEditSession, ConfigValidationReport> apply;
     private readonly Func<string, string> translate;
     private readonly IConfigItemSource itemSource;
-    private readonly Action warpToBeachFishingSpot;
-    private readonly Action<int> createFishingBubble;
-    private readonly Action prepareIceFishingFestival;
-    private readonly Action prepareStardewValleyFair;
     private readonly ConfigResetWorkflow resetWorkflow;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
@@ -51,20 +47,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<ConfigEditSession, ConfigValidationReport> apply,
         Func<ModConfig> createDefaults,
         IConfigItemSource itemSource,
-        ITranslationHelper translations,
-        Action warpToBeachFishingSpot,
-        Action<int> createFishingBubble,
-        Action prepareIceFishingFestival,
-        Action prepareStardewValleyFair)
+        ITranslationHelper translations)
     {
         this.session = session;
         this.apply = apply;
         this.itemSource = itemSource;
         this.translate = key => translations.Get(key);
-        this.warpToBeachFishingSpot = warpToBeachFishingSpot;
-        this.createFishingBubble = createFishingBubble;
-        this.prepareIceFishingFestival = prepareIceFishingFestival;
-        this.prepareStardewValleyFair = prepareStardewValleyFair;
         this.resetWorkflow = new ConfigResetWorkflow(createDefaults);
 
         this.RebuildComponents();
@@ -613,6 +601,15 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.InstantFishBite = value);
                 this.AddDefinition("bubble_steering", () => this.session.Draft.AutomaticBubbleSteering,
                     value => this.SetProfileOption(() => this.session.Draft.AutomaticBubbleSteering = value));
+                this.AddEnumDefinition("automatic_cast_power_adjustment",
+                    () => this.session.Draft.AutomaticCastPowerAdjustmentMode,
+                    value => this.session.Draft.AutomaticCastPowerAdjustmentMode = value,
+                    () => ConfigControlAvailability.BubbleSteering(this.session.Draft.AutomaticBubbleSteering));
+                this.AddEnumDefinition("steering_effort", () => this.session.Draft.SteeringEffort,
+                    value => this.session.Draft.SteeringEffort = value,
+                    () => ConfigControlAvailability.BubbleSteering(this.session.Draft.AutomaticBubbleSteering));
+                this.AddDefinition("bubble_marker", () => this.session.Draft.ShowFishingBubbleMarker,
+                    value => this.session.Draft.ShowFishingBubbleMarker = value);
                 this.AddNumberDefinition("fish_amount", () => this.session.Draft.PreferFishAmount,
                     value => this.session.Draft.PreferFishAmount = Convert.ToInt32(value), 1, 3, 1);
                 this.AddEnumDefinition("fish_quality", () => this.session.Draft.PreferFishQuality,
@@ -732,20 +729,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.ToggleTreasureTargetingButton = value);
                 this.AddKeybindDefinition("open_config", () => this.session.Draft.OpenConfigMenuButton,
                     value => this.session.Draft.OpenConfigMenuButton = value);
-                break;
-            case ConfigCategory.Debug:
-                this.AddActionDefinition("warp_beach",
-                    () => this.translate("config.action.warp"),
-                    this.warpToBeachFishingSpot);
-                this.AddActionDefinition("create_bubble",
-                    () => this.translate("config.action.create"),
-                    () => this.createFishingBubble(this.session.Draft.DefaultCastPower));
-                this.AddActionDefinition("ice_festival",
-                    () => this.translate("config.action.prepare"),
-                    this.prepareIceFishingFestival);
-                this.AddActionDefinition("stardew_valley_fair",
-                    () => this.translate("config.action.prepare"),
-                    this.prepareStardewValleyFair);
                 break;
         }
     }

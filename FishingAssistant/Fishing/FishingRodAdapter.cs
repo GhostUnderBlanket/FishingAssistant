@@ -1,3 +1,4 @@
+using FishingAssistant.Configuration;
 using FishingAssistant.Runtime;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -228,7 +229,7 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             rod.timeUntilFishingBite = 0f;
     }
 
-    public bool TryGetBubbleSteeringTarget(bool enabled, out Vector2 target)
+    public bool TryGetBubbleSteeringTarget(bool enabled, SteeringEffort effort, out Vector2 target)
     {
         Point bubble = player.currentLocation.fishSplashPoint.Value;
         float flightMilliseconds = rod.animations.Count > 0 ? rod.animations[0].interval : 0f;
@@ -241,15 +242,17 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             player.StandingPixel.ToVector2(),
             rod.bobber.Value,
             bubble,
-            flightMilliseconds), out target);
+            flightMilliseconds,
+            effort), out target);
     }
 
-    public bool SteerToward(Vector2 target, ref Vector2 expectedPosition)
+    public bool SteerToward(Vector2 target, SteeringEffort effort, ref Vector2 expectedPosition)
     {
         if (!rod.castedButBobberStillInAir)
             return false;
 
-        Vector2 step = BubbleSteeringPolicy.GetSteeringStep(expectedPosition, target, player.FacingDirection);
+        Vector2 step = BubbleSteeringPolicy.GetSteeringStep(
+            expectedPosition, target, player.FacingDirection, effort);
         if (step == Vector2.Zero)
             return true;
 
@@ -260,6 +263,21 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
             rod.animations[0].position += correction;
         expectedPosition = nextPosition;
         return false;
+    }
+
+    public BubbleCastPlan GetBubbleCastPlan(int requestedCastPower, bool adjustCastPower, SteeringEffort effort)
+    {
+        Point bubble = player.currentLocation.fishSplashPoint.Value;
+        return BubbleCastPolicy.Plan(new BubbleCastPlanningConditions(
+            player.currentLocation.canFishHere(),
+            bubble != Point.Zero && player.currentLocation.isTileFishable(bubble.X, bubble.Y),
+            player.StandingPixel,
+            player.FacingDirection,
+            player.FishingLevel,
+            bubble,
+            requestedCastPower,
+            adjustCastPower,
+            effort));
     }
 
     private bool IsCastTargetFishable(int castPower)
