@@ -597,8 +597,27 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.InfiniteTackle = value);
                 break;
             case ConfigCategory.Fishing:
+                this.AddItemDefinition("starter_rod", ConfigItemKind.FishingRod, "None",
+                    () => this.session.Draft.StartWithFishingRod,
+                    value => this.session.Draft.StartWithFishingRod = value,
+                    "config.value.no_starter_rod");
+                this.AddNumberDefinition("cast_power", () => this.session.Draft.DefaultCastPower,
+                    value => this.session.Draft.DefaultCastPower = Convert.ToInt32(value), 0, 100, 5,
+                    value => $"{value:0}%");
+                this.AddNumberDefinition("cast_delay", () => this.session.Draft.AutoCastDelaySeconds,
+                    value => this.session.Draft.AutoCastDelaySeconds = (float)value, 0, 10, 0.25,
+                    value => $"{value:0.##}s");
+                this.AddNumberDefinition("unlock_cast_time", () => this.session.Draft.UnlockCastPowerTime,
+                    value => this.session.Draft.UnlockCastPowerTime = (float)value, 0, 3, 0.1,
+                    value => value switch
+                    {
+                        <= 0 => this.translate("config.value.instant_unlock"),
+                        >= ManualCastPowerPolicy.NeverUnlockSeconds => this.translate("config.value.never_unlock"),
+                        _ => string.Format(this.translate("config.value.seconds"), value)
+                    });
                 this.AddDefinition("instant_bite", () => this.session.Draft.InstantFishBite,
                     value => this.session.Draft.InstantFishBite = value);
+
                 this.AddDefinition("bubble_steering", () => this.session.Draft.AutomaticBubbleSteering,
                     value => this.SetProfileOption(() => this.session.Draft.AutomaticBubbleSteering = value));
                 this.AddEnumDefinition("automatic_cast_power_adjustment",
@@ -610,6 +629,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     () => ConfigControlAvailability.BubbleSteering(this.session.Draft.AutomaticBubbleSteering));
                 this.AddDefinition("bubble_marker", () => this.session.Draft.ShowFishingBubbleMarker,
                     value => this.session.Draft.ShowFishingBubbleMarker = value);
+
                 this.AddNumberDefinition("fish_amount", () => this.session.Draft.PreferFishAmount,
                     value => this.session.Draft.PreferFishAmount = Convert.ToInt32(value), 1, 3, 1);
                 this.AddEnumDefinition("fish_quality", () => this.session.Draft.PreferFishQuality,
@@ -618,6 +638,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.AlwaysPerfect = value);
                 this.AddDefinition("max_fish_size", () => this.session.Draft.AlwaysMaxFishSize,
                     value => this.session.Draft.AlwaysMaxFishSize = value);
+
                 this.AddDefinition("treasure_targeting", () => this.session.Draft.TreasureTargeting,
                     value => this.session.Draft.TreasureTargeting = value);
                 this.AddDefinition("instant_treasure", () => this.session.Draft.InstantCatchTreasure,
@@ -639,24 +660,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.TreasureChance = value);
                 this.AddEnumDefinition("golden_treasure_chance", () => this.session.Draft.GoldenTreasureChance,
                     value => this.session.Draft.GoldenTreasureChance = value);
-                this.AddNumberDefinition("cast_power", () => this.session.Draft.DefaultCastPower,
-                    value => this.session.Draft.DefaultCastPower = Convert.ToInt32(value), 0, 100, 5,
-                    value => $"{value:0}%");
-                this.AddNumberDefinition("cast_delay", () => this.session.Draft.AutoCastDelaySeconds,
-                    value => this.session.Draft.AutoCastDelaySeconds = (float)value, 0, 10, 0.25,
-                    value => $"{value:0.##}s");
-                this.AddNumberDefinition("unlock_cast_time", () => this.session.Draft.UnlockCastPowerTime,
-                    value => this.session.Draft.UnlockCastPowerTime = (float)value, 0, 3, 0.1,
-                    value => value switch
-                    {
-                        <= 0 => this.translate("config.value.instant_unlock"),
-                        >= ManualCastPowerPolicy.NeverUnlockSeconds => this.translate("config.value.never_unlock"),
-                        _ => string.Format(this.translate("config.value.seconds"), value)
-                    });
-                this.AddItemDefinition("starter_rod", ConfigItemKind.FishingRod, "None",
-                    () => this.session.Draft.StartWithFishingRod,
-                    value => this.session.Draft.StartWithFishingRod = value,
-                    "config.value.no_starter_rod");
                 break;
             case ConfigCategory.Minigame:
                 this.AddEnumDefinition("minigame_assistance",
