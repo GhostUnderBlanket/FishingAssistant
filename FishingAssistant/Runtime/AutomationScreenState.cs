@@ -37,6 +37,11 @@ internal sealed class AutomationScreenState
             this.treasureChestIgnoreIds.Clear();
             foreach (string itemId in config.TreasureChestIgnoreList)
                 this.treasureChestIgnoreIds.Add(itemId);
+            if (config.IgnoreJunkListItemsInTreasureChests)
+            {
+                foreach (string itemId in config.JunkList)
+                    this.treasureChestIgnoreIds.Add(itemId);
+            }
         }
 
         return this.treasureChestIgnoreIds;

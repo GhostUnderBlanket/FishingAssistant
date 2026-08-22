@@ -15,7 +15,9 @@ internal static class ConfigSchemaInspector
     private static readonly HashSet<string> RetiredProperties = new(StringComparer.OrdinalIgnoreCase)
     {
         "CatchTreasureButton",
-        "JunkHighestPrice"
+        "JunkHighestPrice",
+        nameof(ModConfig.FishDifficultyMultiplier),
+        nameof(ModConfig.FishDifficultyAdditive)
     };
 
     public static bool IsLegacyJson(string json)

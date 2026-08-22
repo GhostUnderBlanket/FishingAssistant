@@ -1,3 +1,4 @@
+using FishingAssistant.Fishing;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
@@ -17,6 +18,10 @@ internal static class ConfigValidator
         int originalVersion = config.ConfigVersion;
         NormalizeVersion(config, report);
         RetireJunkIgnoreList(config, originalVersion, report);
+        MigrateJunkDisposalMode(config, originalVersion, report);
+        MigrateCastPowerAdjustmentMode(config, originalVersion, report);
+        MigrateOrderedEquipmentPreferences(config, originalVersion, report);
+        MigrateFishDifficultySettings(config, originalVersion, report);
         if (originalVersion < 12)
         {
             config.FishPreviewStyle = FishPreviewStyle.Classic;
@@ -51,12 +56,25 @@ internal static class ConfigValidator
             () => config.FishPreviewStyle, value => config.FishPreviewStyle = value, FishPreviewStyle.Classic);
         NormalizeEnum(report, nameof(config.AutomationProfile),
             () => config.AutomationProfile, value => config.AutomationProfile = value, AutomationProfile.Custom);
+        NormalizeEnum(report, nameof(config.MinigameAssistance),
+            () => config.MinigameAssistance, value => config.MinigameAssistance = value,
+            MinigameAssistancePreset.Off);
+        NormalizeEnum(report, nameof(config.SteeringEffort),
+            () => config.SteeringEffort, value => config.SteeringEffort = value,
+            SteeringEffort.Normal);
+        NormalizeEnum(report, nameof(config.AutomaticCastPowerAdjustmentMode),
+            () => config.AutomaticCastPowerAdjustmentMode,
+            value => config.AutomaticCastPowerAdjustmentMode = value, CastPowerAdjustmentMode.Off);
         NormalizeEnum(report, nameof(config.ActionIfInventoryFull),
             () => config.ActionIfInventoryFull, value => config.ActionIfInventoryFull = value, InventoryFullAction.Stop);
         NormalizeEnum(report, nameof(config.ActionIfOnlyIgnoredTreasureRemains),
             () => config.ActionIfOnlyIgnoredTreasureRemains,
             value => config.ActionIfOnlyIgnoredTreasureRemains = value,
             IgnoredTreasureAction.KeepOpen);
+        NormalizeEnum(report, nameof(config.JunkDisposalMode),
+            () => config.JunkDisposalMode,
+            value => config.JunkDisposalMode = value,
+            JunkDisposalMode.Off);
         NormalizeEnum(report, nameof(config.AutoPauseFishing),
             () => config.AutoPauseFishing, value => config.AutoPauseFishing = value, PauseFishingBehavior.WarnAndPause);
         NormalizeEnum(report, nameof(config.SkipFishingMiniGame),
@@ -78,10 +96,21 @@ internal static class ConfigValidator
             () => config.BaitAmountToSpawn, value => config.BaitAmountToSpawn = value, 1, 999);
         NormalizeRange(report, nameof(config.PreferFishAmount),
             () => config.PreferFishAmount, value => config.PreferFishAmount = value, 1, 3);
-        NormalizeFloatRange(report, nameof(config.FishDifficultyMultiplier),
-            () => config.FishDifficultyMultiplier, value => config.FishDifficultyMultiplier = value, 0f, 10f);
-        NormalizeRange(report, nameof(config.FishDifficultyAdditive),
-            () => config.FishDifficultyAdditive, value => config.FishDifficultyAdditive = value, -100, 100);
+        NormalizeRange(report, nameof(config.FishSpeedPercent),
+            () => config.FishSpeedPercent, value => config.FishSpeedPercent = value,
+            MinigameAssistancePolicy.FishSpeedMinimum, MinigameAssistancePolicy.FishSpeedMaximum);
+        NormalizeRange(report, nameof(config.ProgressGainPercent),
+            () => config.ProgressGainPercent, value => config.ProgressGainPercent = value,
+            MinigameAssistancePolicy.ProgressGainMinimum, MinigameAssistancePolicy.ProgressGainMaximum);
+        NormalizeRange(report, nameof(config.ProgressLossPercent),
+            () => config.ProgressLossPercent, value => config.ProgressLossPercent = value,
+            MinigameAssistancePolicy.ProgressLossMinimum, MinigameAssistancePolicy.ProgressLossMaximum);
+        NormalizeRange(report, nameof(config.TreasureSpeedPercent),
+            () => config.TreasureSpeedPercent, value => config.TreasureSpeedPercent = value,
+            MinigameAssistancePolicy.TreasureSpeedMinimum, MinigameAssistancePolicy.TreasureSpeedMaximum);
+        NormalizeRange(report, nameof(config.BarSizePercent),
+            () => config.BarSizePercent, value => config.BarSizePercent = value,
+            MinigameAssistancePolicy.BarSizeMinimum, MinigameAssistancePolicy.BarSizeMaximum);
         NormalizeRange(report, nameof(config.DefaultCastPower),
             () => config.DefaultCastPower, value => config.DefaultCastPower = value, 0, 100);
         NormalizeFloatRange(report, nameof(config.AutoCastDelaySeconds),
@@ -89,12 +118,6 @@ internal static class ConfigValidator
         NormalizeFloatRange(report, nameof(config.UnlockCastPowerTime),
             () => config.UnlockCastPowerTime, value => config.UnlockCastPowerTime = value, 0f, 3f);
 
-        NormalizeString(report, nameof(config.PreferredBait),
-            () => config.PreferredBait, value => config.PreferredBait = value, "Any");
-        NormalizeString(report, nameof(config.PreferredTackle),
-            () => config.PreferredTackle, value => config.PreferredTackle = value, "Any");
-        NormalizeString(report, nameof(config.PreferredAdvIridiumTackle),
-            () => config.PreferredAdvIridiumTackle, value => config.PreferredAdvIridiumTackle = value, "Any");
         NormalizeString(report, nameof(config.StartWithFishingRod),
             () => config.StartWithFishingRod, value => config.StartWithFishingRod = value,
             ModConfig.DefaultStarterRod);
@@ -102,6 +125,13 @@ internal static class ConfigValidator
             () => config.JunkList, value => config.JunkList = value);
         NormalizeItemList(report, nameof(config.TreasureChestIgnoreList),
             () => config.TreasureChestIgnoreList, value => config.TreasureChestIgnoreList = value);
+        NormalizeItemList(report, nameof(config.PreferredBaits),
+            () => config.PreferredBaits, value => config.PreferredBaits = value);
+        NormalizeItemList(report, nameof(config.PreferredTackles),
+            () => config.PreferredTackles, value => config.PreferredTackles = value);
+        NormalizeItemList(report, nameof(config.PreferredSecondTackles),
+            () => config.PreferredSecondTackles, value => config.PreferredSecondTackles = value);
+        NormalizeAssistancePreset(config, report);
         NormalizeDependencies(config, report);
 
         if (itemCatalog is not null)
@@ -250,6 +280,121 @@ internal static class ConfigValidator
             "The obsolete junk ignore list was retired; protected items were removed from the explicit junk list.");
     }
 
+
+    private static void MigrateCastPowerAdjustmentMode(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 18 || originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        config.AutomaticCastPowerAdjustmentMode = config.AutomaticCastPowerAdjustment
+            ? CastPowerAdjustmentMode.AutomaticOnly
+            : CastPowerAdjustmentMode.Off;
+        config.AutomaticCastPowerAdjustment = false;
+        if (config.AutomaticCastPowerAdjustmentMode == CastPowerAdjustmentMode.AutomaticOnly)
+        {
+            report.Add(nameof(config.AutomaticCastPowerAdjustment), true,
+                config.AutomaticCastPowerAdjustmentMode,
+                "The automatic-cast power adjustment toggle was migrated to the automatic-casts mode.");
+        }
+    }
+    private static void MigrateJunkDisposalMode(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 14 || originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        bool legacyEnabled = config.AutoTrashJunk;
+        config.JunkDisposalMode = legacyEnabled
+            ? JunkDisposalMode.Immediately
+            : JunkDisposalMode.Off;
+        config.AutoTrashJunk = false;
+        if (legacyEnabled)
+        {
+            report.Add(nameof(config.AutoTrashJunk), true, config.JunkDisposalMode,
+                "The legacy automatic-trash toggle was migrated to the immediate junk disposal mode.");
+        }
+    }
+
+    private static void MigrateOrderedEquipmentPreferences(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        config.PreferredBaits ??= [];
+        config.PreferredTackles ??= [];
+        config.PreferredSecondTackles ??= [];
+
+        MigratePreference(config.PreferredBait, config.PreferredBaits, nameof(config.PreferredBaits), report);
+        MigratePreference(config.PreferredTackle, config.PreferredTackles, nameof(config.PreferredTackles), report);
+        MigratePreference(config.PreferredAdvIridiumTackle, config.PreferredSecondTackles,
+            nameof(config.PreferredSecondTackles), report);
+    }
+
+    private static void MigrateFishDifficultySettings(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        bool hadObsoleteCustomization = !config.FishDifficultyMultiplier.Equals(1f)
+            || config.FishDifficultyAdditive != 0;
+        if (originalVersion < 16)
+        {
+            config.MinigameAssistance = MinigameAssistancePreset.Off;
+            config.FishSpeedPercent = MinigameAssistancePolicy.VanillaPercent;
+            config.ProgressGainPercent = MinigameAssistancePolicy.VanillaPercent;
+            config.ProgressLossPercent = MinigameAssistancePolicy.VanillaPercent;
+            config.TreasureSpeedPercent = MinigameAssistancePolicy.VanillaPercent;
+            config.BarSizePercent = MinigameAssistancePolicy.VanillaPercent;
+        }
+
+        config.FishDifficultyMultiplier = 1f;
+        config.FishDifficultyAdditive = 0;
+        if (hadObsoleteCustomization)
+        {
+            report.Add("FishDifficultyMultiplier/FishDifficultyAdditive", "customized", "retired",
+                "The old difficulty controls affected fish behavior as well as speed and couldn't be converted reliably; Minigame Assistance starts at Vanilla.");
+        }
+    }
+
+    private static void NormalizeAssistancePreset(ModConfig config, ConfigValidationReport report)
+    {
+        MinigameAssistancePreset configured = config.MinigameAssistance;
+        MinigameAssistancePreset detected = MinigameAssistancePresets.Detect(config);
+        if (configured == detected)
+            return;
+
+        config.MinigameAssistance = detected;
+        report.Add(nameof(config.MinigameAssistance), configured, detected,
+            "The assistance preset was resolved from its modifier values.");
+    }
+
+    private static void MigratePreference(
+        string? legacyValue,
+        List<string> preferences,
+        string property,
+        ConfigValidationReport report)
+    {
+        if (preferences.Count > 0 || string.IsNullOrWhiteSpace(legacyValue)
+            || string.Equals(legacyValue.Trim(), "Any", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        string migrated = legacyValue.Trim();
+        preferences.Add(migrated);
+        report.Add(property, legacyValue, migrated,
+            "The single-item preference was migrated to an ordered preference list.");
+    }
+
     private static void NormalizeDependencies(ModConfig config, ConfigValidationReport report)
     {
         if (config.SpawnBaitIfDontHave && !config.AutoAttachBait)
@@ -277,15 +422,13 @@ internal static class ConfigValidator
         ArgumentNullException.ThrowIfNull(catalog);
 
         ConfigValidationReport report = new();
-        NormalizeItemPreference(report, nameof(config.PreferredBait),
-            () => config.PreferredBait, value => config.PreferredBait = value,
-            "Any", ConfigItemKind.Bait, catalog);
-        NormalizeItemPreference(report, nameof(config.PreferredTackle),
-            () => config.PreferredTackle, value => config.PreferredTackle = value,
-            "Any", ConfigItemKind.Tackle, catalog);
-        NormalizeItemPreference(report, nameof(config.PreferredAdvIridiumTackle),
-            () => config.PreferredAdvIridiumTackle, value => config.PreferredAdvIridiumTackle = value,
-            "Any", ConfigItemKind.Tackle, catalog);
+        NormalizeItemIds(report, nameof(config.PreferredBaits),
+            () => config.PreferredBaits, value => config.PreferredBaits = value, catalog, ConfigItemKind.Bait);
+        NormalizeItemIds(report, nameof(config.PreferredTackles),
+            () => config.PreferredTackles, value => config.PreferredTackles = value, catalog, ConfigItemKind.Tackle);
+        NormalizeItemIds(report, nameof(config.PreferredSecondTackles),
+            () => config.PreferredSecondTackles, value => config.PreferredSecondTackles = value, catalog,
+            ConfigItemKind.Tackle);
         NormalizeItemPreference(report, nameof(config.StartWithFishingRod),
             () => config.StartWithFishingRod, value => config.StartWithFishingRod = value,
             ModConfig.DefaultStarterRod, ConfigItemKind.FishingRod, catalog);
@@ -303,12 +446,13 @@ internal static class ConfigValidator
         string property,
         Func<List<string>> getValue,
         Action<List<string>> setValue,
-        IItemCatalog catalog)
+        IItemCatalog catalog,
+        ConfigItemKind? expectedKind = null)
     {
         List<string> original = getValue();
         List<string> corrected = original
             .Select(catalog.Find)
-            .Where(item => item is not null)
+            .Where(item => item is not null && (expectedKind is null || item.Kind == expectedKind))
             .Select(item => item!.QualifiedItemId)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();

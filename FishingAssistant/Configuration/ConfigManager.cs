@@ -43,13 +43,10 @@ internal sealed class ConfigManager(
             return failedReport;
         }
 
-        ConfigValidationReport report = ConfigValidator.Normalize(loaded);
-
         if (metadata.IsLegacy)
-        {
-            report.Add(nameof(ModConfig.ConfigVersion), "missing", ModConfig.CurrentVersion,
-                "The Fishing Assistant 2 configuration was migrated to the current schema.");
-        }
+            loaded.ConfigVersion = 2;
+
+        ConfigValidationReport report = ConfigValidator.Normalize(loaded);
 
         foreach (ConfigPropertySnapshot property in metadata.RetiredProperties)
         {

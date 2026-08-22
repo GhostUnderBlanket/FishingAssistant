@@ -6,6 +6,8 @@ internal sealed class AutomationPendingState
 
     public bool AutomaticCastInProgress { get; set; }
 
+    public int? AutomaticCastPower { get; set; }
+
     public int ManualCastPowerTicks { get; set; }
 
     public bool PlayerCastInputObserved { get; set; }
@@ -41,6 +43,7 @@ internal sealed class AutomationPendingState
         this.ReadyTicks = 0;
         this.AutomaticCastInProgress = false;
         this.ManualCastPowerTicks = 0;
+        this.AutomaticCastPower = null;
         this.PlayerCastInputObserved = false;
         this.ManualCastWasTiming = false;
         this.ManualCastPowerUnlocked = false;

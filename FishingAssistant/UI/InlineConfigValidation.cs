@@ -11,6 +11,7 @@ internal static class InlineConfigValidation
         ArgumentNullException.ThrowIfNull(config);
 
         List<InlineConfigMessage> messages = [];
+
         if (config.FishPreviewStyle == FishPreviewStyle.Sonar)
         {
             messages.Add(new InlineConfigMessage(
@@ -32,11 +33,11 @@ internal static class InlineConfigValidation
                 "config.warning.ignored_treasure_discard"));
         }
 
-        if (config.AutoTrashJunk)
+        if (config.JunkDisposalMode != JunkDisposalMode.Off)
         {
             messages.Add(new InlineConfigMessage(
-                "auto_trash",
-                "config.warning.auto_trash"));
+                "junk_disposal",
+                "config.warning.junk_disposal"));
         }
 
         if (config.AllowTrashFish)
@@ -99,6 +100,24 @@ internal static class InlineConfigValidation
             messages.Add(new InlineConfigMessage(
                 "auto_minigame",
                 "config.warning.auto_minigame_overridden"));
+        }
+
+        if (config.SkipFishingMiniGame != SkipMinigameBehavior.Off)
+        {
+            foreach (string optionKey in new[]
+                     {
+                         "minigame_assistance",
+                         "fish_speed",
+                         "progress_gain",
+                         "progress_loss",
+                         "treasure_speed",
+                         "bar_size"
+                     })
+            {
+                messages.Add(new InlineConfigMessage(
+                    optionKey,
+                    "config.info.minigame_assistance_skipped"));
+            }
         }
 
         return messages;

@@ -27,9 +27,9 @@ internal sealed class TackleAttachmentService(IMonitor monitor, Func<string, str
         List<TackleSlotState> slots = [];
         for (int slot = FishingRod.TackleIndex; slot < rod.AttachmentSlotsCount; slot++)
         {
-            string preference = slot == FishingRod.TackleIndex
-                ? config.PreferredTackle
-                : config.PreferredAdvIridiumTackle;
+            IReadOnlyList<string> preference = slot == FishingRod.TackleIndex
+                ? config.PreferredTackles
+                : config.PreferredSecondTackles;
             slots.Add(new TackleSlotState(slot, rod.attachments[slot] is not null, preference));
         }
 

@@ -1,5 +1,4 @@
 using FishingAssistant.Configuration;
-using FishingAssistant.Debugging;
 using FishingAssistant.Equipment;
 using FishingAssistant.Fishing;
 using FishingAssistant.HUD;
@@ -20,11 +19,9 @@ internal sealed class ModEntry : Mod
     private GameItemCatalog? itemCatalog;
     private AutomationRuntime? automationRuntime;
     private AutomationHudRenderer? automationHud;
+    private FishingBubbleMarkerRenderer? fishingBubbleMarker;
     private FishPreviewRenderer? fishPreview;
     private StarterFishingRodService? starterFishingRod;
-    private DebugWarpService? debugWarp;
-    private DebugFishingBubbleService? debugFishingBubble;
-    private DebugFestivalService? debugFestival;
     private BaitAttachmentService? baitAttachment;
     private TackleAttachmentService? tackleAttachment;
     private InfiniteAttachmentService? infiniteAttachment;
@@ -45,12 +42,10 @@ internal sealed class ModEntry : Mod
             () => this.configManager.Active,
             key => helper.Translation.Get(key));
         this.automationHud = new AutomationHudRenderer();
+        this.fishingBubbleMarker = new FishingBubbleMarkerRenderer(
+            () => this.automationRuntime.GetBubbleMarkerPlanCurrent());
         this.fishPreview = new FishPreviewRenderer(this.Monitor);
         this.starterFishingRod = new StarterFishingRodService(this.Monitor);
-        this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
-        this.debugFishingBubble = new DebugFishingBubbleService(
-            this.Monitor, key => helper.Translation.Get(key));
-        this.debugFestival = new DebugFestivalService(this.Monitor, key => helper.Translation.Get(key));
         this.baitAttachment = new BaitAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.tackleAttachment = new TackleAttachmentService(this.Monitor, key => helper.Translation.Get(key));
         this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
@@ -63,6 +58,10 @@ internal sealed class ModEntry : Mod
             () => this.configManager.Active,
             this.Monitor);
         SonarPreviewPatch.Apply(
+            harmony,
+            () => this.configManager.Active,
+            this.Monitor);
+        MinigameAssistancePatch.Apply(
             harmony,
             () => this.configManager.Active,
             this.Monitor);
@@ -92,19 +91,12 @@ internal sealed class ModEntry : Mod
         helper.Events.Multiplayer.PeerConnected += this.OnPeerConnected;
         helper.Events.Multiplayer.PeerDisconnected += this.OnPeerDisconnected;
         helper.Events.Display.RenderedHud += this.OnRenderedHud;
+        helper.Events.Display.RenderedWorld += this.OnRenderedWorld;
         helper.Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         helper.ConsoleCommands.Add("fa_config", "Open the Fishing Assistant configuration menu.",
             this.OnConfigCommand);
-        helper.ConsoleCommands.Add("fa_bubble", "Create a reachable fishing bubble for testing.",
-            this.OnBubbleCommand);
-        helper.ConsoleCommands.Add("fa_ice_festival",
-            "Prepare the Ice Fishing Festival on the host test save.",
-            this.OnIceFestivalCommand);
-        helper.ConsoleCommands.Add("fa_stardew_valley_fair",
-            "Prepare the Stardew Valley Fair on the host test save.",
-            this.OnStardewValleyFairCommand);
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -140,6 +132,8 @@ internal sealed class ModEntry : Mod
         {
             this.Helper.Input.SuppressActiveKeybinds(this.configManager.Active.EnableAutomationButton);
             this.automationRuntime!.ToggleCurrent();
+            if (this.automationRuntime.Current.IsEnabled)
+                this.autoTrash!.TryDiscardBatchIfFull(Game1.player, this.configManager.Active, true);
             return;
         }
 
@@ -258,6 +252,11 @@ internal sealed class ModEntry : Mod
         this.automationRuntime!.ResetActiveScreens(AutomationTransitionReason.PeerDisconnected);
     }
 
+    private void OnRenderedWorld(object? sender, RenderedWorldEventArgs e)
+    {
+        this.fishingBubbleMarker!.Draw(e.SpriteBatch, this.configManager!.Active);
+    }
+
     private void OnRenderedHud(object? sender, RenderedHudEventArgs e)
     {
         if (!Context.IsWorldReady || Game1.currentMinigame is StardewValley.Minigames.FishingGame)
@@ -282,21 +281,6 @@ internal sealed class ModEntry : Mod
     private void OnConfigCommand(string command, string[] arguments)
     {
         this.TryOpenConfigMenu();
-    }
-
-    private void OnBubbleCommand(string command, string[] arguments)
-    {
-        this.debugFishingBubble!.Create(this.configManager!.Active.DefaultCastPower);
-    }
-
-    private void OnIceFestivalCommand(string command, string[] arguments)
-    {
-        this.debugFestival!.PrepareIceFishingFestival();
-    }
-
-    private void OnStardewValleyFairCommand(string command, string[] arguments)
-    {
-        this.debugFestival!.PrepareStardewValleyFair();
     }
 
     private bool TryOpenConfigMenu()
@@ -332,11 +316,7 @@ internal sealed class ModEntry : Mod
             this.ApplyConfig,
             ConfigManager.CreateDefaultDraft,
             this.itemCatalog!,
-            this.Helper.Translation,
-            this.debugWarp!.WarpToBeachFishingSpot,
-            castPower => this.debugFishingBubble!.Create(castPower),
-            this.debugFestival!.PrepareIceFishingFestival,
-            this.debugFestival!.PrepareStardewValleyFair
+            this.Helper.Translation
         );
         return true;
     }
@@ -361,6 +341,10 @@ internal sealed class ModEntry : Mod
             this.automationRuntime!.ResetSessionCastPowerCurrent();
             this.automationRuntime.InvalidateTreasureChestIgnoreCacheCurrent();
             this.EnsureConfiguredStarterRod();
+            this.autoTrash!.TryDiscardBatchIfFull(
+                Game1.player,
+                this.configManager.Active,
+                this.automationRuntime.Current.IsEnabled);
             return report;
         }
         catch (InvalidOperationException exception)

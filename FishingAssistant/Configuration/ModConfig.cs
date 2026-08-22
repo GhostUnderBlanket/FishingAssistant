@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 13;
+    internal const int CurrentVersion = 18;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -43,9 +43,15 @@ internal sealed class ModConfig
 
     public List<string> TreasureChestIgnoreList { get; set; } = [];
 
+    public bool IgnoreJunkListItemsInTreasureChests { get; set; }
+
     public IgnoredTreasureAction ActionIfOnlyIgnoredTreasureRemains { get; set; } = IgnoredTreasureAction.KeepOpen;
 
+    public JunkDisposalMode JunkDisposalMode { get; set; } = JunkDisposalMode.WhenInventoryFull;
+
     public bool AutoTrashJunk { get; set; }
+
+    public bool ShouldSerializeAutoTrashJunk() => false;
 
     public bool AllowTrashFish { get; set; }
 
@@ -71,6 +77,10 @@ internal sealed class ModConfig
 
     public string PreferredBait { get; set; } = "Any";
 
+    public bool ShouldSerializePreferredBait() => false;
+
+    public List<string> PreferredBaits { get; set; } = [];
+
     public bool SpawnBaitIfDontHave { get; set; }
 
     public int BaitAmountToSpawn { get; set; } = 10;
@@ -79,7 +89,15 @@ internal sealed class ModConfig
 
     public string PreferredTackle { get; set; } = "Any";
 
+    public bool ShouldSerializePreferredTackle() => false;
+
+    public List<string> PreferredTackles { get; set; } = [];
+
     public string PreferredAdvIridiumTackle { get; set; } = "Any";
+
+    public bool ShouldSerializePreferredAdvIridiumTackle() => false;
+
+    public List<string> PreferredSecondTackles { get; set; } = [];
 
     public bool SpawnTackleIfDontHave { get; set; }
 
@@ -89,6 +107,16 @@ internal sealed class ModConfig
 
     public bool AutomaticBubbleSteering { get; set; } = true;
 
+    public bool AutomaticCastPowerAdjustment { get; set; }
+
+    public bool ShouldSerializeAutomaticCastPowerAdjustment() => false;
+
+    public CastPowerAdjustmentMode AutomaticCastPowerAdjustmentMode { get; set; }
+
+    public SteeringEffort SteeringEffort { get; set; } = SteeringEffort.Normal;
+
+    public bool ShowFishingBubbleMarker { get; set; }
+
     public int PreferFishAmount { get; set; } = 1;
 
     public FishQualityPreference PreferFishQuality { get; set; } = FishQualityPreference.Any;
@@ -97,9 +125,25 @@ internal sealed class ModConfig
 
     public bool AlwaysMaxFishSize { get; set; }
 
+    public MinigameAssistancePreset MinigameAssistance { get; set; } = MinigameAssistancePreset.Off;
+
+    public int FishSpeedPercent { get; set; } = 100;
+
+    public int ProgressGainPercent { get; set; } = 100;
+
+    public int ProgressLossPercent { get; set; } = 100;
+
+    public int TreasureSpeedPercent { get; set; } = 100;
+
+    public int BarSizePercent { get; set; } = 100;
+
     public float FishDifficultyMultiplier { get; set; } = 1f;
 
+    public bool ShouldSerializeFishDifficultyMultiplier() => false;
+
     public int FishDifficultyAdditive { get; set; }
+
+    public bool ShouldSerializeFishDifficultyAdditive() => false;
 
     public bool InstantCatchTreasure { get; set; }
 
@@ -152,6 +196,9 @@ internal sealed class ModConfig
         draft.JunkList = [.. this.JunkList];
         draft.JunkIgnoreList = [.. this.JunkIgnoreList];
         draft.TreasureChestIgnoreList = [.. this.TreasureChestIgnoreList];
+        draft.PreferredBaits = [.. this.PreferredBaits];
+        draft.PreferredTackles = [.. this.PreferredTackles];
+        draft.PreferredSecondTackles = [.. this.PreferredSecondTackles];
         return draft;
     }
 }

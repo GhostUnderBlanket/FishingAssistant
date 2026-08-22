@@ -7,6 +7,47 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- An optional `Ignore Junk List items in treasure chests` setting which derives the
+  effective treasure-ignore set without modifying either visual list.
+- A Junk Disposal selector with Off, When Inventory Is Full, and Immediately modes.
+  Full-inventory cleanup discards all eligible Junk List stacks as one batch with one
+  sound and one summary message, without an inventory-add patch. New configurations
+  default to When Inventory Is Full.
+- Ordered bait and tackle preference lists with visual add/remove controls and explicit
+  priority ordering for the bait slot and both tackle slots.
+- A vanilla-style fishing-bubble marker which shows green for a reachable cast and
+  yellow when the current cast cannot reach the bubble.
+- Low, Normal, and High Steering Effort choices for sideways bubble steering without
+  extending cast distance or steering behind the player.
+- Automatic Cast Power Adjustment modes for automatic casts, manual casts, both, or
+  neither. Affected casts prefer the bubble center and use a reachable edge only when
+  the center is outside the available steering correction.
+- Minigame Assistance presets and individual percentages for fish speed, progress gain,
+  progress loss, treasure speed, and the vanilla-calculated fishing-bar size.
+
+### Changed
+
+- Existing single-item bait and tackle preferences migrate to ordered lists. Automatic
+  attachment uses the first available configured item; optional spawning keeps the
+  first configured item authoritative instead of falling through to a lower priority.
+- Fish Difficulty Multiplier and Additive are retired from the active schema and menu.
+  Because they changed several fish-AI decisions and cannot map reliably to Fish Speed,
+  schema 16 migrates customized values to the vanilla Off/100% assistance baseline.
+- Reordered the configuration pages, moved Minigame Assistance into its own page, and
+  show inline guidance on its controls when Skip Minigame takes priority.
+- Rewrote the README as a user-facing overview of features, installation, controls,
+  configuration, multiplayer behavior, and source builds.
+
+### Removed
+
+- The test-only Debug configuration page, festival/bubble setup console commands, and
+  their runtime services from the public mod.
+- Development-only tests, internal planning and verification documents, and local
+  release scripts from the public repository while retaining them as ignored local
+  material for continued maintenance.
+
 ## [3.0.0-rc.1] - 2026-08-21
 
 ### Added

@@ -1,15 +1,16 @@
-# Repository-local development tools
-.tools/
+# Local development files
 .idea/
-
-# Decompiled proprietary game assemblies (reference use only)
+.tools/
 .reference/
-
-# Local agent working instructions
 AGENT.md
+*.sln.DotSettings.user
 
-# Local Codex conversation exports (may contain private project context)
-.codex-export/
+# Development-only project material
+FishingAssistant.Tests/
+FishingAssistant/Debugging/
+FishingAssistant/Properties/AssemblyInfo.cs
+docs/
+scripts/
 
 # .NET build output
 bin/

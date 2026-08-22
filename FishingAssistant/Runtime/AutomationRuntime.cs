@@ -19,6 +19,42 @@ internal sealed class AutomationRuntime(
 
     public AutomationSession Current => this.screens.Value.Session;
 
+    public BubbleCastPlan? GetBubbleMarkerPlanCurrent()
+    {
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod is null)
+            return null;
+
+        ModConfig config = getConfig();
+        AutomationScreenState screen = this.screens.Value;
+        int requestedPower;
+        bool adjustPower;
+        if (rod.IsTimingCast)
+        {
+            requestedPower = (int)Math.Round(rod.CastingPower * 100f);
+            adjustPower = screen.Session.IsEnabled
+                && config.AutomaticBubbleSteering
+                && config.AutomaticCastPowerAdjustmentMode.AppliesToManual();
+        }
+        else if (rod.IsBobberInAir)
+        {
+            requestedPower = (int)Math.Round(rod.CastingPower * 100f);
+            adjustPower = false;
+        }
+        else
+        {
+            requestedPower = screen.Pending.AutomaticCastPower
+                ?? screen.Pending.SessionCastPower
+                ?? config.DefaultCastPower;
+            adjustPower = screen.Session.IsEnabled
+                && config.AutomaticBubbleSteering
+                && config.AutoCastFishingRod
+                && config.AutomaticCastPowerAdjustmentMode.AppliesToAutomatic();
+        }
+
+        return rod.GetBubbleCastPlan(requestedPower, adjustPower, config.SteeringEffort);
+    }
+
     public void UpdateCurrent()
     {
         if (!Context.IsWorldReady)
@@ -44,6 +80,7 @@ internal sealed class AutomationRuntime(
         this.Log(this.lateNight.UpdateCurrent(getConfig(), screen.Session));
         this.autoEat.UpdateCurrent(getConfig(), screen.Session);
         this.UpdateManualCastPower(screen);
+        this.UpdateManualBubbleCastPower(screen);
         this.UpdateLowEnergyStop(screen);
         this.UpdateBubbleSteering(screen);
         this.UpdateInstantBite();
@@ -172,12 +209,14 @@ internal sealed class AutomationRuntime(
     private void UpdateAutomaticCast(AutomationScreenState screen)
     {
         ModConfig config = getConfig();
-        int castPower = screen.Pending.SessionCastPower ?? config.DefaultCastPower;
+        int requestedCastPower = screen.Pending.SessionCastPower ?? config.DefaultCastPower;
+        int castPower = screen.Pending.AutomaticCastPower ?? requestedCastPower;
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         if (rod is null)
         {
             screen.Pending.ReadyTicks = 0;
             screen.Pending.AutomaticCastInProgress = false;
+            screen.Pending.AutomaticCastPower = null;
             return;
         }
 
@@ -193,7 +232,14 @@ internal sealed class AutomationRuntime(
             }
 
             screen.Pending.AutomaticCastInProgress = false;
+            screen.Pending.AutomaticCastPower = null;
         }
+
+        BubbleCastPlan castPlan = rod.GetBubbleCastPlan(
+            requestedCastPower,
+            config.AutomaticBubbleSteering && config.AutomaticCastPowerAdjustmentMode.AppliesToAutomatic(),
+            config.SteeringEffort);
+        castPower = castPlan.CastPower;
 
         AutoCastConditions conditions = rod.ReadAutoCastConditions(
             screen.Session.IsEnabled,
@@ -208,6 +254,7 @@ internal sealed class AutomationRuntime(
         {
             case AutoCastDecision.Reset:
                 screen.Pending.ReadyTicks = 0;
+                screen.Pending.AutomaticCastPower = null;
                 break;
             case AutoCastDecision.Wait:
                 screen.Pending.ReadyTicks++;
@@ -215,6 +262,7 @@ internal sealed class AutomationRuntime(
             case AutoCastDecision.Cast:
                 screen.Pending.ReadyTicks = 0;
                 screen.Pending.AutomaticCastInProgress = true;
+                screen.Pending.AutomaticCastPower = castPower;
                 rod.BeginAutomaticCast(castPower);
                 monitor.Log($"Started an automatic cast for local screen {Context.ScreenId}.", LogLevel.Trace);
                 break;
@@ -264,6 +312,28 @@ internal sealed class AutomationRuntime(
         }
     }
 
+    private void UpdateManualBubbleCastPower(AutomationScreenState screen)
+    {
+        ModConfig config = getConfig();
+        if (!screen.Session.IsEnabled
+            || !config.AutomaticBubbleSteering
+            || screen.Pending.AutomaticCastInProgress
+            || !config.AutomaticCastPowerAdjustmentMode.AppliesToManual())
+            return;
+
+        FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
+        if (rod?.IsTimingCast != true)
+            return;
+
+        int requestedPower = (int)Math.Round(rod.CastingPower * 100f);
+        BubbleCastPlan plan = rod.GetBubbleCastPlan(
+            requestedPower,
+            adjustCastPower: true,
+            config.SteeringEffort);
+        if (plan.IsReachable)
+            rod.SetCastPower(plan.CastPower);
+    }
+
     private void ResetManualCastTracking(AutomationScreenState screen, bool preserveSessionPower = true)
     {
         screen.Pending.ManualCastPowerTicks = 0;
@@ -289,6 +359,7 @@ internal sealed class AutomationRuntime(
         {
             if (!rod.TryGetBubbleSteeringTarget(
                     getConfig().AutomaticBubbleSteering,
+                    getConfig().SteeringEffort,
                     out Microsoft.Xna.Framework.Vector2 target))
                 return;
 
@@ -306,7 +377,7 @@ internal sealed class AutomationRuntime(
         }
 
         Microsoft.Xna.Framework.Vector2 expectedPosition = screen.Pending.BubbleSteeringExpectedPosition;
-        rod.SteerToward(screen.Pending.BubbleSteeringTarget, ref expectedPosition);
+        rod.SteerToward(screen.Pending.BubbleSteeringTarget, getConfig().SteeringEffort, ref expectedPosition);
         screen.Pending.BubbleSteeringExpectedPosition = expectedPosition;
     }
 
@@ -433,14 +504,14 @@ internal sealed class AutomationRuntime(
         bar.ApplyLiveCatchModifiers(config);
         if (!ReferenceEquals(screen.Pending.ConfiguredBobberBar, bar.Identity))
         {
-            FishDifficultyDecision difficulty = bar.ApplyDifficulty(config);
+            (int vanillaBarHeight, int finalBarHeight) = bar.ApplyBarSizeAssistance(config);
             TreasureChanceDecision chance = TreasureChancePolicy.Decide(
                 bar.ReadTreasureChanceConditions(config));
             bar.ApplyTreasureChance(chance);
             screen.Pending.ConfiguredBobberBar = bar.Identity;
             monitor.Log(
                 $"Configured fishing minigame for local screen {Context.ScreenId}: " +
-                $"difficulty={difficulty.VanillaDifficulty:0.##}->{difficulty.AdjustedDifficulty:0.##}, " +
+                $"assistance={config.MinigameAssistance}, bar={vanillaBarHeight}->{finalBarHeight}, " +
                 $"treasure={chance.HasTreasure}, golden={chance.IsGoldenTreasure}.",
                 LogLevel.Trace);
         }
