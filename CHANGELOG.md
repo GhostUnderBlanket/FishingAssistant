@@ -7,6 +7,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-08-22
+
 ### Added
 
 - An optional `Ignore Junk List items in treasure chests` setting which derives the
@@ -37,6 +39,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   schema 16 migrates customized values to the vanilla Off/100% assistance baseline.
 - Reordered the configuration pages, moved Minigame Assistance into its own page, and
   show inline guidance on its controls when Skip Minigame takes priority.
+- Grouped Catch Assistance settings by casting, fishing bubbles, catch results, and
+  treasure handling so related options appear together.
 - Rewrote the README as a user-facing overview of features, installation, controls,
   configuration, multiplayer behavior, and source builds.
 
