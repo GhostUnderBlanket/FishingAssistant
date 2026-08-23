@@ -19,15 +19,22 @@ internal sealed class AutomationHudRenderer
     {
         bool isFishingMinigame = Game1.currentMinigame is FishingGame;
         bool isSupportedFestivalFishing = FestivalFishingContext.IsSupportedFishingActivity;
+        bool hasFishingRod = Game1.player.CurrentTool is StardewValley.Tools.FishingRod;
+        bool isFishingActive = Game1.activeClickableMenu is BobberBar
+            || isFishingMinigame
+            || isSupportedFestivalFishing;
         bool hasBlockingMenu = Game1.activeClickableMenu is not null
             && Game1.activeClickableMenu is not BobberBar;
         if (!AutomationHudVisibilityPolicy.ShouldDraw(new(
+                config.HudVisibility,
                 Game1.displayHUD,
                 hasBlockingMenu,
                 Game1.eventUp,
                 Game1.isFestival(),
                 Game1.currentMinigame is not null && !isFishingMinigame,
-                isSupportedFestivalFishing)))
+                isSupportedFestivalFishing,
+                hasFishingRod,
+                isFishingActive)))
         {
             return;
         }

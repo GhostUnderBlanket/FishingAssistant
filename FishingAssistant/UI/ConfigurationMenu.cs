@@ -694,6 +694,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.SkipFishingMiniGame = value);
                 break;
             case ConfigCategory.Display:
+                this.AddEnumDefinition("hud_visibility", () => this.session.Draft.HudVisibility,
+                    value => this.session.Draft.HudVisibility = value);
                 this.AddEnumDefinition("hud_position", () => this.session.Draft.ModStatusPosition,
                     value => this.session.Draft.ModStatusPosition = value);
                 this.AddDefinition("fish_preview", () => this.session.Draft.DisplayFishPreview,

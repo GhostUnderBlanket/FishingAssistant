@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 18;
+    internal const int CurrentVersion = 19;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -26,6 +26,8 @@ internal sealed class ModConfig
     public KeybindList ToggleTreasureTargetingButton { get; set; } = new(SButton.None);
 
     public HudPosition ModStatusPosition { get; set; } = HudPosition.Left;
+
+    public HudVisibilityMode HudVisibility { get; set; } = HudVisibilityMode.WhileFishing;
 
     public AutomationProfile AutomationProfile { get; set; } = AutomationProfile.Relaxed;
 

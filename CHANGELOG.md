@@ -7,6 +7,12 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Assistant HUD visibility modes for showing status only while fishing, keeping it
+  always visible, or hiding it completely. New configurations default to While Fishing,
+  while existing configurations preserve the previous Always behavior.
+
 ## [3.1.0] - 2026-08-22
 
 ### Added
