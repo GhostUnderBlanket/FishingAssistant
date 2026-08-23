@@ -247,7 +247,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
         Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
         IReadOnlyDictionary<string, InlineConfigMessage> inlineMessages = InlineConfigValidation
-            .Evaluate(this.session.Draft)
+            .Evaluate(this.session.Draft, this.GetMacFunctionKeyMessages())
             .ToDictionary(message => message.OptionKey, StringComparer.Ordinal);
         foreach (IConfigControl option in this.options)
         {
@@ -694,6 +694,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.SkipFishingMiniGame = value);
                 break;
             case ConfigCategory.Display:
+                this.AddEnumDefinition("hud_visibility", () => this.session.Draft.HudVisibility,
+                    value => this.session.Draft.HudVisibility = value);
                 this.AddEnumDefinition("hud_position", () => this.session.Draft.ModStatusPosition,
                     value => this.session.Draft.ModStatusPosition = value);
                 this.AddDefinition("fish_preview", () => this.session.Draft.DisplayFishPreview,
@@ -726,12 +728,18 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 break;
             case ConfigCategory.Controls:
                 this.AddKeybindDefinition("toggle_automation", () => this.session.Draft.EnableAutomationButton,
-                    value => this.session.Draft.EnableAutomationButton = value);
+                    value => this.session.Draft.EnableAutomationButton = value,
+                    () => this.session.Draft.EnableAutomationOptionalButton,
+                    value => this.session.Draft.EnableAutomationOptionalButton = value);
                 this.AddKeybindDefinition("toggle_treasure_targeting",
                     () => this.session.Draft.ToggleTreasureTargetingButton,
-                    value => this.session.Draft.ToggleTreasureTargetingButton = value);
+                    value => this.session.Draft.ToggleTreasureTargetingButton = value,
+                    () => this.session.Draft.ToggleTreasureTargetingOptionalButton,
+                    value => this.session.Draft.ToggleTreasureTargetingOptionalButton = value);
                 this.AddKeybindDefinition("open_config", () => this.session.Draft.OpenConfigMenuButton,
-                    value => this.session.Draft.OpenConfigMenuButton = value);
+                    value => this.session.Draft.OpenConfigMenuButton = value,
+                    () => this.session.Draft.OpenConfigMenuOptionalButton,
+                    value => this.session.Draft.OpenConfigMenuOptionalButton = value);
                 break;
         }
     }
@@ -894,7 +902,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private void AddKeybindDefinition(
         string key,
         Func<KeybindList> getValue,
-        Action<KeybindList> setValue)
+        Action<KeybindList> setValue,
+        Func<KeybindList>? getOptionalValue = null,
+        Action<KeybindList>? setOptionalValue = null)
     {
         this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigKeybind(
             id,
@@ -903,7 +913,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.translate($"config.option.{key}.description"),
             this.translate("config.keybind.listening"),
             getValue,
-            setValue
+            setValue,
+            getOptionalValue,
+            setOptionalValue
         ), () => ConfigControlState.Enabled));
     }
 
@@ -1058,6 +1070,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
             accent);
 
         string message = this.translate(messageKey);
+        if (state.IsEnabled && inlineMessage?.FormatArguments is { Length: > 0 } arguments)
+            message = string.Format(message, arguments);
         string fitted = MenuText.Fit(message, Game1.smallFont,
             Math.Max(1, messageBounds.Width - 16) / InlineMessageScale);
         batch.DrawString(Game1.smallFont, fitted,
@@ -1074,6 +1088,63 @@ internal sealed class ConfigurationMenu : IClickableMenu
     {
         return this.optionStateProviders.GetValueOrDefault(option.Component.myID)?.Invoke()
             ?? ConfigControlState.Enabled;
+    }
+
+    private IEnumerable<InlineConfigMessage> GetMacFunctionKeyMessages()
+    {
+        if (Constants.TargetPlatform != GamePlatform.Mac)
+            return [];
+
+        List<InlineConfigMessage> messages = [];
+        AddMacFunctionKeyMessage(messages, "toggle_automation",
+            this.session.Draft.EnableAutomationButton,
+            this.session.Draft.EnableAutomationOptionalButton);
+        AddMacFunctionKeyMessage(messages, "toggle_treasure_targeting",
+            this.session.Draft.ToggleTreasureTargetingButton,
+            this.session.Draft.ToggleTreasureTargetingOptionalButton);
+        AddMacFunctionKeyMessage(messages, "open_config",
+            this.session.Draft.OpenConfigMenuButton,
+            this.session.Draft.OpenConfigMenuOptionalButton);
+        return messages;
+    }
+
+    private static void AddMacFunctionKeyMessage(
+        ICollection<InlineConfigMessage> messages,
+        string optionKey,
+        params KeybindList[] keybinds)
+    {
+        string[] shortcuts = keybinds
+            .Select(FormatMacFunctionKeyShortcut)
+            .Where(shortcut => shortcut is not null)
+            .Cast<string>()
+            .ToArray();
+        if (shortcuts.Length > 0)
+        {
+            messages.Add(new InlineConfigMessage(
+                optionKey,
+                "config.info.keybind.mac_fn",
+                [string.Join(" | ", shortcuts)]));
+        }
+    }
+
+    private static string? FormatMacFunctionKeyShortcut(KeybindList keybinds)
+    {
+        bool hasFunctionKey = false;
+        if (!keybinds.IsBound)
+            return null;
+
+        string formatted = string.Join(", ", keybinds.Keybinds.Select(keybind =>
+            string.Join(" + ", keybind.Buttons.Select(button =>
+            {
+                if (button.TryGetKeyboard(out Keys key) && key is >= Keys.F1 and <= Keys.F24)
+                {
+                    hasFunctionKey = true;
+                    return $"Fn + {button}";
+                }
+
+                return button.ToString();
+            }))));
+        return hasFunctionKey ? formatted : null;
     }
 
     private bool TryUseOption(IConfigControl option)

@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 18;
+    internal const int CurrentVersion = 20;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -21,11 +21,19 @@ internal sealed class ModConfig
 
     public KeybindList EnableAutomationButton { get; set; } = new(SButton.F5);
 
+    public KeybindList EnableAutomationOptionalButton { get; set; } = new(SButton.None);
+
     public KeybindList OpenConfigMenuButton { get; set; } = new(SButton.F6);
+
+    public KeybindList OpenConfigMenuOptionalButton { get; set; } = new(SButton.ControllerBack);
 
     public KeybindList ToggleTreasureTargetingButton { get; set; } = new(SButton.None);
 
+    public KeybindList ToggleTreasureTargetingOptionalButton { get; set; } = new(SButton.None);
+
     public HudPosition ModStatusPosition { get; set; } = HudPosition.Left;
+
+    public HudVisibilityMode HudVisibility { get; set; } = HudVisibilityMode.WhileFishing;
 
     public AutomationProfile AutomationProfile { get; set; } = AutomationProfile.Relaxed;
 
@@ -191,8 +199,14 @@ internal sealed class ModConfig
     {
         ModConfig draft = (ModConfig)this.MemberwiseClone();
         draft.EnableAutomationButton = KeybindList.Parse(this.EnableAutomationButton.ToString());
+        draft.EnableAutomationOptionalButton =
+            KeybindList.Parse(this.EnableAutomationOptionalButton.ToString());
         draft.OpenConfigMenuButton = KeybindList.Parse(this.OpenConfigMenuButton.ToString());
+        draft.OpenConfigMenuOptionalButton =
+            KeybindList.Parse(this.OpenConfigMenuOptionalButton.ToString());
         draft.ToggleTreasureTargetingButton = KeybindList.Parse(this.ToggleTreasureTargetingButton.ToString());
+        draft.ToggleTreasureTargetingOptionalButton =
+            KeybindList.Parse(this.ToggleTreasureTargetingOptionalButton.ToString());
         draft.JunkList = [.. this.JunkList];
         draft.JunkIgnoreList = [.. this.JunkIgnoreList];
         draft.TreasureChestIgnoreList = [.. this.TreasureChestIgnoreList];

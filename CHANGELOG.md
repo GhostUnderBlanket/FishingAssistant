@@ -7,6 +7,24 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-08-23
+
+### Added
+
+- Assistant HUD visibility modes for showing status only while fishing, keeping it
+  always visible, or hiding it completely. New configurations default to While Fishing,
+  while existing configurations preserve the previous Always behavior.
+- An optional Generic Mod Config Menu launcher which redirects to Fishing Assistant's
+  custom configuration menu without replacing its visual editors or making GMCM a
+  requirement.
+- macOS guidance for using `Fn + F6` when the operating system reserves the F6 key.
+- Separately configurable main and optional shortcuts for opening the configuration
+  menu, displayed as two buttons on the same row (for example, `F6` and `Back`).
+- Matching main and optional shortcut buttons for automation and treasure targeting;
+  their optional shortcuts default to unbound.
+- macOS `Fn` inline hints for every configured shortcut that actually uses F1-F24;
+  letter and other non-function-key bindings are shown without `Fn`.
+
 ## [3.1.0] - 2026-08-22
 
 ### Added

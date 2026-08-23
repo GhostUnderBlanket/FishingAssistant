@@ -9,6 +9,14 @@ internal enum HudPosition
     Right
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<HudVisibilityMode>))]
+internal enum HudVisibilityMode
+{
+    WhileFishing,
+    Always,
+    Hidden
+}
+
 [JsonConverter(typeof(SafeStringEnumConverter<FishPreviewStyle>))]
 internal enum FishPreviewStyle
 {

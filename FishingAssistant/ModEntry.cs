@@ -2,6 +2,7 @@ using FishingAssistant.Configuration;
 using FishingAssistant.Equipment;
 using FishingAssistant.Fishing;
 using FishingAssistant.HUD;
+using FishingAssistant.Integrations.GenericModConfigMenu;
 using FishingAssistant.Inventory;
 using FishingAssistant.Runtime;
 using FishingAssistant.UI;
@@ -27,6 +28,7 @@ internal sealed class ModEntry : Mod
     private InfiniteAttachmentService? infiniteAttachment;
     private RodEnchantmentService? rodEnchantments;
     private AutoTrashService? autoTrash;
+    private GenericModConfigMenuBridge? genericModConfigMenu;
     private readonly PerScreen<bool> pendingConfigMenuOpen = new(() => false);
 
     public override void Entry(IModHelper helper)
@@ -51,6 +53,12 @@ internal sealed class ModEntry : Mod
         this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
         this.rodEnchantments = new RodEnchantmentService(this.Monitor, key => helper.Translation.Get(key));
         this.autoTrash = new AutoTrashService(this.Monitor, key => helper.Translation.Get(key));
+        this.genericModConfigMenu = new GenericModConfigMenuBridge(
+            helper,
+            this.ModManifest,
+            this.Monitor,
+            this.TryOpenConfigMenu,
+            () => helper.Translation.Get("integration.gmcm.load_save"));
         ConfigValidationReport report = this.configManager.Load();
         Harmony harmony = new(this.ModManifest.UniqueID);
         CatchResultPatch.Apply(
@@ -102,6 +110,7 @@ internal sealed class ModEntry : Mod
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         this.itemCatalog = new GameItemCatalog();
+        this.genericModConfigMenu!.Register();
         ConfigValidationReport report = this.configManager!.ValidateItems(this.itemCatalog);
         if (report.Corrections.Count > 0 || report.Warnings.Count > 0)
         {
@@ -128,9 +137,16 @@ internal sealed class ModEntry : Mod
         if (Game1.activeClickableMenu is ConfigurationMenu)
             return;
 
-        if (Context.IsWorldReady && this.configManager!.Active.EnableAutomationButton.JustPressed())
+        KeybindList automationKeybind = this.configManager!.Active.EnableAutomationButton;
+        KeybindList automationOptionalKeybind = this.configManager.Active.EnableAutomationOptionalButton;
+        bool automationKeybindPressed = automationKeybind.JustPressed();
+        bool automationOptionalKeybindPressed = automationOptionalKeybind.JustPressed();
+        if (Context.IsWorldReady && (automationKeybindPressed || automationOptionalKeybindPressed))
         {
-            this.Helper.Input.SuppressActiveKeybinds(this.configManager.Active.EnableAutomationButton);
+            if (automationKeybindPressed)
+                this.Helper.Input.SuppressActiveKeybinds(automationKeybind);
+            if (automationOptionalKeybindPressed)
+                this.Helper.Input.SuppressActiveKeybinds(automationOptionalKeybind);
             this.automationRuntime!.ToggleCurrent();
             if (this.automationRuntime.Current.IsEnabled)
                 this.autoTrash!.TryDiscardBatchIfFull(Game1.player, this.configManager.Active, true);
@@ -138,9 +154,16 @@ internal sealed class ModEntry : Mod
         }
 
         KeybindList treasureKeybind = this.configManager!.Active.ToggleTreasureTargetingButton;
-        if (Context.IsWorldReady && treasureKeybind.IsBound && treasureKeybind.JustPressed())
+        KeybindList treasureOptionalKeybind =
+            this.configManager.Active.ToggleTreasureTargetingOptionalButton;
+        bool treasureKeybindPressed = treasureKeybind.JustPressed();
+        bool treasureOptionalKeybindPressed = treasureOptionalKeybind.JustPressed();
+        if (Context.IsWorldReady && (treasureKeybindPressed || treasureOptionalKeybindPressed))
         {
-            this.Helper.Input.SuppressActiveKeybinds(treasureKeybind);
+            if (treasureKeybindPressed)
+                this.Helper.Input.SuppressActiveKeybinds(treasureKeybind);
+            if (treasureOptionalKeybindPressed)
+                this.Helper.Input.SuppressActiveKeybinds(treasureOptionalKeybind);
             try
             {
                 bool enabled = this.configManager.ToggleTreasureTargeting();
@@ -156,8 +179,11 @@ internal sealed class ModEntry : Mod
         }
 
         KeybindList openConfigKeybind = this.configManager!.Active.OpenConfigMenuButton;
+        KeybindList openConfigOptionalKeybind =
+            this.configManager.Active.OpenConfigMenuOptionalButton;
         bool configuredKeybindPressed = openConfigKeybind.JustPressed();
-        if (!ConfigurationMenuInput.IsOpenRequested(configuredKeybindPressed, e.Pressed))
+        bool configuredOptionalKeybindPressed = openConfigOptionalKeybind.JustPressed();
+        if (!configuredKeybindPressed && !configuredOptionalKeybindPressed)
             return;
 
         if (!this.TryOpenConfigMenu())
@@ -165,12 +191,13 @@ internal sealed class ModEntry : Mod
 
         if (configuredKeybindPressed)
             this.Helper.Input.SuppressActiveKeybinds(openConfigKeybind);
-        if (e.Pressed.Contains(ConfigurationMenuInput.ControllerFallbackButton))
-            this.Helper.Input.Suppress(ConfigurationMenuInput.ControllerFallbackButton);
+        if (configuredOptionalKeybindPressed)
+            this.Helper.Input.SuppressActiveKeybinds(openConfigOptionalKeybind);
     }
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
     {
+        this.genericModConfigMenu!.UpdateCurrent();
         this.TryCompletePendingConfigMenuOpen();
         this.rodEnchantments!.UpdateCurrent(this.configManager!.Active);
         this.infiniteAttachment!.UpdateCurrent(this.configManager.Active);
@@ -198,6 +225,7 @@ internal sealed class ModEntry : Mod
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
     {
         this.pendingConfigMenuOpen.ResetAllScreens();
+        this.genericModConfigMenu!.Reset();
         this.rodEnchantments!.RemoveAllAndReset();
         this.infiniteAttachment!.RestoreAll();
         this.infiniteAttachment.ResetAll();

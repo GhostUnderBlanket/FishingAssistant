@@ -17,6 +17,7 @@ internal static class ConfigValidator
 
         int originalVersion = config.ConfigVersion;
         NormalizeVersion(config, report);
+        MigrateHudVisibility(config, originalVersion, report);
         RetireJunkIgnoreList(config, originalVersion, report);
         MigrateJunkDisposalMode(config, originalVersion, report);
         MigrateCastPowerAdjustmentMode(config, originalVersion, report);
@@ -43,15 +44,29 @@ internal static class ConfigValidator
         }
         NormalizeKeybind(report, nameof(config.EnableAutomationButton),
             () => config.EnableAutomationButton, value => config.EnableAutomationButton = value, SButton.F5);
+        NormalizeKeybind(report, nameof(config.EnableAutomationOptionalButton),
+            () => config.EnableAutomationOptionalButton,
+            value => config.EnableAutomationOptionalButton = value,
+            SButton.None);
         NormalizeKeybind(report, nameof(config.OpenConfigMenuButton),
             () => config.OpenConfigMenuButton, value => config.OpenConfigMenuButton = value, SButton.F6);
+        NormalizeKeybind(report, nameof(config.OpenConfigMenuOptionalButton),
+            () => config.OpenConfigMenuOptionalButton,
+            value => config.OpenConfigMenuOptionalButton = value,
+            SButton.ControllerBack);
         NormalizeKeybind(report, nameof(config.ToggleTreasureTargetingButton),
             () => config.ToggleTreasureTargetingButton,
             value => config.ToggleTreasureTargetingButton = value,
             SButton.None);
+        NormalizeKeybind(report, nameof(config.ToggleTreasureTargetingOptionalButton),
+            () => config.ToggleTreasureTargetingOptionalButton,
+            value => config.ToggleTreasureTargetingOptionalButton = value,
+            SButton.None);
 
         NormalizeEnum(report, nameof(config.ModStatusPosition),
             () => config.ModStatusPosition, value => config.ModStatusPosition = value, HudPosition.Left);
+        NormalizeEnum(report, nameof(config.HudVisibility),
+            () => config.HudVisibility, value => config.HudVisibility = value, HudVisibilityMode.WhileFishing);
         NormalizeEnum(report, nameof(config.FishPreviewStyle),
             () => config.FishPreviewStyle, value => config.FishPreviewStyle = value, FishPreviewStyle.Classic);
         NormalizeEnum(report, nameof(config.AutomationProfile),
@@ -279,7 +294,18 @@ internal static class ConfigValidator
         report.Add(nameof(config.JunkIgnoreList), string.Join(", ", ignored), "retired",
             "The obsolete junk ignore list was retired; protected items were removed from the explicit junk list.");
     }
+    private static void MigrateHudVisibility(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 19 || originalVersion > ModConfig.CurrentVersion)
+            return;
 
+        config.HudVisibility = HudVisibilityMode.Always;
+        report.Add(nameof(config.HudVisibility), null, config.HudVisibility,
+            "The existing always-visible assistant status behavior was preserved during migration.");
+    }
 
     private static void MigrateCastPowerAdjustmentMode(
         ModConfig config,
