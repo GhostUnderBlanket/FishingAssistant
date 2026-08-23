@@ -44,11 +44,23 @@ internal static class ConfigValidator
         }
         NormalizeKeybind(report, nameof(config.EnableAutomationButton),
             () => config.EnableAutomationButton, value => config.EnableAutomationButton = value, SButton.F5);
+        NormalizeKeybind(report, nameof(config.EnableAutomationOptionalButton),
+            () => config.EnableAutomationOptionalButton,
+            value => config.EnableAutomationOptionalButton = value,
+            SButton.None);
         NormalizeKeybind(report, nameof(config.OpenConfigMenuButton),
             () => config.OpenConfigMenuButton, value => config.OpenConfigMenuButton = value, SButton.F6);
+        NormalizeKeybind(report, nameof(config.OpenConfigMenuOptionalButton),
+            () => config.OpenConfigMenuOptionalButton,
+            value => config.OpenConfigMenuOptionalButton = value,
+            SButton.ControllerBack);
         NormalizeKeybind(report, nameof(config.ToggleTreasureTargetingButton),
             () => config.ToggleTreasureTargetingButton,
             value => config.ToggleTreasureTargetingButton = value,
+            SButton.None);
+        NormalizeKeybind(report, nameof(config.ToggleTreasureTargetingOptionalButton),
+            () => config.ToggleTreasureTargetingOptionalButton,
+            value => config.ToggleTreasureTargetingOptionalButton = value,
             SButton.None);
 
         NormalizeEnum(report, nameof(config.ModStatusPosition),

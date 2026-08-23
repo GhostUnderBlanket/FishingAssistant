@@ -74,18 +74,22 @@ writing temporary state into the shared save.
 ## Controls
 
 - `F5`: enable or disable fishing automation for the current local player.
-- `F6`: open the Fishing Assistant configuration menu.
+- `F6`: main shortcut for opening the Fishing Assistant configuration menu.
+- Controller `Back / View`: optional shortcut for opening the configuration menu.
 - Treasure-targeting toggle: unbound by default and available as an optional keybind.
 
 All controls can be changed from the in-game configuration menu. Controller and mouse
-input are supported.
+input are supported. On macOS, hold `Fn` when using a configured F1-F24 shortcut if the
+operating system assigns that function key to a system action.
 
 ## Configuration
 
 Open the menu with `F6`, change the draft settings, then select **Apply**. **Cancel**
 discards the draft, while **Defaults** restores default values within the draft until it
 is applied. Configuration is stored per player so local co-op players can use different
-profiles and assistance settings.
+profiles and assistance settings. If Generic Mod Config Menu is installed, selecting
+Fishing Assistant from its mod list opens this same custom configuration menu; the
+integration is optional.
 
 ## Building from source
 

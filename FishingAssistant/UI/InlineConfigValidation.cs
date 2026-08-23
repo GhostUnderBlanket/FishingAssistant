@@ -2,15 +2,22 @@ using FishingAssistant.Configuration;
 
 namespace FishingAssistant.UI;
 
-internal sealed record InlineConfigMessage(string OptionKey, string TranslationKey);
+internal sealed record InlineConfigMessage(
+    string OptionKey,
+    string TranslationKey,
+    object?[]? FormatArguments = null);
 
 internal static class InlineConfigValidation
 {
-    public static IReadOnlyList<InlineConfigMessage> Evaluate(ModConfig config)
+    public static IReadOnlyList<InlineConfigMessage> Evaluate(
+        ModConfig config,
+        IEnumerable<InlineConfigMessage>? contextualMessages = null)
     {
         ArgumentNullException.ThrowIfNull(config);
 
         List<InlineConfigMessage> messages = [];
+        if (contextualMessages is not null)
+            messages.AddRange(contextualMessages);
 
         if (config.FishPreviewStyle == FishPreviewStyle.Sonar)
         {
