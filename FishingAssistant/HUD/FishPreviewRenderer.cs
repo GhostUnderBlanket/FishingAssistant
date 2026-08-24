@@ -79,7 +79,7 @@ internal sealed class FishPreviewRenderer
             : drawClassic ? FishPreviewLayout.MinimumWidth : SonarWidth;
         int textWidth = Math.Max(1, desiredWidth - PanelPadding * 2);
         string wrappedLabel = drawClassic && decision.ShowFishName
-            ? Game1.parseText(label, Game1.smallFont, textWidth)
+            ? TrimWrappedLabel(Game1.parseText(label, Game1.smallFont, textWidth))
             : string.Empty;
         int textHeight = drawClassic && decision.ShowFishName
             ? (int)Math.Ceiling(Game1.smallFont.MeasureString(wrappedLabel).Y) + 4
@@ -167,12 +167,22 @@ internal sealed class FishPreviewRenderer
 
         if (decision.ShowFishName)
         {
-            Vector2 textSize = Game1.smallFont.MeasureString(wrappedLabel);
-            Vector2 textPosition = new(
-                bounds.Center.X - textSize.X / 2f,
-                iconPosition.Y + IconSize + 4f);
-            Utility.drawTextWithShadow(batch, wrappedLabel, Game1.smallFont, textPosition, Game1.textColor);
+            float textY = iconPosition.Y + IconSize + 4f;
+            foreach (string line in wrappedLabel.Split('\n'))
+            {
+                Vector2 textSize = Game1.smallFont.MeasureString(line);
+                Vector2 textPosition = new(bounds.Center.X - textSize.X / 2f, textY);
+                Utility.drawTextWithShadow(batch, line, Game1.smallFont, textPosition, Game1.textColor);
+                textY += Game1.smallFont.LineSpacing;
+            }
         }
+    }
+
+    private static string TrimWrappedLabel(string text)
+    {
+        return string.Join('\n', text.Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Split('\n')
+            .Select(line => line.TrimEnd()));
     }
 
     private static void DrawSonarPreview(

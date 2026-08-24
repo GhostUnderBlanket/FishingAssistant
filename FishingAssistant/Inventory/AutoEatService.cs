@@ -16,6 +16,7 @@ internal sealed class AutoEatService(IMonitor monitor, Func<string, string> tran
     public void UpdateCurrent(ModConfig config, AutomationSession session)
     {
         ScreenState screen = this.screens.Value;
+        this.RestoreFacingDirectionAfterEating(screen);
         if (screen.RetryTicks > 0)
         {
             screen.RetryTicks--;
@@ -48,8 +49,16 @@ internal sealed class AutoEatService(IMonitor monitor, Func<string, string> tran
             return;
         }
 
+        int originalFacingDirection = player.FacingDirection;
         if (!this.TryEat(player, decision.InventoryIndex))
+        {
+            player.faceDirection(originalFacingDirection);
             screen.RetryTicks = RetryDelayTicks;
+            return;
+        }
+
+        screen.EatingPlayer = player;
+        screen.FacingDirectionToRestore = originalFacingDirection;
     }
 
     public void ResetCurrent()
@@ -129,8 +138,31 @@ internal sealed class AutoEatService(IMonitor monitor, Func<string, string> tran
         return true;
     }
 
+    private void RestoreFacingDirectionAfterEating(ScreenState screen)
+    {
+        if (screen.EatingPlayer is not Farmer player
+            || screen.FacingDirectionToRestore is not int facingDirection
+            || player.isEating)
+        {
+            return;
+        }
+
+        screen.EatingPlayer = null;
+        screen.FacingDirectionToRestore = null;
+        if (player.IsLocalPlayer
+            && player.FacingDirection == Game1.down
+            && facingDirection is >= Game1.up and <= Game1.left)
+        {
+            player.faceDirection(facingDirection);
+        }
+    }
+
     private sealed class ScreenState
     {
+        public Farmer? EatingPlayer { get; set; }
+
+        public int? FacingDirectionToRestore { get; set; }
+
         public int RetryTicks { get; set; }
     }
 }

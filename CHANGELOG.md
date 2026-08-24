@@ -7,6 +7,13 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Automatic eating now restores the local player's original facing direction after the
+  eating animation finishes.
+- Classic Fish Preview now centers each line of the fish name without counting wrapping
+  whitespace as part of the visible label.
+
 ## [3.2.0] - 2026-08-23
 
 ### Added
