@@ -8,6 +8,9 @@
     <EnableModDeploy>false</EnableModDeploy>
     <EnableModZip>false</EnableModZip>
     <EnableHarmony>true</EnableHarmony>
+
+    <FishingAssistantTestBuild Condition="'$(FishingAssistantTestBuild)' == ''">false</FishingAssistantTestBuild>
+    <DefineConstants Condition="'$(FishingAssistantTestBuild)' == 'true'">$(DefineConstants);FISHING_ASSISTANT_TEST_BUILD</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

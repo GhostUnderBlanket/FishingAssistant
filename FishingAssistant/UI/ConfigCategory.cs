@@ -9,5 +9,8 @@ internal enum ConfigCategory
     Inventory,
     Equipment,
     Enchantments,
-    Controls
+    Controls,
+#if FISHING_ASSISTANT_TEST_BUILD
+    Debug
+#endif
 }

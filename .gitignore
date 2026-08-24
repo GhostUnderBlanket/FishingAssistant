@@ -7,7 +7,6 @@ AGENT.md
 
 # Development-only project material
 FishingAssistant.Tests/
-FishingAssistant/Debugging/
 FishingAssistant/Properties/AssemblyInfo.cs
 docs/
 scripts/

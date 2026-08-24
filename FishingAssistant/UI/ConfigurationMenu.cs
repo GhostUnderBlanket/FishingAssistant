@@ -26,6 +26,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly Func<ConfigEditSession, ConfigValidationReport> apply;
     private readonly Func<string, string> translate;
     private readonly IConfigItemSource itemSource;
+#if FISHING_ASSISTANT_TEST_BUILD
+    private readonly DebugMenuActions debugActions;
+#endif
     private readonly ConfigResetWorkflow resetWorkflow;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
@@ -47,12 +50,19 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<ConfigEditSession, ConfigValidationReport> apply,
         Func<ModConfig> createDefaults,
         IConfigItemSource itemSource,
-        ITranslationHelper translations)
+        ITranslationHelper translations
+#if FISHING_ASSISTANT_TEST_BUILD
+        , DebugMenuActions debugActions
+#endif
+        )
     {
         this.session = session;
         this.apply = apply;
         this.itemSource = itemSource;
         this.translate = key => translations.Get(key);
+#if FISHING_ASSISTANT_TEST_BUILD
+        this.debugActions = debugActions;
+#endif
         this.resetWorkflow = new ConfigResetWorkflow(createDefaults);
 
         this.RebuildComponents();
@@ -741,6 +751,28 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     () => this.session.Draft.OpenConfigMenuOptionalButton,
                     value => this.session.Draft.OpenConfigMenuOptionalButton = value);
                 break;
+#if FISHING_ASSISTANT_TEST_BUILD
+            case ConfigCategory.Debug:
+                this.AddActionDefinition("energy_low",
+                    () => this.translate("config.action.set"),
+                    this.debugActions.SetLowEnergy);
+                this.AddActionDefinition("energy_full",
+                    () => this.translate("config.action.restore"),
+                    this.debugActions.RestoreEnergy);
+                this.AddActionDefinition("warp_beach",
+                    () => this.translate("config.action.warp"),
+                    this.debugActions.WarpToBeachFishingSpot);
+                this.AddActionDefinition("create_bubble",
+                    () => this.translate("config.action.create"),
+                    () => this.debugActions.CreateFishingBubble(this.session.Draft.DefaultCastPower));
+                this.AddActionDefinition("ice_festival",
+                    () => this.translate("config.action.prepare"),
+                    this.debugActions.PrepareIceFishingFestival);
+                this.AddActionDefinition("stardew_valley_fair",
+                    () => this.translate("config.action.prepare"),
+                    this.debugActions.PrepareStardewValleyFair);
+                break;
+#endif
         }
     }
 
