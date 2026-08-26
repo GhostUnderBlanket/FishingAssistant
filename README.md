@@ -15,15 +15,17 @@ The mod includes its own in-game configuration menu.
   and collect treasure.
 - Use Relaxed, Training, Manual+, or Custom automation profiles as a starting point.
 - Toggle every automation stage independently.
-- Apply late-night warnings, low-energy protection, automatic eating, and configurable
-  delays without forcing a shared multiplayer pause.
+- Use Slow, Normal, Fast, or Custom timing for automatic recasting, catch popups, and
+  treasure looting.
+- Apply late-night warnings, low-energy protection, automatic eating, and optional
+  inventory opening after a safety stop without forcing a shared multiplayer pause.
 
 ### Fishing and minigame assistance
 
 - Adjust fish speed, catch progress gain and loss, treasure progress, and fishing-bar
   size independently.
 - Preview the hooked fish with Classic or vanilla-inspired Sonar presentation.
-- Hide uncaught fish, reveal legendary fish separately, and show treasure status.
+- Control the visibility of uncaught and legendary fish, and show treasure status.
 - Steer manual or automatic casts toward reachable fishing bubbles without moving the
   player or increasing the rod's normal forward range.
 - Choose steering effort, show a reachability marker, and optionally adjust cast power
@@ -86,10 +88,9 @@ operating system assigns that function key to a system action.
 
 Open the menu with `F6`, change the draft settings, then select **Apply**. **Cancel**
 discards the draft, while **Defaults** restores default values within the draft until it
-is applied. Configuration is stored per player so local co-op players can use different
-profiles and assistance settings. If Generic Mod Config Menu is installed, selecting
-Fishing Assistant from its mod list opens this same custom configuration menu; the
-integration is optional.
+is applied. The menu warns before discarding unapplied changes and supports sliders,
+direct numeric entry, keyboard, mouse, and controller input. Configuration is stored per
+player so local co-op players can use different profiles and assistance settings.
 
 ## Building from source
 

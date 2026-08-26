@@ -7,6 +7,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-08-26
+
 ### Added
 
 - Automation Timing presets for Slow, Normal, Fast, and Custom timing, coordinating
