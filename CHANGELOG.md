@@ -25,6 +25,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Automatic minigame play now starts pursuing available treasure at 80% catch progress
+  instead of 90%, giving the assistant more time to secure nearby treasure before the fish.
 - Clarified treasure-chest, minigame, catch, junk-disposal, and related configuration
   wording in English and Thai.
 - Dependent settings are now disabled with concise inline explanations when their
