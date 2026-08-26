@@ -13,6 +13,21 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   single-player after automation safely stops for late-night or low-energy reasons.
   New configurations enable it by default, while migrated configurations preserve the
   previous disabled behavior.
+- Reusable numeric sliders with drag, keyboard/controller adjustment, direct value
+  entry, and automatic range clamping for configurable numeric values.
+- A confirmation prompt before closing the configuration menu with unapplied changes.
+
+### Changed
+
+- Clarified treasure-chest, minigame, catch, junk-disposal, and related configuration
+  wording in English and Thai.
+- Dependent settings are now disabled with concise inline explanations when their
+  parent option makes them ineffective.
+- Widened the responsive configuration layout and selector column to reduce truncated
+  labels and descriptions on larger viewports.
+- Late-night warning times now use the game's localized clock format.
+- `Reveal legendary fish` now requires `Reveal uncaught fish`, matching the preview
+  behavior and configuration availability.
 
 ### Fixed
 

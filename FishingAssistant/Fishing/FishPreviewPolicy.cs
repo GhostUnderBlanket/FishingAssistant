@@ -29,8 +29,8 @@ internal static class FishPreviewPolicy
             return new(false, false, false, false, false);
 
         bool revealFish = conditions.WasCaught
-            || conditions.RevealUncaughtFish
-            || (conditions.IsLegendary && conditions.RevealLegendaryFish);
+            || (conditions.RevealUncaughtFish
+                && (!conditions.IsLegendary || conditions.RevealLegendaryFish));
 
         return new FishPreviewDecision(
             ShouldDraw: true,

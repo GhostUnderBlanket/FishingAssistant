@@ -331,7 +331,7 @@ internal sealed class ModEntry : Mod
     {
         if (Game1.activeClickableMenu is ConfigurationMenu menu)
         {
-            menu.exitThisMenu();
+            menu.RequestClose();
             return true;
         }
 

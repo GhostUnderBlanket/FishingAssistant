@@ -44,7 +44,7 @@ internal static class MenuVisualMetrics
 
     public static int GetControlWidth(int availableWidth)
     {
-        return Math.Clamp(availableWidth * 43 / 100, 152, 320);
+        return Math.Clamp(availableWidth * 43 / 100, 152, 420);
     }
 
     public static int GetControlHeight(int availableHeight)
