@@ -560,6 +560,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.TimeToPause = Convert.ToInt32(value), 6, 25, 1);
                 this.AddNumberDefinition("warning_count", () => this.session.Draft.WarnCount,
                     value => this.session.Draft.WarnCount = Convert.ToInt32(value), 1, 5, 1);
+                this.AddDefinition("open_inventory_on_stop", () => this.session.Draft.OpenInventoryOnStop,
+                    value => this.session.Draft.OpenInventoryOnStop = value);
                 break;
             case ConfigCategory.Inventory:
                 this.AddEnumDefinition("inventory_full_action", () => this.session.Draft.ActionIfInventoryFull,

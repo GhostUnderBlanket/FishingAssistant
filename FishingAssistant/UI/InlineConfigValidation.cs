@@ -61,6 +61,13 @@ internal static class InlineConfigValidation
                 "config.warning.auto_eat"));
         }
 
+        if (config.OpenInventoryOnStop)
+        {
+            messages.Add(new InlineConfigMessage(
+                "open_inventory_on_stop",
+                "config.info.single_player_only"));
+        }
+
         if (config.AllowEatingFish)
         {
             messages.Add(new InlineConfigMessage(

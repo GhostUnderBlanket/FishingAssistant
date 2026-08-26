@@ -7,6 +7,13 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- An optional `Open inventory on stop` setting which opens the inventory in
+  single-player after automation safely stops for late-night or low-energy reasons.
+  New configurations enable it by default, while migrated configurations preserve the
+  previous disabled behavior.
+
 ### Fixed
 
 - Automatic eating now restores the local player's original facing direction after the

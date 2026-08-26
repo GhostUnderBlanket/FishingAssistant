@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 20;
+    internal const int CurrentVersion = 21;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -74,6 +74,8 @@ internal sealed class ModConfig
     public int TimeToPause { get; set; } = 24;
 
     public int WarnCount { get; set; } = 1;
+
+    public bool OpenInventoryOnStop { get; set; } = true;
 
     public bool AutoEatFood { get; set; }
 

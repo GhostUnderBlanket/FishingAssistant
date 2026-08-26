@@ -23,6 +23,7 @@ internal static class ConfigValidator
         MigrateCastPowerAdjustmentMode(config, originalVersion, report);
         MigrateOrderedEquipmentPreferences(config, originalVersion, report);
         MigrateFishDifficultySettings(config, originalVersion, report);
+        MigrateOpenInventoryOnStop(config, originalVersion, report);
         if (originalVersion < 12)
         {
             config.FishPreviewStyle = FishPreviewStyle.Classic;
@@ -187,6 +188,19 @@ internal static class ConfigValidator
         KeybindList corrected = new(fallback);
         setValue(corrected);
         report.Add(property, null, corrected, "The keybind was missing or invalid.");
+    }
+
+    private static void MigrateOpenInventoryOnStop(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 21)
+            return;
+
+        config.OpenInventoryOnStop = false;
+        report.Add(nameof(config.OpenInventoryOnStop), null, false,
+            "The existing automation-stop behavior was preserved during migration.");
     }
 
     private static void NormalizeEnum<TEnum>(

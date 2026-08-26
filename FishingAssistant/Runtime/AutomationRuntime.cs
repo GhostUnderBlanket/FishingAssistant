@@ -4,6 +4,7 @@ using FishingAssistant.Inventory;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Tools;
 
 namespace FishingAssistant.Runtime;
@@ -77,11 +78,18 @@ internal sealed class AutomationRuntime(
         }
         if (this.UpdateRecoveryTimeout(screen))
             return;
-        this.Log(this.lateNight.UpdateCurrent(getConfig(), screen.Session));
+        ModConfig config = getConfig();
+        AutomationTransition? lateNightStop = this.lateNight.UpdateCurrent(config, screen.Session);
+        this.Log(lateNightStop);
+        if (this.TryOpenInventoryAfterSafetyStop(config, lateNightStop))
+            return;
         this.autoEat.UpdateCurrent(getConfig(), screen.Session);
         this.UpdateManualCastPower(screen);
         this.UpdateManualBubbleCastPower(screen);
-        this.UpdateLowEnergyStop(screen);
+        AutomationTransition? lowEnergyStop = this.UpdateLowEnergyStop(screen);
+        this.Log(lowEnergyStop);
+        if (this.TryOpenInventoryAfterSafetyStop(config, lowEnergyStop))
+            return;
         this.UpdateBubbleSteering(screen);
         this.UpdateInstantBite();
         this.UpdateAutomaticMinigame(screen);
@@ -381,12 +389,12 @@ internal sealed class AutomationRuntime(
         screen.Pending.BubbleSteeringExpectedPosition = expectedPosition;
     }
 
-    private void UpdateLowEnergyStop(AutomationScreenState screen)
+    private AutomationTransition? UpdateLowEnergyStop(AutomationScreenState screen)
     {
         ModConfig config = getConfig();
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         if (rod is null)
-            return;
+            return null;
 
         LowEnergyStopDecision decision = LowEnergyStopPolicy.Decide(
             rod.ReadLowEnergyStopConditions(
@@ -396,7 +404,7 @@ internal sealed class AutomationRuntime(
                 config.AutoEatFood,
                 config.EnergyPercentToEat));
         if (decision == LowEnergyStopDecision.None)
-            return;
+            return null;
 
         string messageKey = decision == LowEnergyStopDecision.StopAtEatingThreshold
             ? "hud.energy.no_food"
@@ -405,7 +413,31 @@ internal sealed class AutomationRuntime(
         monitor.Log(
             $"Paused fishing automation for low energy on local screen {Context.ScreenId} ({decision}).",
             LogLevel.Info);
-        this.Log(screen.Session.Disable(AutomationTransitionReason.LowEnergy));
+        return screen.Session.Disable(AutomationTransitionReason.LowEnergy);
+    }
+
+    private bool TryOpenInventoryAfterSafetyStop(
+        ModConfig config,
+        AutomationTransition? transition)
+    {
+        OpenInventoryAfterStopConditions conditions = new(
+            config.OpenInventoryOnStop,
+            transition?.Reason,
+            Context.IsWorldReady,
+            Context.IsWorldReady && Game1.player.IsLocalPlayer,
+            Game1.IsMultiplayer,
+            Game1.activeClickableMenu is not null,
+            Game1.currentMinigame is not null,
+            Game1.eventUp,
+            Game1.isFestival());
+        if (!OpenInventoryAfterStopPolicy.ShouldOpen(conditions))
+            return false;
+
+        Game1.activeClickableMenu = new GameMenu();
+        monitor.Log(
+            $"Opened the inventory after a {transition!.Reason} safety stop for local screen {Context.ScreenId}.",
+            LogLevel.Info);
+        return true;
     }
 
     private void UpdateAutomaticHook(AutomationScreenState screen)
