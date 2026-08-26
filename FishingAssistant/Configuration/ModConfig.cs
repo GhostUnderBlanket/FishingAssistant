@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 20;
+    internal const int CurrentVersion = 23;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -47,6 +47,14 @@ internal sealed class ModConfig
 
     public bool AutoLootTreasure { get; set; } = true;
 
+    public AutomationTimingPreset AutomationTiming { get; set; } = AutomationTimingPreset.Normal;
+
+    public float AutoCastDelaySeconds { get; set; } = 1f;
+
+    public float CatchPopupDurationSeconds { get; set; } = 1.5f;
+
+    public float TreasureLootDelaySeconds { get; set; } = 0.5f;
+
     public InventoryFullAction ActionIfInventoryFull { get; set; } = InventoryFullAction.Stop;
 
     public List<string> TreasureChestIgnoreList { get; set; } = [];
@@ -74,6 +82,8 @@ internal sealed class ModConfig
     public int TimeToPause { get; set; } = 24;
 
     public int WarnCount { get; set; } = 1;
+
+    public bool OpenInventoryOnStop { get; set; } = true;
 
     public bool AutoEatFood { get; set; }
 
@@ -176,8 +186,6 @@ internal sealed class ModConfig
     public string StartWithFishingRod { get; set; } = DefaultStarterRod;
 
     public int DefaultCastPower { get; set; } = 100;
-
-    public float AutoCastDelaySeconds { get; set; } = 1f;
 
     public float UnlockCastPowerTime { get; set; } = 1f;
 

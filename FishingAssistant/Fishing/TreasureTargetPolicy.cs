@@ -24,7 +24,7 @@ internal sealed record TreasureTargetDecision(
 
 internal static class TreasureTargetPolicy
 {
-    private const float BeginTreasureProgress = 0.9f;
+    private const float BeginTreasureProgress = 0.8f;
     private const float AbandonTreasureProgress = 0.35f;
 
     public static TreasureTargetDecision Decide(TreasureTargetConditions conditions)

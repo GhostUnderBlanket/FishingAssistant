@@ -7,6 +7,45 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-08-26
+
+### Added
+
+- Automation Timing presets for Slow, Normal, Fast, and Custom timing, coordinating
+  automatic recast delay, catch popup duration, and treasure loot delay.
+- Configurable catch-popup and initial treasure-loot delays. Existing configurations
+  preserve their previous timing during schema migration.
+- An optional `Open inventory on stop` setting which opens the inventory in
+  single-player after automation safely stops for late-night or low-energy reasons.
+  New configurations enable it by default, while migrated configurations preserve the
+  previous disabled behavior.
+- Reusable numeric sliders with drag, keyboard/controller adjustment, direct value
+  entry, and automatic range clamping for configurable numeric values.
+- A confirmation prompt before closing the configuration menu with unapplied changes.
+
+### Changed
+
+- Automatic minigame play now starts pursuing available treasure at 80% catch progress
+  instead of 90%, giving the assistant more time to secure nearby treasure before the fish.
+- Clarified treasure-chest, minigame, catch, junk-disposal, and related configuration
+  wording in English and Thai.
+- Dependent settings are now disabled with concise inline explanations when their
+  parent option makes them ineffective.
+- Widened the responsive configuration layout and selector column to reduce truncated
+  labels and descriptions on larger viewports.
+- Late-night warning times now use the game's localized clock format.
+- `Reveal legendary fish` now requires `Reveal uncaught fish`, matching the preview
+  behavior and configuration availability.
+
+### Fixed
+
+- Configurations previously written with schema version 22 are no longer treated as
+  coming from a newer version after the optional Companion project was separated.
+- Automatic eating now restores the local player's original facing direction after the
+  eating animation finishes.
+- Classic Fish Preview now centers each line of the fish name without counting wrapping
+  whitespace as part of the visible label.
+
 ## [3.2.0] - 2026-08-23
 
 ### Added

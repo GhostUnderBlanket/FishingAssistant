@@ -19,6 +19,25 @@ internal static class InlineConfigValidation
         if (contextualMessages is not null)
             messages.AddRange(contextualMessages);
 
+        messages.Add(new InlineConfigMessage(
+            "automation_profile",
+            "config.info.automation_profile"));
+
+        if (config.AutomaticBubbleSteering
+            && config.AutomaticCastPowerAdjustmentMode != CastPowerAdjustmentMode.Off)
+        {
+            messages.Add(new InlineConfigMessage(
+                "automatic_cast_power_adjustment",
+                "config.info.cast_power_bubble_only"));
+        }
+
+        if (config.ShowFishingBubbleMarker)
+        {
+            messages.Add(new InlineConfigMessage(
+                "bubble_marker",
+                "config.info.bubble_marker_colors"));
+        }
+
         if (config.FishPreviewStyle == FishPreviewStyle.Sonar)
         {
             messages.Add(new InlineConfigMessage(
@@ -40,11 +59,17 @@ internal static class InlineConfigValidation
                 "config.warning.ignored_treasure_discard"));
         }
 
-        if (config.JunkDisposalMode != JunkDisposalMode.Off)
+        if (config.JunkDisposalMode == JunkDisposalMode.Immediately)
         {
             messages.Add(new InlineConfigMessage(
                 "junk_disposal",
                 "config.warning.junk_disposal"));
+        }
+        else if (config.JunkDisposalMode == JunkDisposalMode.WhenInventoryFull)
+        {
+            messages.Add(new InlineConfigMessage(
+                "junk_disposal",
+                "config.info.junk_disposal_full"));
         }
 
         if (config.AllowTrashFish)
@@ -59,6 +84,13 @@ internal static class InlineConfigValidation
             messages.Add(new InlineConfigMessage(
                 "auto_eat",
                 "config.warning.auto_eat"));
+        }
+
+        if (config.OpenInventoryOnStop)
+        {
+            messages.Add(new InlineConfigMessage(
+                "open_inventory_on_stop",
+                "config.info.single_player_only"));
         }
 
         if (config.AllowEatingFish)

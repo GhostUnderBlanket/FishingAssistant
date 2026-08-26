@@ -1,4 +1,7 @@
 using FishingAssistant.Configuration;
+#if FISHING_ASSISTANT_TEST_BUILD
+using FishingAssistant.Debugging;
+#endif
 using FishingAssistant.Equipment;
 using FishingAssistant.Fishing;
 using FishingAssistant.HUD;
@@ -29,6 +32,12 @@ internal sealed class ModEntry : Mod
     private RodEnchantmentService? rodEnchantments;
     private AutoTrashService? autoTrash;
     private GenericModConfigMenuBridge? genericModConfigMenu;
+#if FISHING_ASSISTANT_TEST_BUILD
+    private DebugEnergyService? debugEnergy;
+    private DebugWarpService? debugWarp;
+    private DebugFishingBubbleService? debugFishingBubble;
+    private DebugFestivalService? debugFestival;
+#endif
     private readonly PerScreen<bool> pendingConfigMenuOpen = new(() => false);
 
     public override void Entry(IModHelper helper)
@@ -53,6 +62,13 @@ internal sealed class ModEntry : Mod
         this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
         this.rodEnchantments = new RodEnchantmentService(this.Monitor, key => helper.Translation.Get(key));
         this.autoTrash = new AutoTrashService(this.Monitor, key => helper.Translation.Get(key));
+#if FISHING_ASSISTANT_TEST_BUILD
+        this.debugEnergy = new DebugEnergyService(this.Monitor, key => helper.Translation.Get(key));
+        this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
+        this.debugFishingBubble = new DebugFishingBubbleService(
+            this.Monitor, key => helper.Translation.Get(key));
+        this.debugFestival = new DebugFestivalService(this.Monitor, key => helper.Translation.Get(key));
+#endif
         this.genericModConfigMenu = new GenericModConfigMenuBridge(
             helper,
             this.ModManifest,
@@ -315,7 +331,7 @@ internal sealed class ModEntry : Mod
     {
         if (Game1.activeClickableMenu is ConfigurationMenu menu)
         {
-            menu.exitThisMenu();
+            menu.RequestClose();
             return true;
         }
 
@@ -345,6 +361,15 @@ internal sealed class ModEntry : Mod
             ConfigManager.CreateDefaultDraft,
             this.itemCatalog!,
             this.Helper.Translation
+#if FISHING_ASSISTANT_TEST_BUILD
+            , new DebugMenuActions(
+                this.debugEnergy!.SetLowEnergy,
+                this.debugEnergy!.RestoreEnergy,
+                this.debugWarp!.WarpToBeachFishingSpot,
+                castPower => this.debugFishingBubble!.Create(castPower),
+                this.debugFestival!.PrepareIceFishingFestival,
+                this.debugFestival!.PrepareStardewValleyFair)
+#endif
         );
         return true;
     }
