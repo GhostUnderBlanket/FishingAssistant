@@ -31,6 +31,8 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Configurations previously written with schema version 22 are no longer treated as
+  coming from a newer version after the optional Companion project was separated.
 - Automatic eating now restores the local player's original facing direction after the
   eating animation finishes.
 - Classic Fish Preview now centers each line of the fish name without counting wrapping
