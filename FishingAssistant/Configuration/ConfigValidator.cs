@@ -24,6 +24,7 @@ internal static class ConfigValidator
         MigrateOrderedEquipmentPreferences(config, originalVersion, report);
         MigrateFishDifficultySettings(config, originalVersion, report);
         MigrateOpenInventoryOnStop(config, originalVersion, report);
+        MigrateAutomationTiming(config, originalVersion, report);
         if (originalVersion < 12)
         {
             config.FishPreviewStyle = FishPreviewStyle.Classic;
@@ -72,6 +73,8 @@ internal static class ConfigValidator
             () => config.FishPreviewStyle, value => config.FishPreviewStyle = value, FishPreviewStyle.Classic);
         NormalizeEnum(report, nameof(config.AutomationProfile),
             () => config.AutomationProfile, value => config.AutomationProfile = value, AutomationProfile.Custom);
+        NormalizeEnum(report, nameof(config.AutomationTiming),
+            () => config.AutomationTiming, value => config.AutomationTiming = value, AutomationTimingPreset.Custom);
         NormalizeEnum(report, nameof(config.MinigameAssistance),
             () => config.MinigameAssistance, value => config.MinigameAssistance = value,
             MinigameAssistancePreset.Off);
@@ -131,6 +134,10 @@ internal static class ConfigValidator
             () => config.DefaultCastPower, value => config.DefaultCastPower = value, 0, 100);
         NormalizeFloatRange(report, nameof(config.AutoCastDelaySeconds),
             () => config.AutoCastDelaySeconds, value => config.AutoCastDelaySeconds = value, 0f, 10f);
+        NormalizeFloatRange(report, nameof(config.CatchPopupDurationSeconds),
+            () => config.CatchPopupDurationSeconds, value => config.CatchPopupDurationSeconds = value, 0f, 10f);
+        NormalizeFloatRange(report, nameof(config.TreasureLootDelaySeconds),
+            () => config.TreasureLootDelaySeconds, value => config.TreasureLootDelaySeconds = value, 0f, 10f);
         NormalizeFloatRange(report, nameof(config.UnlockCastPowerTime),
             () => config.UnlockCastPowerTime, value => config.UnlockCastPowerTime = value, 0f, 3f);
 
@@ -148,6 +155,7 @@ internal static class ConfigValidator
         NormalizeItemList(report, nameof(config.PreferredSecondTackles),
             () => config.PreferredSecondTackles, value => config.PreferredSecondTackles = value);
         NormalizeAssistancePreset(config, report);
+        NormalizeAutomationTimingPreset(config, report);
         NormalizeDependencies(config, report);
 
         if (itemCatalog is not null)
@@ -201,6 +209,21 @@ internal static class ConfigValidator
         config.OpenInventoryOnStop = false;
         report.Add(nameof(config.OpenInventoryOnStop), null, false,
             "The existing automation-stop behavior was preserved during migration.");
+    }
+
+    private static void MigrateAutomationTiming(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 23 || originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        config.CatchPopupDurationSeconds = AutoClosePopupPolicy.DefaultDelayTicks / 60f;
+        config.TreasureLootDelaySeconds = TreasureLootPolicy.InitialDelayTicks / 60f;
+        config.AutomationTiming = AutomationTimingPreset.Custom;
+        report.Add(nameof(config.AutomationTiming), null, config.AutomationTiming,
+            "Existing automation delays were preserved during migration.");
     }
 
     private static void NormalizeEnum<TEnum>(
@@ -417,6 +440,18 @@ internal static class ConfigValidator
         config.MinigameAssistance = detected;
         report.Add(nameof(config.MinigameAssistance), configured, detected,
             "The assistance preset was resolved from its modifier values.");
+    }
+
+    private static void NormalizeAutomationTimingPreset(ModConfig config, ConfigValidationReport report)
+    {
+        AutomationTimingPreset configured = config.AutomationTiming;
+        AutomationTimingPreset detected = AutomationTimingPresets.Detect(config);
+        if (configured == detected)
+            return;
+
+        config.AutomationTiming = detected;
+        report.Add(nameof(config.AutomationTiming), configured, detected,
+            "The automation timing preset was resolved from its delay values.");
     }
 
     private static void MigratePreference(

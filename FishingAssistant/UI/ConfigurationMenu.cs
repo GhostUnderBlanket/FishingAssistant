@@ -664,6 +664,20 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.SetProfileOption(() => this.session.Draft.AutoClosePopup = value));
                 this.AddDefinition("auto_treasure", () => this.session.Draft.AutoLootTreasure,
                     value => this.SetProfileOption(() => this.session.Draft.AutoLootTreasure = value));
+                this.AddEnumDefinition("automation_timing", () => this.session.Draft.AutomationTiming,
+                    value => AutomationTimingPresets.Apply(this.session.Draft, value));
+                this.AddTimingSliderDefinition("cast_delay", () => this.session.Draft.AutoCastDelaySeconds,
+                    value => this.session.Draft.AutoCastDelaySeconds = (float)value, 0, 10, 0.25);
+                this.AddTimingSliderDefinition("catch_popup_duration",
+                    () => this.session.Draft.CatchPopupDurationSeconds,
+                    value => this.session.Draft.CatchPopupDurationSeconds = (float)value, 0, 10, 0.25,
+                    getState: () => ConfigControlAvailability.Requires(this.session.Draft.AutoClosePopup,
+                        "config.unavailable.auto_close"));
+                this.AddTimingSliderDefinition("treasure_loot_delay",
+                    () => this.session.Draft.TreasureLootDelaySeconds,
+                    value => this.session.Draft.TreasureLootDelaySeconds = (float)value, 0, 10, 0.25,
+                    getState: () => ConfigControlAvailability.Requires(this.session.Draft.AutoLootTreasure,
+                        "config.unavailable.auto_treasure"));
                 this.AddEnumDefinition("auto_pause", () => this.session.Draft.AutoPauseFishing,
                     value => this.session.Draft.AutoPauseFishing = value);
                 this.AddSliderDefinition("pause_time", () => this.session.Draft.TimeToPause,
@@ -748,9 +762,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddSliderDefinition("cast_power", () => this.session.Draft.DefaultCastPower,
                     value => this.session.Draft.DefaultCastPower = Convert.ToInt32(value), 0, 100, 5,
                     value => $"{value:0}%");
-                this.AddSliderDefinition("cast_delay", () => this.session.Draft.AutoCastDelaySeconds,
-                    value => this.session.Draft.AutoCastDelaySeconds = (float)value, 0, 10, 0.25,
-                    value => $"{value:0.##}s");
                 this.AddSliderDefinition("unlock_cast_time", () => this.session.Draft.UnlockCastPowerTime,
                     value => this.session.Draft.UnlockCastPowerTime = (float)value, 0, 3, 0.1,
                     value => value switch
@@ -1080,6 +1091,30 @@ internal sealed class ConfigurationMenu : IClickableMenu
             maximum,
             5,
             value => $"{value:0}%",
+            getState);
+    }
+
+    private void AddTimingSliderDefinition(
+        string key,
+        Func<double> getValue,
+        Action<double> setValue,
+        double minimum,
+        double maximum,
+        double increment,
+        Func<ConfigControlState>? getState = null)
+    {
+        this.AddSliderDefinition(
+            key,
+            getValue,
+            value =>
+            {
+                setValue(value);
+                AutomationTimingPresets.DetectAndSet(this.session.Draft);
+            },
+            minimum,
+            maximum,
+            increment,
+            value => string.Format(this.translate("config.value.seconds"), value),
             getState);
     }
 

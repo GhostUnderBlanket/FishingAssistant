@@ -84,6 +84,15 @@ internal enum AutomationProfile
     Custom
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<AutomationTimingPreset>))]
+internal enum AutomationTimingPreset
+{
+    Slow,
+    Normal,
+    Fast,
+    Custom
+}
+
 [JsonConverter(typeof(SafeStringEnumConverter<MinigameAssistancePreset>))]
 internal enum MinigameAssistancePreset
 {

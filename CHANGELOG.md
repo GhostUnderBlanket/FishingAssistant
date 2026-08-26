@@ -9,6 +9,10 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Automation Timing presets for Slow, Normal, Fast, and Custom timing, coordinating
+  automatic recast delay, catch popup duration, and treasure loot delay.
+- Configurable catch-popup and initial treasure-loot delays. Existing configurations
+  preserve their previous timing during schema migration.
 - An optional `Open inventory on stop` setting which opens the inventory in
   single-player after automation safely stops for late-night or low-energy reasons.
   New configurations enable it by default, while migrated configurations preserve the

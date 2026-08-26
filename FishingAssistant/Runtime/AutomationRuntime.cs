@@ -503,7 +503,8 @@ internal sealed class AutomationRuntime(
             screen.Session.State,
             screen.Pending.FishPopupCloseAttempted
         );
-        switch (AutoClosePopupPolicy.Decide(conditions, screen.Pending.FishPopupVisibleTicks))
+        int requiredTicks = SecondsToTicks(config.CatchPopupDurationSeconds);
+        switch (AutoClosePopupPolicy.Decide(conditions, screen.Pending.FishPopupVisibleTicks, requiredTicks))
         {
             case AutoClosePopupDecision.Reset:
                 screen.Pending.FishPopupVisibleTicks = 0;
@@ -605,13 +606,14 @@ internal sealed class AutomationRuntime(
             return;
         }
 
+        ModConfig config = getConfig();
         if (!ReferenceEquals(screen.TreasureMenuIdentity, menu.Identity))
         {
             this.ResetTreasureLoot(screen);
             screen.TreasureMenuIdentity = menu.Identity;
+            screen.TreasureLootRequiredTicks = SecondsToTicks(config.TreasureLootDelaySeconds);
         }
 
-        ModConfig config = getConfig();
         IReadOnlySet<string> ignoredItemIds = screen.GetTreasureChestIgnoreIds(config);
         TreasureLootConditions conditions = new(
             screen.Session.IsEnabled,
@@ -729,5 +731,10 @@ internal sealed class AutomationRuntime(
     private void ResetTreasureLoot(AutomationScreenState screen)
     {
         screen.ResetTreasureLoot();
+    }
+
+    private static int SecondsToTicks(float seconds)
+    {
+        return (int)Math.Ceiling(Math.Max(0f, seconds) * 60f);
     }
 }
