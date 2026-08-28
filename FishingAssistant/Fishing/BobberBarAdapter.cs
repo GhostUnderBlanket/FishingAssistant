@@ -142,10 +142,11 @@ internal sealed class BobberBarAdapter(BobberBar bar)
         );
     }
 
-    public void ApplyTreasureChance(TreasureChanceDecision decision)
+    public void ApplyTreasureChance(TreasureChanceDecision decision, FishingRodAdapter? rod)
     {
         bar.treasure = decision.HasTreasure;
         bar.goldenTreasure = decision.IsGoldenTreasure;
+        rod?.SetGoldenTreasure(decision.IsGoldenTreasure);
     }
 
     public void CaptureTreasure()

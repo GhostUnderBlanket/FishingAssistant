@@ -39,6 +39,10 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Automatic junk disposal no longer runs while automation is disabled or the local
+  player does not have a fishing rod selected.
+- Forced Golden Treasure Chest state now remains synchronized through the minigame,
+  post-catch chest presentation, and reward generation.
 - Configurations previously written with schema version 22 are no longer treated as
   coming from a newer version after the optional Companion project was separated.
 - Automatic eating now restores the local player's original facing direction after the

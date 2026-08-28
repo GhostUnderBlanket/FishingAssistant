@@ -11,6 +11,7 @@ internal sealed record BatchJunkCandidate(
 
 internal sealed record BatchJunkDisposalConditions(
     bool AutomationEnabled,
+    bool HasFishingRod,
     JunkDisposalMode Mode,
     bool IsInventoryFull,
     bool AllowTrashFish,
@@ -24,6 +25,7 @@ internal static class BatchJunkDisposalPolicy
         ArgumentNullException.ThrowIfNull(conditions);
 
         if (!conditions.AutomationEnabled
+            || !conditions.HasFishingRod
             || conditions.Mode != JunkDisposalMode.WhenInventoryFull
             || !conditions.IsInventoryFull)
         {
