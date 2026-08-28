@@ -28,6 +28,49 @@ internal sealed class AutomationRuntime(
             && ReferenceEquals(this.screens.Value.Pending.SkippedBobberBar, bar.Identity);
     }
 
+    public bool TrySkipBeforeFirstDraw(BobberBar bobberBar)
+    {
+        ArgumentNullException.ThrowIfNull(bobberBar);
+
+        try
+        {
+            AutomationScreenState screen = this.screens.Value;
+            ModConfig config = getConfig();
+            BobberBarAdapter bar = new(bobberBar);
+            SkipMinigameDecision decision = SkipMinigamePolicy.Decide(
+                bar.ReadSkipMinigameConditions(
+                    config.SkipFishingMiniGame,
+                    config.SkipMinigameCatchesRequired,
+                    perfectCatchProgress,
+                    allowOpeningAnimation: true));
+            if (decision != SkipMinigameDecision.Skip)
+                return false;
+
+            bar.ApplyLiveCatchModifiers(config);
+            TreasureChanceDecision chance = TreasureChancePolicy.Decide(
+                bar.ReadTreasureChanceConditions(config));
+            bar.ApplyTreasureChance(chance, FishingRodAdapter.ForCurrentPlayer());
+
+            screen.Pending.SkippedBobberBar = bar.Identity;
+            screen.Pending.ConfiguredBobberBar = bar.Identity;
+            screen.Pending.IsPursuingTreasure = false;
+            bar.PrepareInvisibleCompletion(
+                config.TreasureTargeting || config.InstantCatchTreasure);
+            monitor.Log(
+                $"Prepared an invisible fishing-minigame skip for local screen {Context.ScreenId}.",
+                LogLevel.Trace);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            monitor.Log(
+                $"The fishing minigame couldn't be skipped before its first draw; " +
+                $"the normal compatibility path will be used instead.\n{exception}",
+                LogLevel.Warn);
+            return false;
+        }
+    }
+
     public BubbleCastPlan? GetBubbleMarkerPlanCurrent()
     {
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();

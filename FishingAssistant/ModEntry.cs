@@ -14,6 +14,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Tools;
 
 namespace FishingAssistant;
@@ -123,6 +124,7 @@ internal sealed class ModEntry : Mod
         helper.Events.Display.RenderedWorld += this.OnRenderedWorld;
         helper.Events.Display.RenderingActiveMenu += this.OnRenderingActiveMenu;
         helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
+        helper.Events.Display.MenuChanged += this.OnMenuChanged;
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
         helper.ConsoleCommands.Add("fa_config", "Open the Fishing Assistant configuration menu.",
             this.OnConfigCommand);
@@ -325,6 +327,14 @@ internal sealed class ModEntry : Mod
             return;
 
         this.fishPreview!.Draw(e.SpriteBatch, this.configManager!.Active);
+    }
+
+    private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
+    {
+        if (!Context.IsWorldReady || e.NewMenu is not BobberBar bobberBar)
+            return;
+
+        this.automationRuntime!.TrySkipBeforeFirstDraw(bobberBar);
     }
 
     private void OnRenderingActiveMenu(object? sender, RenderingActiveMenuEventArgs e)

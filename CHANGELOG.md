@@ -13,6 +13,11 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Perfect catches are tracked per fish, player, and save without counting skipped or
   artificially perfect catches.
 
+### Changed
+
+- Eligible skipped fishing minigames are now completed before their panel is drawn,
+  while retaining the previous compatibility path as a fallback.
+
 ## [3.3.0] - 2026-08-26
 
 ### Added

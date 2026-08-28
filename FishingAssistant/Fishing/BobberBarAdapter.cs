@@ -128,7 +128,8 @@ internal sealed class BobberBarAdapter(BobberBar bar)
     public SkipMinigameConditions ReadSkipMinigameConditions(
         SkipMinigameBehavior behavior,
         int catchesRequired,
-        PerfectCatchProgressService perfectCatchProgress)
+        PerfectCatchProgressService perfectCatchProgress,
+        bool allowOpeningAnimation = false)
     {
         string qualifiedFishId = ItemRegistry.GetMetadata(bar.whichFish)?.QualifiedItemId ?? bar.whichFish;
         int caughtCount = Game1.player.fishCaught.TryGetValue(qualifiedFishId, out int[]? catchData)
@@ -138,7 +139,10 @@ internal sealed class BobberBarAdapter(BobberBar bar)
 
         return new SkipMinigameConditions(
             behavior,
-            !bar.fadeIn && !bar.fadeOut && !bar.handledFishResult && bar.distanceFromCatching < 1f,
+            (allowOpeningAnimation || !bar.fadeIn)
+            && !bar.fadeOut
+            && !bar.handledFishResult
+            && bar.distanceFromCatching < 1f,
             caughtCount,
             perfectCatchProgress.GetCount(Game1.player, qualifiedFishId),
             Math.Max(1, catchesRequired),
@@ -192,5 +196,14 @@ internal sealed class BobberBarAdapter(BobberBar bar)
         }
 
         bar.distanceFromCatching = 1f;
+    }
+
+    public void PrepareInvisibleCompletion(bool collectTreasure)
+    {
+        this.CompleteMinigame(collectTreasure);
+        bar.scale = 0f;
+        bar.fadeIn = false;
+        bar.fadeOut = true;
+        bar.handledFishResult = true;
     }
 }
