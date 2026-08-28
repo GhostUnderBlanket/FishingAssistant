@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 23;
+    internal const int CurrentVersion = 24;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -120,6 +120,8 @@ internal sealed class ModConfig
     public bool SpawnTackleIfDontHave { get; set; }
 
     public SkipMinigameBehavior SkipFishingMiniGame { get; set; } = SkipMinigameBehavior.Off;
+
+    public int SkipMinigameCatchesRequired { get; set; } = 1;
 
     public bool InstantFishBite { get; set; }
 

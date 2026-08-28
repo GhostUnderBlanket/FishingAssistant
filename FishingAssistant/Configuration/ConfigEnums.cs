@@ -116,6 +116,9 @@ internal enum SkipMinigameBehavior
 {
     Off,
     SkipAll,
+    AfterEnoughCatches,
+    AfterEnoughPerfectCatches,
+    // Kept only so configurations from schema 23 and earlier can be migrated safely.
     SkipOnlyCaught
 }
 

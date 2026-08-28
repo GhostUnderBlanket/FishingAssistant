@@ -12,13 +12,64 @@ namespace FishingAssistant.Runtime;
 internal sealed class AutomationRuntime(
     IMonitor monitor,
     Func<ModConfig> getConfig,
-    Func<string, string> translate)
+    Func<string, string> translate,
+    PerfectCatchProgressService perfectCatchProgress)
 {
     private readonly PerScreen<AutomationScreenState> screens = new(() => new AutomationScreenState());
     private readonly AutoEatService autoEat = new(monitor, translate);
     private readonly LateNightService lateNight = new(monitor, translate);
 
     public AutomationSession Current => this.screens.Value.Session;
+
+    public bool IsCurrentMinigameSkipResult()
+    {
+        BobberBarAdapter? bar = BobberBarAdapter.ForCurrentScreen();
+        return bar is not null
+            && ReferenceEquals(this.screens.Value.Pending.SkippedBobberBar, bar.Identity);
+    }
+
+    public bool TrySkipBeforeFirstDraw(BobberBar bobberBar)
+    {
+        ArgumentNullException.ThrowIfNull(bobberBar);
+
+        try
+        {
+            AutomationScreenState screen = this.screens.Value;
+            ModConfig config = getConfig();
+            BobberBarAdapter bar = new(bobberBar);
+            SkipMinigameDecision decision = SkipMinigamePolicy.Decide(
+                bar.ReadSkipMinigameConditions(
+                    config.SkipFishingMiniGame,
+                    config.SkipMinigameCatchesRequired,
+                    perfectCatchProgress,
+                    allowOpeningAnimation: true));
+            if (decision != SkipMinigameDecision.Skip)
+                return false;
+
+            bar.ApplyLiveCatchModifiers(config);
+            TreasureChanceDecision chance = TreasureChancePolicy.Decide(
+                bar.ReadTreasureChanceConditions(config));
+            bar.ApplyTreasureChance(chance, FishingRodAdapter.ForCurrentPlayer());
+
+            screen.Pending.SkippedBobberBar = bar.Identity;
+            screen.Pending.ConfiguredBobberBar = bar.Identity;
+            screen.Pending.IsPursuingTreasure = false;
+            bar.PrepareInvisibleCompletion(
+                config.TreasureTargeting || config.InstantCatchTreasure);
+            monitor.Log(
+                $"Prepared an invisible fishing-minigame skip for local screen {Context.ScreenId}.",
+                LogLevel.Trace);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            monitor.Log(
+                $"The fishing minigame couldn't be skipped before its first draw; " +
+                $"the normal compatibility path will be used instead.\n{exception}",
+                LogLevel.Warn);
+            return false;
+        }
+    }
 
     public BubbleCastPlan? GetBubbleMarkerPlanCurrent()
     {
@@ -530,6 +581,7 @@ internal sealed class AutomationRuntime(
         {
             screen.Pending.IsPursuingTreasure = false;
             screen.Pending.ConfiguredBobberBar = null;
+            screen.Pending.SkippedBobberBar = null;
             return;
         }
 
@@ -583,10 +635,14 @@ internal sealed class AutomationRuntime(
     private bool TrySkipMinigame(AutomationScreenState screen, BobberBarAdapter bar, ModConfig config)
     {
         SkipMinigameDecision decision = SkipMinigamePolicy.Decide(
-            bar.ReadSkipMinigameConditions(config.SkipFishingMiniGame));
+            bar.ReadSkipMinigameConditions(
+                config.SkipFishingMiniGame,
+                config.SkipMinigameCatchesRequired,
+                perfectCatchProgress));
         if (decision != SkipMinigameDecision.Skip)
             return false;
 
+        screen.Pending.SkippedBobberBar = bar.Identity;
         bar.CompleteMinigame(
             config.TreasureTargeting || config.InstantCatchTreasure);
         screen.Pending.IsPursuingTreasure = false;
