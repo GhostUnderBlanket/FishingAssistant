@@ -31,6 +31,11 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
 
     public float CastingPower => Math.Clamp(rod.castingPower, 0f, 1f);
 
+    public void SetGoldenTreasure(bool isGolden)
+    {
+        rod.goldenTreasure = isGolden;
+    }
+
     internal static bool IsCastInProgressFor(FishingRod fishingRod)
     {
         ArgumentNullException.ThrowIfNull(fishingRod);

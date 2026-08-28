@@ -14,6 +14,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Tools;
 
 namespace FishingAssistant;
 
@@ -165,7 +166,11 @@ internal sealed class ModEntry : Mod
                 this.Helper.Input.SuppressActiveKeybinds(automationOptionalKeybind);
             this.automationRuntime!.ToggleCurrent();
             if (this.automationRuntime.Current.IsEnabled)
-                this.autoTrash!.TryDiscardBatchIfFull(Game1.player, this.configManager.Active, true);
+                this.autoTrash!.TryDiscardBatchIfFull(
+                    Game1.player,
+                    this.configManager.Active,
+                    automationEnabled: true,
+                    hasFishingRod: Game1.player.CurrentTool is FishingRod);
             return;
         }
 
@@ -263,7 +268,8 @@ internal sealed class ModEntry : Mod
         this.autoTrash!.OnInventoryChanged(
             e,
             this.configManager!.Active,
-            this.automationRuntime!.Current.IsEnabled);
+            this.automationRuntime!.Current.IsEnabled,
+            e.Player.CurrentTool is FishingRod);
     }
 
     private void OnSaving(object? sender, SavingEventArgs e)
@@ -397,7 +403,8 @@ internal sealed class ModEntry : Mod
             this.autoTrash!.TryDiscardBatchIfFull(
                 Game1.player,
                 this.configManager.Active,
-                this.automationRuntime.Current.IsEnabled);
+                this.automationRuntime.Current.IsEnabled,
+                Game1.player.CurrentTool is FishingRod);
             return report;
         }
         catch (InvalidOperationException exception)

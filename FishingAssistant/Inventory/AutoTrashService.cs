@@ -11,18 +11,19 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
     public void OnInventoryChanged(
         InventoryChangedEventArgs eventArgs,
         ModConfig config,
-        bool automationEnabled)
+        bool automationEnabled,
+        bool hasFishingRod)
     {
         if (!eventArgs.IsLocalPlayer || !ReferenceEquals(eventArgs.Player, Game1.player))
             return;
 
         if (config.JunkDisposalMode == JunkDisposalMode.WhenInventoryFull)
         {
-            this.TryDiscardBatchIfFull(eventArgs.Player, config, automationEnabled);
+            this.TryDiscardBatchIfFull(eventArgs.Player, config, automationEnabled, hasFishingRod);
             return;
         }
 
-        if (!automationEnabled || config.JunkDisposalMode != JunkDisposalMode.Immediately)
+        if (!automationEnabled || !hasFishingRod || config.JunkDisposalMode != JunkDisposalMode.Immediately)
             return;
 
         Dictionary<Item, int> acquired = new(ReferenceEqualityComparer.Instance);
@@ -39,6 +40,7 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
 
             AutoTrashDecision decision = AutoTrashPolicy.Decide(new AutoTrashConditions(
                 automationEnabled,
+                hasFishingRod,
                 true,
                 item.QualifiedItemId,
                 item.canBeTrashed(),
@@ -82,7 +84,8 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
     public bool TryDiscardBatchIfFull(
         Farmer player,
         ModConfig config,
-        bool automationEnabled)
+        bool automationEnabled,
+        bool hasFishingRod)
     {
         ArgumentNullException.ThrowIfNull(player);
         ArgumentNullException.ThrowIfNull(config);
@@ -91,6 +94,7 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
             || !ReferenceEquals(player, Game1.player)
             || !player.IsLocalPlayer
             || !automationEnabled
+            || !hasFishingRod
             || config.JunkDisposalMode != JunkDisposalMode.WhenInventoryFull
             || !IsInventoryFull(player))
         {
@@ -113,6 +117,7 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
 
         IReadOnlyList<int> selected = BatchJunkDisposalPolicy.Select(new(
             automationEnabled,
+            hasFishingRod,
             config.JunkDisposalMode,
             true,
             config.AllowTrashFish,

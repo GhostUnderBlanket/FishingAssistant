@@ -2,6 +2,7 @@ namespace FishingAssistant.Inventory;
 
 internal sealed record AutoTrashConditions(
     bool AutomationEnabled,
+    bool HasFishingRod,
     bool AutoTrashEnabled,
     string QualifiedItemId,
     bool CanBeTrashed,
@@ -23,6 +24,7 @@ internal static class AutoTrashPolicy
             conditions.QualifiedItemId,
             StringComparer.OrdinalIgnoreCase);
         bool isEligible = conditions.AutomationEnabled
+            && conditions.HasFishingRod
             && conditions.AutoTrashEnabled
             && conditions.CanBeTrashed
             && isJunk

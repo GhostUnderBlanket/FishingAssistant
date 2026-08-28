@@ -540,7 +540,7 @@ internal sealed class AutomationRuntime(
             (int vanillaBarHeight, int finalBarHeight) = bar.ApplyBarSizeAssistance(config);
             TreasureChanceDecision chance = TreasureChancePolicy.Decide(
                 bar.ReadTreasureChanceConditions(config));
-            bar.ApplyTreasureChance(chance);
+            bar.ApplyTreasureChance(chance, FishingRodAdapter.ForCurrentPlayer());
             screen.Pending.ConfiguredBobberBar = bar.Identity;
             monitor.Log(
                 $"Configured fishing minigame for local screen {Context.ScreenId}: " +
