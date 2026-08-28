@@ -25,6 +25,7 @@ internal static class ConfigValidator
         MigrateFishDifficultySettings(config, originalVersion, report);
         MigrateOpenInventoryOnStop(config, originalVersion, report);
         MigrateAutomationTiming(config, originalVersion, report);
+        MigrateSkipMinigameConditions(config, originalVersion, report);
         if (originalVersion < 12)
         {
             config.FishPreviewStyle = FishPreviewStyle.Classic;
@@ -115,6 +116,9 @@ internal static class ConfigValidator
             () => config.BaitAmountToSpawn, value => config.BaitAmountToSpawn = value, 1, 999);
         NormalizeRange(report, nameof(config.PreferFishAmount),
             () => config.PreferFishAmount, value => config.PreferFishAmount = value, 1, 3);
+        NormalizeRange(report, nameof(config.SkipMinigameCatchesRequired),
+            () => config.SkipMinigameCatchesRequired,
+            value => config.SkipMinigameCatchesRequired = value, 1, 20);
         NormalizeRange(report, nameof(config.FishSpeedPercent),
             () => config.FishSpeedPercent, value => config.FishSpeedPercent = value,
             MinigameAssistancePolicy.FishSpeedMinimum, MinigameAssistancePolicy.FishSpeedMaximum);
@@ -224,6 +228,30 @@ internal static class ConfigValidator
         config.AutomationTiming = AutomationTimingPreset.Custom;
         report.Add(nameof(config.AutomationTiming), null, config.AutomationTiming,
             "Existing automation delays were preserved during migration.");
+    }
+
+    private static void MigrateSkipMinigameConditions(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        if (config.SkipFishingMiniGame == SkipMinigameBehavior.SkipOnlyCaught)
+        {
+            config.SkipFishingMiniGame = SkipMinigameBehavior.AfterEnoughCatches;
+            report.Add(nameof(config.SkipFishingMiniGame), SkipMinigameBehavior.SkipOnlyCaught,
+                config.SkipFishingMiniGame,
+                "The previous caught-fish skip mode was preserved using its new name.");
+        }
+
+        if (originalVersion >= 24)
+            return;
+
+        config.SkipMinigameCatchesRequired = 1;
+        report.Add(nameof(config.SkipMinigameCatchesRequired), null, 1,
+            "Existing skip behavior was preserved with one required catch.");
     }
 
     private static void NormalizeEnum<TEnum>(

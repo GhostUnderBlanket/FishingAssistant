@@ -125,18 +125,23 @@ internal sealed class BobberBarAdapter(BobberBar bar)
         return (vanillaHeight, finalHeight);
     }
 
-    public SkipMinigameConditions ReadSkipMinigameConditions(SkipMinigameBehavior behavior)
+    public SkipMinigameConditions ReadSkipMinigameConditions(
+        SkipMinigameBehavior behavior,
+        int catchesRequired,
+        PerfectCatchProgressService perfectCatchProgress)
     {
-        string? qualifiedFishId = ItemRegistry.GetMetadata(bar.whichFish)?.QualifiedItemId;
-        bool wasCaught = qualifiedFishId is not null
-            && Game1.player.fishCaught.TryGetValue(qualifiedFishId, out int[]? catchData)
+        string qualifiedFishId = ItemRegistry.GetMetadata(bar.whichFish)?.QualifiedItemId ?? bar.whichFish;
+        int caughtCount = Game1.player.fishCaught.TryGetValue(qualifiedFishId, out int[]? catchData)
             && catchData is { Length: > 0 }
-            && catchData[0] > 0;
+            ? Math.Max(0, catchData[0])
+            : 0;
 
         return new SkipMinigameConditions(
             behavior,
             !bar.fadeIn && !bar.fadeOut && !bar.handledFishResult && bar.distanceFromCatching < 1f,
-            wasCaught,
+            caughtCount,
+            perfectCatchProgress.GetCount(Game1.player, qualifiedFishId),
+            Math.Max(1, catchesRequired),
             Game1.isFestival(),
             Game1.currentMinigame is FishingGame
         );

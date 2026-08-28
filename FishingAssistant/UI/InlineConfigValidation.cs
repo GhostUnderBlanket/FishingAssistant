@@ -159,6 +159,13 @@ internal static class InlineConfigValidation
             }
         }
 
+        if (config.SkipFishingMiniGame == SkipMinigameBehavior.AfterEnoughPerfectCatches)
+        {
+            messages.Add(new InlineConfigMessage(
+                "skip_catches_required",
+                "config.info.perfect_catches_tracking"));
+        }
+
         return messages;
     }
 }

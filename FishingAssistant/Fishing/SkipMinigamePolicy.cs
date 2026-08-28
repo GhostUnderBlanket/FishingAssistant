@@ -11,7 +11,9 @@ internal enum SkipMinigameDecision
 internal sealed record SkipMinigameConditions(
     SkipMinigameBehavior Behavior,
     bool IsMinigameActive,
-    bool FishWasCaughtBefore,
+    int FishCaughtCount,
+    int PerfectCatchCount,
+    int CatchesRequired,
     bool IsFestival,
     bool IsSupportedFishingMinigame);
 
@@ -24,7 +26,11 @@ internal static class SkipMinigamePolicy
         bool behaviorAllowsSkip = conditions.Behavior switch
         {
             SkipMinigameBehavior.SkipAll => true,
-            SkipMinigameBehavior.SkipOnlyCaught => conditions.FishWasCaughtBefore,
+            SkipMinigameBehavior.AfterEnoughCatches =>
+                conditions.FishCaughtCount >= conditions.CatchesRequired,
+            SkipMinigameBehavior.AfterEnoughPerfectCatches =>
+                conditions.PerfectCatchCount >= conditions.CatchesRequired,
+            SkipMinigameBehavior.SkipOnlyCaught => conditions.FishCaughtCount > 0,
             _ => false
         };
         bool shouldSkip = behaviorAllowsSkip

@@ -49,10 +49,12 @@ internal sealed class ModEntry : Mod
             () => Context.IsWorldReady
                 ? $"player-{Game1.player.UniqueMultiplayerID}"
                 : null);
+        PerfectCatchProgressService perfectCatchProgress = new();
         this.automationRuntime = new AutomationRuntime(
             this.Monitor,
             () => this.configManager.Active,
-            key => helper.Translation.Get(key));
+            key => helper.Translation.Get(key),
+            perfectCatchProgress);
         this.automationHud = new AutomationHudRenderer();
         this.fishingBubbleMarker = new FishingBubbleMarkerRenderer(
             () => this.automationRuntime.GetBubbleMarkerPlanCurrent());
@@ -81,6 +83,8 @@ internal sealed class ModEntry : Mod
         CatchResultPatch.Apply(
             harmony,
             () => this.configManager.Active,
+            perfectCatchProgress,
+            () => this.automationRuntime.IsCurrentMinigameSkipResult(),
             this.Monitor);
         SonarPreviewPatch.Apply(
             harmony,

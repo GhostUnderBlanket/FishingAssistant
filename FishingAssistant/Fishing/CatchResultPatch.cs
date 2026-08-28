@@ -11,11 +11,20 @@ namespace FishingAssistant.Fishing;
 internal static class CatchResultPatch
 {
     private static Func<ModConfig>? getConfig;
+    private static PerfectCatchProgressService? perfectCatchProgress;
+    private static Func<bool>? isSkippedMinigameResult;
     private static IMonitor? monitor;
 
-    public static void Apply(Harmony harmony, Func<ModConfig> configProvider, IMonitor modMonitor)
+    public static void Apply(
+        Harmony harmony,
+        Func<ModConfig> configProvider,
+        PerfectCatchProgressService progressService,
+        Func<bool> skippedMinigameResultProvider,
+        IMonitor modMonitor)
     {
         getConfig = configProvider;
+        perfectCatchProgress = progressService;
+        isSkippedMinigameResult = skippedMinigameResultProvider;
         monitor = modMonitor;
 
         harmony.Patch(
@@ -46,6 +55,19 @@ internal static class CatchResultPatch
                 && DataLoader.Fish(Game1.content).ContainsKey(bar!.whichFish);
             bool isFestivalFishing = Game1.isFestival() || Game1.currentMinigame is FishingGame;
             ModConfig config = getConfig();
+            bool genuinePerfect = wasPerfect
+                && belongsToActiveBar
+                && isFish
+                && !fromFishPond
+                && !isFestivalFishing
+                && !(isSkippedMinigameResult?.Invoke() ?? false);
+            int genuineCatchQuantity = Math.Max(1, numCaught);
+
+            if (genuinePerfect && perfectCatchProgress is not null)
+            {
+                string qualifiedFishId = ItemRegistry.GetMetadata(fishId)?.QualifiedItemId ?? fishId;
+                perfectCatchProgress.Record(Game1.player, qualifiedFishId, genuineCatchQuantity);
+            }
 
             CatchResultDecision decision = CatchResultPolicy.Decide(new CatchResultConditions(
                 fishSize,

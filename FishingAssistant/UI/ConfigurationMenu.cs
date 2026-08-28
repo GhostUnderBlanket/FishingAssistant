@@ -828,6 +828,26 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.GoldenTreasureChance = value);
                 break;
             case ConfigCategory.Minigame:
+                this.AddEnumDefinition("skip_minigame", () => this.session.Draft.SkipFishingMiniGame,
+                    value => this.session.Draft.SkipFishingMiniGame = value,
+                    values:
+                    [
+                        SkipMinigameBehavior.Off,
+                        SkipMinigameBehavior.SkipAll,
+                        SkipMinigameBehavior.AfterEnoughCatches,
+                        SkipMinigameBehavior.AfterEnoughPerfectCatches
+                    ]);
+                this.AddSliderDefinition("skip_catches_required",
+                    () => this.session.Draft.SkipMinigameCatchesRequired,
+                    value => this.session.Draft.SkipMinigameCatchesRequired = Convert.ToInt32(value),
+                    1,
+                    20,
+                    1,
+                    getState: () => ConfigControlAvailability.Requires(
+                        this.session.Draft.SkipFishingMiniGame is
+                            SkipMinigameBehavior.AfterEnoughCatches or
+                            SkipMinigameBehavior.AfterEnoughPerfectCatches,
+                        "config.unavailable.skip_catches_required"));
                 this.AddEnumDefinition("minigame_assistance",
                     () => this.session.Draft.MinigameAssistance,
                     value => MinigameAssistancePresets.Apply(this.session.Draft, value),
@@ -874,8 +894,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     () => ConfigControlAvailability.Requires(
                         this.session.Draft.SkipFishingMiniGame == SkipMinigameBehavior.Off,
                         "config.unavailable.minigame_skipped"));
-                this.AddEnumDefinition("skip_minigame", () => this.session.Draft.SkipFishingMiniGame,
-                    value => this.session.Draft.SkipFishingMiniGame = value);
                 break;
             case ConfigCategory.Display:
                 this.AddEnumDefinition("hud_visibility", () => this.session.Draft.HudVisibility,
@@ -986,10 +1004,11 @@ internal sealed class ConfigurationMenu : IClickableMenu
         string key,
         Func<TEnum> getValue,
         Action<TEnum> setValue,
-        Func<ConfigControlState>? getState = null)
+        Func<ConfigControlState>? getState = null,
+        IReadOnlyList<TEnum>? values = null)
         where TEnum : struct, Enum
     {
-        TEnum[] values = Enum.GetValues<TEnum>();
+        IReadOnlyList<TEnum> availableValues = values ?? Enum.GetValues<TEnum>();
         this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigValueSelector<TEnum>(
             id,
             bounds,
@@ -997,7 +1016,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.translate($"config.option.{key}.description"),
             getValue,
             setValue,
-            (current, direction) => OptionAdjustment.Cycle(values, current, direction),
+            (current, direction) => OptionAdjustment.Cycle(availableValues, current, direction),
             value => this.translate($"config.value.{value.ToString().ToLowerInvariant()}")
         ), getState ?? (() => ConfigControlState.Enabled)));
     }

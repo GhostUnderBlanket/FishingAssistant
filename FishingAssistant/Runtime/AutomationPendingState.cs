@@ -24,6 +24,8 @@ internal sealed class AutomationPendingState
 
     public object? ConfiguredBobberBar { get; set; }
 
+    public object? SkippedBobberBar { get; set; }
+
     public int FishPopupVisibleTicks { get; set; }
 
     public bool FishPopupCloseAttempted { get; set; }
@@ -51,6 +53,7 @@ internal sealed class AutomationPendingState
         this.HookAttemptedForNibble = false;
         this.IsPursuingTreasure = false;
         this.ConfiguredBobberBar = null;
+        this.SkippedBobberBar = null;
         this.FishPopupVisibleTicks = 0;
         this.FishPopupCloseAttempted = false;
         this.Action = PendingAutomationAction.None;
