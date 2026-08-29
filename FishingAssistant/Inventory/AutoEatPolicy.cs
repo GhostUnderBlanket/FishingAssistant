@@ -1,3 +1,5 @@
+using FishingAssistant.Configuration;
+
 namespace FishingAssistant.Inventory;
 
 internal enum AutoEatAction
@@ -22,8 +24,14 @@ internal sealed record AutoEatConditions(
     bool IsSafeToEat,
     float Stamina,
     float MaxStamina,
-    int EnergyThresholdPercent,
+    int EnergyTargetPercent,
+    AutoEatTriggerBehavior TriggerBehavior,
+    bool IsRecoveringToTarget,
+    bool CastConsumesStamina,
+    float CastStaminaCost,
     bool AllowEatingFish,
+    IReadOnlyList<string> PreferredFoods,
+    FoodFallbackBehavior FallbackBehavior,
     IReadOnlyList<FoodInventoryCandidate> Candidates);
 
 internal sealed record AutoEatDecision(AutoEatAction Action, int InventoryIndex = -1);
@@ -38,18 +46,35 @@ internal static class AutoEatPolicy
             || !conditions.AutomationEnabled
             || !conditions.IsSafeToEat
             || conditions.MaxStamina <= 0f
-            || conditions.Stamina > conditions.MaxStamina * conditions.EnergyThresholdPercent / 100f)
+            || !ShouldEat(conditions))
         {
             return new AutoEatDecision(AutoEatAction.None);
         }
 
         int missingStamina = Math.Max(1, (int)Math.Ceiling(conditions.MaxStamina - conditions.Stamina));
-        List<FoodInventoryCandidate> eligible = conditions.Candidates
+        List<FoodInventoryCandidate> safeCandidates = conditions.Candidates
             .Where(candidate => candidate.InventoryIndex >= 0
                 && candidate.StaminaRecovery > 0
                 && !candidate.IsQuestOrProgressionItem
-                && !candidate.IsBlockedByFullness
-                && (conditions.AllowEatingFish || !candidate.IsFish))
+                && !candidate.IsBlockedByFullness)
+            .ToList();
+
+        foreach (string preferredId in conditions.PreferredFoods)
+        {
+            FoodInventoryCandidate? preferred = safeCandidates
+                .Where(candidate => string.Equals(candidate.QualifiedItemId, preferredId,
+                    StringComparison.OrdinalIgnoreCase))
+                .OrderBy(candidate => candidate.InventoryIndex)
+                .FirstOrDefault();
+            if (preferred is not null)
+                return new AutoEatDecision(AutoEatAction.Eat, preferred.InventoryIndex);
+        }
+
+        if (conditions.FallbackBehavior == FoodFallbackBehavior.DoNotEat)
+            return new AutoEatDecision(AutoEatAction.None);
+
+        List<FoodInventoryCandidate> eligible = safeCandidates
+            .Where(candidate => conditions.AllowEatingFish || !candidate.IsFish)
             .ToList();
         if (eligible.Count == 0)
             return new AutoEatDecision(AutoEatAction.None);
@@ -58,14 +83,37 @@ internal static class AutoEatPolicy
         IReadOnlyList<FoodInventoryCandidate> pool = eligible.Any(candidate => !candidate.HasBuff)
             ? eligible.Where(candidate => !candidate.HasBuff).ToList()
             : eligible;
-        FoodInventoryCandidate selected = pool
-            .OrderBy(candidate => GetCostPerUsefulEnergy(candidate, missingStamina))
-            .ThenBy(candidate => Math.Max(0, candidate.StaminaRecovery - missingStamina))
-            .ThenBy(candidate => Math.Max(0, candidate.SalePrice))
-            .ThenBy(candidate => candidate.InventoryIndex)
-            .First();
+        FoodInventoryCandidate selected = conditions.FallbackBehavior == FoodFallbackBehavior.MostEnergy
+            ? pool.OrderByDescending(candidate => candidate.StaminaRecovery)
+                .ThenBy(candidate => Math.Max(0, candidate.SalePrice))
+                .ThenBy(candidate => candidate.InventoryIndex)
+                .First()
+            : pool.OrderBy(candidate => GetCostPerUsefulEnergy(candidate, missingStamina))
+                .ThenBy(candidate => Math.Max(0, candidate.StaminaRecovery - missingStamina))
+                .ThenBy(candidate => Math.Max(0, candidate.SalePrice))
+                .ThenBy(candidate => candidate.InventoryIndex)
+                .First();
 
         return new AutoEatDecision(AutoEatAction.Eat, selected.InventoryIndex);
+    }
+
+    internal static float GetTargetStamina(AutoEatConditions conditions)
+    {
+        float configuredTarget = conditions.MaxStamina * conditions.EnergyTargetPercent / 100f;
+        return conditions.TriggerBehavior == AutoEatTriggerBehavior.BeforeNextCast
+            ? Math.Max(configuredTarget, conditions.CastStaminaCost + 0.01f)
+            : configuredTarget;
+    }
+
+    private static bool ShouldEat(AutoEatConditions conditions)
+    {
+        float target = GetTargetStamina(conditions);
+        return conditions.TriggerBehavior switch
+        {
+            AutoEatTriggerBehavior.AtEnergyTarget or AutoEatTriggerBehavior.BeforeNextCast =>
+                conditions.IsRecoveringToTarget && conditions.Stamina < target,
+            _ => false
+        };
     }
 
     private static decimal GetCostPerUsefulEnergy(FoodInventoryCandidate candidate, int missingStamina)

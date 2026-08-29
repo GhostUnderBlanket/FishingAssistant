@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 24;
+    internal const int CurrentVersion = 28;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -69,8 +69,6 @@ internal sealed class ModConfig
 
     public bool ShouldSerializeAutoTrashJunk() => false;
 
-    public bool AllowTrashFish { get; set; }
-
     public List<string> JunkList { get; set; } = [.. DefaultJunkList];
 
     public List<string> JunkIgnoreList { get; set; } = [];
@@ -89,7 +87,15 @@ internal sealed class ModConfig
 
     public int EnergyPercentToEat { get; set; } = 5;
 
+    public float FoodConsumptionDelaySeconds { get; set; } = 1f;
+
+    public AutoEatTriggerBehavior AutoEatTrigger { get; set; } = AutoEatTriggerBehavior.BeforeNextCast;
+
     public bool AllowEatingFish { get; set; }
+
+    public List<string> PreferredFoods { get; set; } = [];
+
+    public FoodFallbackBehavior FoodFallback { get; set; } = FoodFallbackBehavior.BestValue;
 
     public bool AutoAttachBait { get; set; }
 
@@ -125,6 +131,10 @@ internal sealed class ModConfig
 
     public bool InstantFishBite { get; set; }
 
+    public bool ShouldSerializeInstantFishBite() => false;
+
+    public int BiteWaitingTimePercent { get; set; } = 100;
+
     public bool AutomaticBubbleSteering { get; set; } = true;
 
     public bool AutomaticCastPowerAdjustment { get; set; }
@@ -139,7 +149,11 @@ internal sealed class ModConfig
 
     public int PreferFishAmount { get; set; } = 1;
 
+    public FishAmountBehavior FishAmountBehavior { get; set; } = FishAmountBehavior.Vanilla;
+
     public FishQualityPreference PreferFishQuality { get; set; } = FishQualityPreference.Any;
+
+    public FishQualityBehavior FishQualityBehavior { get; set; } = FishQualityBehavior.Vanilla;
 
     public bool AlwaysPerfect { get; set; }
 
@@ -171,7 +185,15 @@ internal sealed class ModConfig
 
     public TreasureChanceBehavior TreasureChance { get; set; } = TreasureChanceBehavior.Default;
 
+    public bool ShouldSerializeTreasureChance() => false;
+
+    public int TreasureChancePercent { get; set; } = 15;
+
     public TreasureChanceBehavior GoldenTreasureChance { get; set; } = TreasureChanceBehavior.Default;
+
+    public bool ShouldSerializeGoldenTreasureChance() => false;
+
+    public int GoldenTreasureChancePercent { get; set; } = 25;
 
     public bool DisplayFishPreview { get; set; } = true;
 
@@ -220,6 +242,7 @@ internal sealed class ModConfig
         draft.JunkList = [.. this.JunkList];
         draft.JunkIgnoreList = [.. this.JunkIgnoreList];
         draft.TreasureChestIgnoreList = [.. this.TreasureChestIgnoreList];
+        draft.PreferredFoods = [.. this.PreferredFoods];
         draft.PreferredBaits = [.. this.PreferredBaits];
         draft.PreferredTackles = [.. this.PreferredTackles];
         draft.PreferredSecondTackles = [.. this.PreferredSecondTackles];

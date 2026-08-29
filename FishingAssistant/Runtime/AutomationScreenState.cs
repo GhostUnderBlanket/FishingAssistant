@@ -17,6 +17,8 @@ internal sealed class AutomationScreenState
 
     public AutomationPendingState Pending { get; } = new();
 
+    public object? BiteWaitingTimeRod { get; set; }
+
     public object? TreasureMenuIdentity { get; set; }
 
     public int TreasureLootElapsedTicks { get; set; }
@@ -59,6 +61,7 @@ internal sealed class AutomationScreenState
             throw new ArgumentOutOfRangeException(nameof(reason), reason, "Reason doesn't cancel pending work.");
 
         this.Pending.Clear();
+        this.BiteWaitingTimeRod = null;
         this.ResetTreasureLoot();
         return disable
             ? this.Session.Disable(reason)
@@ -70,6 +73,7 @@ internal sealed class AutomationScreenState
         if (this.Session.IsEnabled)
         {
             this.Pending.Clear();
+            this.BiteWaitingTimeRod = null;
             this.ResetTreasureLoot();
         }
 

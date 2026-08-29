@@ -3,11 +3,12 @@ namespace FishingAssistant.Fishing;
 internal enum InstantBiteDecision
 {
     Wait,
-    Trigger
+    ApplyWaitingTime
 }
 
 internal sealed record InstantBiteConditions(
-    bool InstantBiteEnabled,
+    int WaitingTimePercent,
+    bool WaitingTimeAlreadyApplied,
     bool IsFishing,
     bool IsNibbling,
     bool HasPendingBiteTimer,
@@ -21,12 +22,12 @@ internal static class InstantBitePolicy
     {
         ArgumentNullException.ThrowIfNull(conditions);
 
-        bool shouldTrigger = conditions.InstantBiteEnabled
+        bool shouldApply = !conditions.WaitingTimeAlreadyApplied
             && conditions.IsFishing
             && !conditions.IsNibbling
             && conditions.HasPendingBiteTimer
             && !conditions.HasBlockingMenu
             && (!conditions.IsFestival || conditions.IsSupportedFishingMinigame);
-        return shouldTrigger ? InstantBiteDecision.Trigger : InstantBiteDecision.Wait;
+        return shouldApply ? InstantBiteDecision.ApplyWaitingTime : InstantBiteDecision.Wait;
     }
 }

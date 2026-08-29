@@ -132,6 +132,37 @@ internal enum FishQualityPreference
     Iridium = 4
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<FoodFallbackBehavior>))]
+internal enum FoodFallbackBehavior
+{
+    DoNotEat,
+    BestValue,
+    MostEnergy
+}
+
+[JsonConverter(typeof(SafeStringEnumConverter<AutoEatTriggerBehavior>))]
+internal enum AutoEatTriggerBehavior
+{
+    AtEnergyTarget,
+    BeforeNextCast
+}
+
+[JsonConverter(typeof(SafeStringEnumConverter<FishQualityBehavior>))]
+internal enum FishQualityBehavior
+{
+    Vanilla,
+    Minimum,
+    Fixed
+}
+
+[JsonConverter(typeof(SafeStringEnumConverter<FishAmountBehavior>))]
+internal enum FishAmountBehavior
+{
+    Vanilla,
+    Minimum,
+    Fixed
+}
+
 [JsonConverter(typeof(SafeStringEnumConverter<TreasureChanceBehavior>))]
 internal enum TreasureChanceBehavior
 {

@@ -6,8 +6,6 @@ internal sealed record AutoTrashConditions(
     bool AutoTrashEnabled,
     string QualifiedItemId,
     bool CanBeTrashed,
-    bool IsFish,
-    bool AllowTrashFish,
     int AcquiredQuantity,
     int CurrentStack,
     IReadOnlyCollection<string> JunkList);
@@ -27,8 +25,7 @@ internal static class AutoTrashPolicy
             && conditions.HasFishingRod
             && conditions.AutoTrashEnabled
             && conditions.CanBeTrashed
-            && isJunk
-            && (!conditions.IsFish || conditions.AllowTrashFish);
+            && isJunk;
         if (!isEligible)
             return new(false, 0);
 

@@ -9,7 +9,9 @@ internal sealed record CatchResultConditions(
     bool VanillaPerfect,
     int VanillaFishCount,
     int PreferredFishCount,
+    FishAmountBehavior FishAmountBehavior,
     FishQualityPreference PreferredFishQuality,
+    FishQualityBehavior FishQualityBehavior,
     bool AlwaysPerfect,
     bool AlwaysMaximumFishSize,
     bool IsFish,
@@ -48,19 +50,30 @@ internal static class CatchResultPolicy
                 fishSize = GetLargestFishSize(conditions.MaximumFishSize);
 
             if (conditions.PreferredFishQuality != FishQualityPreference.Any)
-                fishQuality = (int)conditions.PreferredFishQuality;
+            {
+                fishQuality = conditions.FishQualityBehavior switch
+                {
+                    FishQualityBehavior.Minimum => Math.Max(fishQuality, (int)conditions.PreferredFishQuality),
+                    FishQualityBehavior.Fixed => (int)conditions.PreferredFishQuality,
+                    _ => fishQuality
+                };
+            }
 
             if (conditions.AlwaysPerfect)
                 isPerfect = true;
 
-            // Preserve special vanilla multi-catches, depleted Challenge Bait, and
-            // the one-fish legendary rule. The preference only expands an ordinary
-            // single catch.
+            // Preserve Challenge Bait and the one-fish legendary rule. Ordinary
+            // multi-catches can use a minimum or a fixed configured quantity.
             if (!conditions.IsBossFish
-                && !conditions.UsesChallengeBait
-                && fishCount == 1)
+                && !conditions.UsesChallengeBait)
             {
-                fishCount = Math.Clamp(conditions.PreferredFishCount, 1, 3);
+                int preferredCount = Math.Clamp(conditions.PreferredFishCount, 1, 3);
+                fishCount = conditions.FishAmountBehavior switch
+                {
+                    FishAmountBehavior.Minimum => Math.Max(fishCount, preferredCount),
+                    FishAmountBehavior.Fixed => preferredCount,
+                    _ => fishCount
+                };
             }
         }
 

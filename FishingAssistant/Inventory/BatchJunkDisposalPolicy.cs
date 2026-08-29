@@ -6,7 +6,6 @@ internal sealed record BatchJunkCandidate(
     int InventoryIndex,
     string QualifiedItemId,
     bool CanBeTrashed,
-    bool IsFish,
     int Quantity);
 
 internal sealed record BatchJunkDisposalConditions(
@@ -14,7 +13,6 @@ internal sealed record BatchJunkDisposalConditions(
     bool HasFishingRod,
     JunkDisposalMode Mode,
     bool IsInventoryFull,
-    bool AllowTrashFish,
     IReadOnlyCollection<string> JunkList,
     IReadOnlyList<BatchJunkCandidate> Candidates);
 
@@ -41,8 +39,7 @@ internal static class BatchJunkDisposalPolicy
             if (candidate.InventoryIndex >= 0
                 && candidate.Quantity > 0
                 && candidate.CanBeTrashed
-                && isJunk
-                && (!candidate.IsFish || conditions.AllowTrashFish))
+                && isJunk)
             {
                 selected.Add(candidate.InventoryIndex);
             }

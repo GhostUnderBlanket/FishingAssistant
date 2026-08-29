@@ -3,8 +3,12 @@ using FishingAssistant.Configuration;
 namespace FishingAssistant.Fishing;
 
 internal sealed record TreasureChanceConditions(
-    TreasureChanceBehavior TreasureBehavior,
-    TreasureChanceBehavior GoldenBehavior,
+    int TreasureChancePercent,
+    int GoldenChancePercent,
+    double AdjustedTreasureChance,
+    double AdjustedGoldenChance,
+    double TreasureRoll,
+    double GoldenRoll,
     bool VanillaTreasure,
     bool VanillaGoldenTreasure,
     bool IsFestivalFishing);
@@ -20,20 +24,22 @@ internal static class TreasureChancePolicy
         if (conditions.IsFestivalFishing)
             return new TreasureChanceDecision(conditions.VanillaTreasure, conditions.VanillaGoldenTreasure);
 
-        bool hasTreasure = conditions.TreasureBehavior switch
+        bool hasTreasure = conditions.TreasureChancePercent switch
         {
-            TreasureChanceBehavior.Always => true,
-            TreasureChanceBehavior.Never => false,
-            _ => conditions.VanillaTreasure
+            <= 0 => false,
+            >= 100 => true,
+            15 => conditions.VanillaTreasure,
+            _ => conditions.TreasureRoll < Math.Clamp(conditions.AdjustedTreasureChance, 0d, 1d)
         };
         if (!hasTreasure)
             return new TreasureChanceDecision(false, false);
 
-        bool isGolden = conditions.GoldenBehavior switch
+        bool isGolden = conditions.GoldenChancePercent switch
         {
-            TreasureChanceBehavior.Always => true,
-            TreasureChanceBehavior.Never => false,
-            _ => conditions.VanillaGoldenTreasure
+            <= 0 => false,
+            >= 100 => true,
+            25 => conditions.VanillaGoldenTreasure,
+            _ => conditions.GoldenRoll < Math.Clamp(conditions.AdjustedGoldenChance, 0d, 1d)
         };
         return new TreasureChanceDecision(true, isGolden);
     }

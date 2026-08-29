@@ -22,6 +22,7 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
     private readonly Action<string> setValue;
     private readonly List<string>? orderedValues;
     private readonly Func<string, string> translate;
+    private readonly Func<string, IReadOnlyList<ItemPickerStatus>> getStatuses;
     private readonly List<ItemCard> visibleCards = [];
     private readonly List<int> visibleSeparatorYs = [];
     private readonly List<ClickableComponent> buttons = [];
@@ -41,7 +42,8 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         string sentinelLabel,
         Func<string> getValue,
         Action<string> setValue,
-        Func<string, string> translate)
+        Func<string, string> translate,
+        Func<string, IReadOnlyList<ItemPickerStatus>>? getStatuses = null)
     {
         this.title = title;
         this.allItems =
@@ -53,6 +55,7 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         this.getValue = getValue;
         this.setValue = setValue;
         this.translate = translate;
+        this.getStatuses = getStatuses ?? (_ => []);
         this.RebuildComponents();
         Game1.playSound("bigSelect");
     }
@@ -61,7 +64,8 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         string title,
         IReadOnlyList<ConfigItem> items,
         List<string> orderedValues,
-        Func<string, string> translate)
+        Func<string, string> translate,
+        Func<string, IReadOnlyList<ItemPickerStatus>>? getStatuses = null)
     {
         this.title = title;
         this.allItems = items
@@ -72,6 +76,7 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         this.getValue = () => orderedValues.FirstOrDefault() ?? "Any";
         this.setValue = _ => { };
         this.translate = translate;
+        this.getStatuses = getStatuses ?? (_ => []);
         this.RebuildComponents();
         Game1.playSound("bigSelect");
     }
@@ -239,9 +244,20 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
 
     public override void performHoverAction(int x, int y)
     {
-        this.hoverText = this.visibleCards
-            .FirstOrDefault(card => card.Component.containsPoint(x, y))?
-            .Item.DisplayName ?? "";
+        ItemCard? card = this.visibleCards.FirstOrDefault(item => item.Component.containsPoint(x, y));
+        if (card is null)
+        {
+            this.hoverText = "";
+            return;
+        }
+
+        string[] details = this.getStatuses(card.Item.Id)
+            .Select(status => status.Tooltip)
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .ToArray();
+        this.hoverText = details.Length == 0
+            ? card.Item.DisplayName
+            : $"{card.Item.DisplayName}\n{string.Join("\n", details)}";
     }
 
     public override void update(GameTime time)
@@ -503,6 +519,8 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
     private void DrawCard(SpriteBatch batch, ItemCard card, bool highlighted)
     {
         bool selected = this.IsSelected(card.Item.Id);
+        IReadOnlyList<ItemPickerStatus> statuses = this.getStatuses(card.Item.Id);
+        bool hasState = selected || statuses.Count > 0;
         Rectangle bounds = card.Component.bounds;
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
             bounds.X, bounds.Y, bounds.Width, bounds.Height,
@@ -510,6 +528,10 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         if (selected)
             batch.Draw(Game1.staminaRect, new Rectangle(bounds.X + 5, bounds.Y + 5, bounds.Width - 10, bounds.Height - 10),
                 Color.ForestGreen * 0.24f);
+        else if (statuses.Any(status => status.Tone == ItemPickerStatusTone.Warning))
+            batch.Draw(Game1.staminaRect,
+                new Rectangle(bounds.X + 5, bounds.Y + 5, bounds.Width - 10, bounds.Height - 10),
+                Color.IndianRed * 0.18f);
 
         int textLeft = bounds.X + 14;
         if (card.Item.Item is ConfigItem item)
@@ -529,35 +551,41 @@ internal sealed class SingleItemPickerMenu : IClickableMenu
         string name = MenuText.Fit(card.Item.DisplayName, Game1.smallFont,
             bounds.Right - textLeft - (selected ? 32 : 12));
         Vector2 size = Game1.smallFont.MeasureString(name);
-        float nameY = selected
+        float nameY = hasState
             ? bounds.Center.Y - size.Y / 2f - 7f
             : bounds.Center.Y - size.Y / 2f;
         Utility.drawTextWithShadow(batch, name, Game1.smallFont,
             new Vector2(textLeft, nameY), Game1.textColor);
-        if (selected)
+        if (hasState)
         {
             int order = this.orderedValues?.FindIndex(id =>
                 string.Equals(id, card.Item.Id, StringComparison.OrdinalIgnoreCase)) ?? -1;
-            string selectedLabel = order >= 0
-                ? string.Format(this.translate("config.item_picker.priority"), order + 1)
-                : this.translate("config.item_picker.state_selected");
+            List<string> labels = [];
+            if (selected)
+            {
+                labels.Add(order >= 0
+                    ? string.Format(this.translate("config.item_picker.priority"), order + 1)
+                    : this.translate("config.item_picker.state_selected"));
+            }
+            labels.AddRange(statuses.Select(status => status.Label));
+            string selectedLabel = string.Join(" / ", labels);
             float availableWidth = Math.Max(1f, bounds.Right - textLeft - 8);
             selectedLabel = MenuText.Fit(selectedLabel, Game1.smallFont, availableWidth / CardStateScale);
             batch.DrawString(Game1.smallFont, selectedLabel,
                 new Vector2(textLeft, bounds.Center.Y + 1), MenuVisualMetrics.ItemStateText,
                 0f, Vector2.Zero, CardStateScale, SpriteEffects.None, 0.91f);
-            if (this.orderedValues is null)
+            if (selected && this.orderedValues is null)
             {
                 batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
                     OptionsCheckbox.sourceRectChecked, Color.White, 0f, Vector2.Zero, 2f,
                     SpriteEffects.None, 0.95f);
             }
-            else
+            else if (selected && this.orderedValues is { } orderedValues)
             {
                 this.DrawOrderButton(batch, this.GetOrderButtonBounds(bounds, true), true,
                     order > 0);
                 this.DrawOrderButton(batch, this.GetOrderButtonBounds(bounds, false), false,
-                    order >= 0 && order < this.orderedValues.Count - 1);
+                    order >= 0 && order < orderedValues.Count - 1);
             }
         }
     }

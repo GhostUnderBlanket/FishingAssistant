@@ -23,6 +23,8 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
 
     public bool IsBobberInAir => rod.castedButBobberStillInAir;
 
+    public bool IsFishing => rod.isFishing;
+
     public bool IsCastInProgress => IsCastInProgressFor(rod);
 
     public object Identity => rod;
@@ -31,9 +33,37 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
 
     public float CastingPower => Math.Clamp(rod.castingPower, 0f, 1f);
 
+    public float CastStaminaCost => this.GetCastStaminaCost();
+
+    public bool CastConsumesStamina => this.DoesCastConsumeStamina();
+
     public void SetGoldenTreasure(bool isGolden)
     {
         rod.goldenTreasure = isGolden;
+    }
+
+    public double GetAdjustedTreasureChance(int baseChancePercent)
+    {
+        double baseChance = Math.Clamp(baseChancePercent, 0, 100) / 100d;
+        if (player.fishCaught.Length <= 1)
+            return 0d;
+
+        int treasureHunterCount = rod.GetTackle()
+            .Count(item => item?.QualifiedItemId == "(O)693");
+        double chance = baseChance
+            + player.LuckLevel * 0.005d
+            + (rod.GetBait()?.QualifiedItemId == "(O)703" ? baseChance : 0d)
+            + treasureHunterCount * baseChance / 3d
+            + player.DailyLuck / 2d
+            + (player.professions.Contains(9) ? baseChance : 0d);
+        return Math.Clamp(chance, 0d, 1d);
+    }
+
+    public double GetAdjustedGoldenTreasureChance(int baseChancePercent)
+    {
+        double chance = Math.Clamp(baseChancePercent, 0, 100) / 100d
+            + player.team.AverageDailyLuck();
+        return Math.Clamp(chance, 0d, 1d);
     }
 
     internal static bool IsCastInProgressFor(FishingRod fishingRod)
@@ -158,10 +188,11 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
         );
     }
 
-    public InstantBiteConditions ReadInstantBiteConditions(bool instantBiteEnabled)
+    public InstantBiteConditions ReadInstantBiteConditions(int waitingTimePercent, bool waitingTimeAlreadyApplied)
     {
         return new InstantBiteConditions(
-            instantBiteEnabled,
+            Math.Clamp(waitingTimePercent, 0, 100),
+            waitingTimeAlreadyApplied,
             rod.isFishing,
             rod.isNibbling,
             rod.timeUntilFishingBite > 0f,
@@ -228,10 +259,10 @@ internal sealed class FishingRodAdapter(Farmer player, FishingRod rod)
         rod.doneHoldingFish(player);
     }
 
-    public void TriggerInstantBite()
+    public void ApplyBiteWaitingTime(int waitingTimePercent)
     {
         if (rod.timeUntilFishingBite > 0f)
-            rod.timeUntilFishingBite = 0f;
+            rod.timeUntilFishingBite *= Math.Clamp(waitingTimePercent, 0, 100) / 100f;
     }
 
     public bool TryGetBubbleSteeringTarget(bool enabled, SteeringEffort effort, out Vector2 target)

@@ -47,9 +47,10 @@ internal sealed class AutomationRuntime(
                 return false;
 
             bar.ApplyLiveCatchModifiers(config);
+            FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
             TreasureChanceDecision chance = TreasureChancePolicy.Decide(
-                bar.ReadTreasureChanceConditions(config));
-            bar.ApplyTreasureChance(chance, FishingRodAdapter.ForCurrentPlayer());
+                bar.ReadTreasureChanceConditions(config, rod));
+            bar.ApplyTreasureChance(chance, rod);
 
             screen.Pending.SkippedBobberBar = bar.Identity;
             screen.Pending.ConfiguredBobberBar = bar.Identity;
@@ -134,7 +135,8 @@ internal sealed class AutomationRuntime(
         this.Log(lateNightStop);
         if (this.TryOpenInventoryAfterSafetyStop(config, lateNightStop))
             return;
-        this.autoEat.UpdateCurrent(getConfig(), screen.Session);
+        if (this.autoEat.UpdateCurrent(getConfig(), screen.Session))
+            return;
         this.UpdateManualCastPower(screen);
         this.UpdateManualBubbleCastPower(screen);
         AutomationTransition? lowEnergyStop = this.UpdateLowEnergyStop(screen);
@@ -142,7 +144,7 @@ internal sealed class AutomationRuntime(
         if (this.TryOpenInventoryAfterSafetyStop(config, lowEnergyStop))
             return;
         this.UpdateBubbleSteering(screen);
-        this.UpdateInstantBite();
+        this.UpdateBiteWaitingTime(screen);
         this.UpdateAutomaticMinigame(screen);
         this.UpdateAutomaticCatchPopup(screen);
         this.UpdateAutomaticTreasureLoot(screen);
@@ -452,7 +454,8 @@ internal sealed class AutomationRuntime(
                 screen.Session.IsEnabled,
                 config.AutoCastFishingRod,
                 screen.Session.State,
-                config.AutoEatFood,
+                config.AutoEatFood
+                && config.AutoEatTrigger == AutoEatTriggerBehavior.AtEnergyTarget,
                 config.EnergyPercentToEat));
         if (decision == LowEnergyStopDecision.None)
             return null;
@@ -522,19 +525,34 @@ internal sealed class AutomationRuntime(
         }
     }
 
-    private void UpdateInstantBite()
+    private void UpdateBiteWaitingTime(AutomationScreenState screen)
     {
         FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
         if (rod is null)
+        {
+            screen.BiteWaitingTimeRod = null;
             return;
+        }
 
+        if (!rod.IsFishing)
+        {
+            screen.BiteWaitingTimeRod = null;
+            return;
+        }
+
+        bool alreadyApplied = ReferenceEquals(screen.BiteWaitingTimeRod, rod.Identity);
+
+        int waitingTimePercent = getConfig().BiteWaitingTimePercent;
         InstantBiteDecision decision = InstantBitePolicy.Decide(
-            rod.ReadInstantBiteConditions(getConfig().InstantFishBite));
-        if (decision != InstantBiteDecision.Trigger)
+            rod.ReadInstantBiteConditions(waitingTimePercent, alreadyApplied));
+        if (decision != InstantBiteDecision.ApplyWaitingTime)
             return;
 
-        rod.TriggerInstantBite();
-        monitor.Log($"Triggered an instant fish bite for local screen {Context.ScreenId}.", LogLevel.Trace);
+        rod.ApplyBiteWaitingTime(waitingTimePercent);
+        screen.BiteWaitingTimeRod = rod.Identity;
+        monitor.Log(
+            $"Applied {waitingTimePercent}% bite waiting time for local screen {Context.ScreenId}.",
+            LogLevel.Trace);
     }
 
     private void UpdateAutomaticCatchPopup(AutomationScreenState screen)
@@ -590,9 +608,10 @@ internal sealed class AutomationRuntime(
         if (!ReferenceEquals(screen.Pending.ConfiguredBobberBar, bar.Identity))
         {
             (int vanillaBarHeight, int finalBarHeight) = bar.ApplyBarSizeAssistance(config);
+            FishingRodAdapter? rod = FishingRodAdapter.ForCurrentPlayer();
             TreasureChanceDecision chance = TreasureChancePolicy.Decide(
-                bar.ReadTreasureChanceConditions(config));
-            bar.ApplyTreasureChance(chance, FishingRodAdapter.ForCurrentPlayer());
+                bar.ReadTreasureChanceConditions(config, rod));
+            bar.ApplyTreasureChance(chance, rod);
             screen.Pending.ConfiguredBobberBar = bar.Identity;
             monitor.Log(
                 $"Configured fishing minigame for local screen {Context.ScreenId}: " +

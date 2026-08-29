@@ -1,4 +1,5 @@
 using FishingAssistant.Configuration;
+using FishingAssistant.UI;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Tools;
@@ -107,8 +108,8 @@ internal sealed class BaitAttachmentService(IMonitor monitor, Func<string, strin
             return;
         }
 
-        Game1.addHUDMessage(new HUDMessage(
-            string.Format(translate("hud.bait.spawned"), bait.DisplayName, bait.Stack)));
+        HudNotification.ShowItem(
+            string.Format(translate("hud.bait.spawned"), bait.DisplayName, bait.Stack), bait);
         monitor.Log(
             $"Spawned and attached {amount} {bait.DisplayName} for local screen {Context.ScreenId}.",
             LogLevel.Warn);
