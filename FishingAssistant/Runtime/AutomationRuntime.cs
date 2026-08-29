@@ -730,12 +730,12 @@ internal sealed class AutomationRuntime(
             case TreasureLootDecision.DropBlocked:
                 menu.DropBlockedItems(screen.BlockedTreasureItems, ignoredItemIds);
                 this.ResolveIgnoredTreasureRemainder(menu, config.ActionIfOnlyIgnoredTreasureRemains);
-                this.StopForFullInventory(screen, "hud.treasure_full.drop");
+                this.ContinueAfterFullInventoryResolution(screen, "hud.treasure_full.drop", "dropped");
                 break;
             case TreasureLootDecision.DiscardBlocked:
                 menu.DiscardBlockedItems(screen.BlockedTreasureItems, ignoredItemIds);
                 this.ResolveIgnoredTreasureRemainder(menu, config.ActionIfOnlyIgnoredTreasureRemains);
-                this.StopForFullInventory(screen, "hud.treasure_full.discard");
+                this.ContinueAfterFullInventoryResolution(screen, "hud.treasure_full.discard", "discarded");
                 break;
             case TreasureLootDecision.KeepIgnoredOpen:
                 screen.TreasureCollectionStopped = true;
@@ -801,6 +801,19 @@ internal sealed class AutomationRuntime(
 
         monitor.Log($"Stopped fishing automation for local screen {Context.ScreenId} because the inventory " +
                     "couldn't accept the remaining treasure.", LogLevel.Warn);
+    }
+
+    private void ContinueAfterFullInventoryResolution(
+        AutomationScreenState screen,
+        string messageKey,
+        string action)
+    {
+        Game1.addHUDMessage(new HUDMessage(translate(messageKey), HUDMessage.error_type));
+        this.ResetTreasureLoot(screen);
+        monitor.Log(
+            $"Fishing automation continued after treasure that could not fit was {action} for local screen "
+            + $"{Context.ScreenId}.",
+            LogLevel.Info);
     }
 
     private void ResetTreasureLoot(AutomationScreenState screen)
