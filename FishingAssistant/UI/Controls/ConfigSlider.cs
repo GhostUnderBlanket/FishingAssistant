@@ -18,6 +18,7 @@ internal sealed class ConfigSlider : IConfigControl, IKeyboardSubscriber
     private readonly double minimum;
     private readonly double maximum;
     private readonly double increment;
+    private readonly int knobMinimumWidth;
     private Point pointerStart;
     private bool pointerActive;
     private bool pointerStartedOnKnob;
@@ -35,12 +36,15 @@ internal sealed class ConfigSlider : IConfigControl, IKeyboardSubscriber
         double minimum,
         double maximum,
         double increment,
-        Func<double, string> formatValue)
+        Func<double, string> formatValue,
+        int knobMinimumWidth = KnobMinimumWidth)
     {
         if (maximum <= minimum)
             throw new ArgumentOutOfRangeException(nameof(maximum));
         if (increment <= 0)
             throw new ArgumentOutOfRangeException(nameof(increment));
+        if (knobMinimumWidth <= 0)
+            throw new ArgumentOutOfRangeException(nameof(knobMinimumWidth));
 
         this.Component = new ClickableComponent(bounds, label) { myID = id };
         this.Description = description;
@@ -50,6 +54,7 @@ internal sealed class ConfigSlider : IConfigControl, IKeyboardSubscriber
         this.maximum = maximum;
         this.increment = increment;
         this.formatValue = formatValue;
+        this.knobMinimumWidth = knobMinimumWidth;
     }
 
     public ClickableComponent Component { get; }
@@ -323,8 +328,9 @@ internal sealed class ConfigSlider : IConfigControl, IKeyboardSubscriber
             .OrderByDescending(value => Game1.smallFont.MeasureString(value).X)
             .First();
         return Math.Clamp((int)Math.Ceiling(Game1.smallFont.MeasureString(widest).X) + 24,
-            KnobMinimumWidth,
-            Math.Max(KnobMinimumWidth, MenuVisualMetrics.GetControlWidth(this.Component.bounds.Width) / 2));
+            this.knobMinimumWidth,
+            Math.Max(this.knobMinimumWidth,
+                MenuVisualMetrics.GetControlWidth(this.Component.bounds.Width) / 2));
     }
 
     private void StopEditing()

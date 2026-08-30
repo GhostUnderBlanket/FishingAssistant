@@ -30,6 +30,45 @@ internal static class CatchResultPatch
         harmony.Patch(
             AccessTools.Method(typeof(FishingRod), nameof(FishingRod.pullFishFromWater)),
             prefix: new HarmonyMethod(typeof(CatchResultPatch), nameof(BeforePullFishFromWater)));
+
+        harmony.Patch(
+            AccessTools.Method(typeof(FishingRod), "doPullFishFromWater"),
+            postfix: new HarmonyMethod(typeof(CatchResultPatch), nameof(AfterPullFishFromWater)));
+    }
+
+    private static void AfterPullFishFromWater(FishingRod __instance)
+    {
+        try
+        {
+            if (getConfig is null
+                || __instance.lastUser is not { IsLocalPlayer: true }
+                || __instance.fromFishPond
+                || Game1.isFestival()
+                || Game1.currentMinigame is FishingGame)
+            {
+                return;
+            }
+
+            ModConfig config = getConfig();
+            if (config.FishQualityBehavior != FishQualityBehavior.Fixed
+                || config.PreferFishQuality == FishQualityPreference.Any
+                || __instance.whichFish is null
+                || __instance.lastCatchWasJunk
+                || !DataLoader.Fish(Game1.content).ContainsKey(__instance.whichFish.LocalItemId))
+            {
+                return;
+            }
+
+            // Vanilla upgrades quality for a perfect catch while processing the
+            // queued result. Fixed quality must be applied after that upgrade.
+            __instance.fishQuality = (int)config.PreferFishQuality;
+        }
+        catch (Exception exception)
+        {
+            monitor?.Log(
+                $"Fixed fish quality could not be finalized after the vanilla catch result.\n{exception}",
+                LogLevel.Error);
+        }
     }
 
     private static void BeforePullFishFromWater(
@@ -76,7 +115,9 @@ internal static class CatchResultPatch
                 wasPerfect,
                 numCaught,
                 config.PreferFishAmount,
+                config.FishAmountBehavior,
                 config.PreferFishQuality,
+                config.FishQualityBehavior,
                 config.AlwaysPerfect,
                 config.AlwaysMaxFishSize,
                 isFish,

@@ -7,16 +7,60 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-08-30
+
 ### Added
 
 - Catch-count and perfect-catch thresholds for selectively skipping fishing minigames.
   Perfect catches are tracked per fish, player, and save without counting skipped or
   artificially perfect catches.
+- Ordered Preferred Food selection with Best Value, Most Energy, and Do Not Eat
+  fallbacks. Preferred fish may always be eaten, while the fallback has a separate
+  Allow Eating Fish safeguard.
+- Configurable automatic-eating triggers for eating at the energy target or waiting
+  until the player cannot afford another cast.
+- A Food Consumption Delay, included in Automation Timing presets, which gives players
+  time to cancel before the first item and between additional items.
+- Percentage sliders for bite waiting time, fishing treasure chance, and golden treasure
+  chance. Vanilla bonuses from level, bait, tackle, professions, and luck still apply
+  where appropriate.
+- Vanilla, Minimum, and Fixed behaviors for supported fish amounts and fish quality.
+- Cross-list status badges in visual item pickers, including Junk, Food priority, and
+  treasure items inherited from the Junk List.
+- Relevant item icons on automatic eating and junk-disposal notifications.
 
 ### Changed
 
 - Eligible skipped fishing minigames are now completed before their panel is drawn,
   while retaining the previous compatibility path as a fallback.
+- Dropping or discarding treasure that cannot fit now resolves the blocked rewards and
+  continues fishing. Stop remains the explicit choice for disabling automation and
+  leaving the treasure menu open.
+- Automatic eating now performs one recovery cycle from the food available when the
+  cycle starts. Newly caught fish are not repeatedly consumed to chase the target.
+- Reorganized the configuration menu into workflow-oriented pages for Automation,
+  Fishing, Minigame, Treasure, Inventory & Food, Equipment, Interface & Controls, and
+  Enchantments. Named group dividers and a taller viewport-responsive layout make large
+  pages easier to scan.
+- Treasure ignore totals now include Junk List items when that derived ignore option is
+  enabled, without copying those items into the explicit list.
+- Numeric timing values display Instant at zero, and late-night times use the game's
+  localized clock format.
+- Existing Instant Fish Bites and treasure-chance enum settings migrate to the new
+  percentage sliders. Existing skip-only-caught behavior migrates to one required catch.
+
+### Removed
+
+- Removed the redundant Allow Fish to Be Treated as Junk setting. Explicit Junk List
+  selection is now authoritative.
+
+### Fixed
+
+- Fixed quality now applies exactly to catches that support quality, without a later
+  perfect-catch upgrade, and no longer gives quality to junk or other ineligible items.
+- Fixed amount behavior preserves Challenge Bait and legendary-catch restrictions.
+- Configuration controls and descriptions no longer crowd group separators, and menu
+  height is recalculated when the game viewport changes.
 
 ## [3.3.0] - 2026-08-26
 

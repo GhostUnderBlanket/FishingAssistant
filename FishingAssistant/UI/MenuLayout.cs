@@ -26,7 +26,7 @@ internal sealed record MenuLayout(
             throw new ArgumentOutOfRangeException(nameof(viewportHeight));
         int margin = viewportWidth >= 960 && viewportHeight >= 640 ? 48 : 12;
         int width = Math.Min(1200, Math.Max(1, viewportWidth - margin * 2));
-        int height = Math.Min(680, Math.Max(1, viewportHeight - margin * 2));
+        int height = Math.Min(960, Math.Max(1, viewportHeight - margin * 2));
         int padding = width >= 640 ? 48 : 24;
         int headerHeight = Math.Min(88, Math.Max(48, height / 6));
         int categoryHeight = height >= 300 ? 44 : 32;

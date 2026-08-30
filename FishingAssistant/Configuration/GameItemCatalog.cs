@@ -25,6 +25,8 @@ internal sealed class GameItemCatalog : IItemCatalog, IConfigItemSource
             StardewValley.Object.baitCategory => ConfigItemKind.Bait,
             StardewValley.Object.tackleCategory => ConfigItemKind.Tackle,
             _ when SupportedStarterRods.Contains(data.QualifiedItemId) => ConfigItemKind.FishingRod,
+            _ when Game1.objectData.TryGetValue(data.ItemId, out var objectData) && objectData.Edibility > 0
+                => ConfigItemKind.Food,
             _ => ConfigItemKind.Other
         };
 
@@ -35,6 +37,9 @@ internal sealed class GameItemCatalog : IItemCatalog, IConfigItemSource
     {
         IEnumerable<string> itemIds = kind switch
         {
+            ConfigItemKind.Food => Game1.objectData
+                .Where(pair => pair.Value.Edibility > 0)
+                .Select(pair => ItemRegistry.ManuallyQualifyItemId(pair.Key, "(O)")),
             ConfigItemKind.Bait => Game1.objectData
                 .Where(pair => pair.Value.Category == StardewValley.Object.baitCategory)
                 .Select(pair => ItemRegistry.ManuallyQualifyItemId(pair.Key, "(O)")),

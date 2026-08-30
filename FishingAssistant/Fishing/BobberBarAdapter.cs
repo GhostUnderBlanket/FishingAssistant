@@ -70,11 +70,17 @@ internal sealed class BobberBarAdapter(BobberBar bar)
         );
     }
 
-    public TreasureChanceConditions ReadTreasureChanceConditions(ModConfig config)
+    public TreasureChanceConditions ReadTreasureChanceConditions(ModConfig config, FishingRodAdapter? rod)
     {
+        int treasurePercent = Math.Clamp(config.TreasureChancePercent, 0, 100);
+        int goldenPercent = Math.Clamp(config.GoldenTreasureChancePercent, 0, 100);
         return new TreasureChanceConditions(
-            config.TreasureChance,
-            config.GoldenTreasureChance,
+            treasurePercent,
+            goldenPercent,
+            rod?.GetAdjustedTreasureChance(treasurePercent) ?? treasurePercent / 100d,
+            rod?.GetAdjustedGoldenTreasureChance(goldenPercent) ?? goldenPercent / 100d,
+            treasurePercent is > 0 and < 100 && treasurePercent != 15 ? Game1.random.NextDouble() : 0d,
+            goldenPercent is > 0 and < 100 && goldenPercent != 25 ? Game1.random.NextDouble() : 0d,
             bar.treasure,
             bar.goldenTreasure,
             Game1.isFestival() || Game1.currentMinigame is FishingGame

@@ -33,6 +33,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private readonly ConfigResetWorkflow resetWorkflow;
     private readonly List<ControlDefinition> definitions = [];
     private readonly List<IConfigControl> options = [];
+    private readonly List<GroupSeparator> groupSeparators = [];
     private readonly Dictionary<int, string> optionKeys = [];
     private readonly Dictionary<int, Func<ConfigControlState>> optionStateProviders = [];
     private readonly List<ClickableComponent> categoryButtons = [];
@@ -47,6 +48,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private string hoverText = "";
     private string statusText = "";
     private bool discardConfirmed;
+    private bool nextDefinitionStartsGroup;
+    private string? nextGroupLabelKey;
 
     public ConfigurationMenu(
         ConfigEditSession session,
@@ -73,9 +76,31 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Game1.playSound("bigSelect");
     }
 
-    private int MaximumScrollOffset => Math.Max(0, this.VisibleDefinitionCount - this.layout.VisibleOptionCount);
+    private int MaximumScrollOffset => this.GetMaximumScrollOffset();
 
     private int VisibleDefinitionCount => this.definitions.Count(definition => definition.IsVisible?.Invoke() ?? true);
+
+    private int GetMaximumScrollOffset()
+    {
+        ControlDefinition[] visible = this.definitions
+            .Where(definition => definition.IsVisible?.Invoke() ?? true)
+            .ToArray();
+        int availableHeight = Math.Max(1, this.layout.ContentBottom - this.layout.ContentTop);
+        int usedHeight = 0;
+        int firstVisibleIndex = visible.Length;
+        for (int index = visible.Length - 1; index >= 0; index--)
+        {
+            int entryHeight = this.layout.OptionHeight
+                + (visible[index].StartsGroup ? MenuVisualMetrics.ConfigGroupHeaderHeight : 0);
+            if (usedHeight + entryHeight > availableHeight)
+                break;
+
+            usedHeight += entryHeight;
+            firstVisibleIndex = index;
+        }
+
+        return Math.Max(0, firstVisibleIndex);
+    }
 
     public bool IsListeningForKeybind => this.options.OfType<ConfigKeybind>().Any(control => control.IsListening);
 
@@ -312,6 +337,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
 
         this.DrawHeader(batch);
         this.DrawCategorySelector(batch);
+
+        foreach (GroupSeparator separator in this.groupSeparators)
+            this.DrawGroupSeparator(batch, separator);
 
         Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
         IReadOnlyDictionary<string, InlineConfigMessage> inlineMessages = InlineConfigValidation
@@ -606,19 +634,35 @@ internal sealed class ConfigurationMenu : IClickableMenu
         int optionWidth = contentWidth - scrollWidth - scrollGap;
 
         this.options.Clear();
+        this.groupSeparators.Clear();
         this.optionKeys.Clear();
         this.optionStateProviders.Clear();
         IEnumerable<(ControlDefinition Definition, int Index)> visible = this.definitions
             .Select((definition, index) => (definition, index))
             .Where(entry => entry.definition.IsVisible?.Invoke() ?? true)
-            .Skip(this.scrollOffset)
-            .Take(this.layout.VisibleOptionCount);
-        int row = 0;
+            .Skip(this.scrollOffset);
+        int y = this.layout.ContentTop;
         foreach ((ControlDefinition definition, int index) in visible)
         {
+            if (definition.StartsGroup)
+            {
+                if (y + MenuVisualMetrics.ConfigGroupHeaderHeight + this.layout.OptionHeight
+                    > this.layout.ContentBottom)
+                    break;
+
+                this.groupSeparators.Add(new GroupSeparator(
+                    new Rectangle(contentX, y, optionWidth, MenuVisualMetrics.ConfigGroupHeaderHeight),
+                    this.translate(definition.GroupLabelKey!)));
+                y += MenuVisualMetrics.ConfigGroupHeaderHeight;
+            }
+            else if (y + this.layout.OptionHeight > this.layout.ContentBottom)
+            {
+                break;
+            }
+
             Rectangle bounds = new(
                 contentX,
-                this.layout.ContentTop + row * this.layout.OptionHeight,
+                y,
                 optionWidth,
                 this.layout.OptionHeight
             );
@@ -626,7 +670,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             this.options.Add(option);
             this.optionKeys[option.Component.myID] = definition.Key;
             this.optionStateProviders[option.Component.myID] = definition.GetState;
-            row++;
+            y += this.layout.OptionHeight;
         }
 
         this.scrollButtons.Clear();
@@ -646,9 +690,12 @@ internal sealed class ConfigurationMenu : IClickableMenu
     private void BuildDefinitions()
     {
         this.definitions.Clear();
+        this.nextDefinitionStartsGroup = false;
+        this.nextGroupLabelKey = null;
         switch (this.category)
         {
             case ConfigCategory.Automation:
+                this.AddSeparator("automation.actions");
                 this.AddEnumDefinition("automation_profile", () => this.session.Draft.AutomationProfile,
                     value => AutomationProfiles.Apply(this.session.Draft, value));
                 this.AddDefinition("auto_cast", () => this.session.Draft.AutoCastFishingRod,
@@ -662,8 +709,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                         "config.unavailable.auto_minigame_skipped"));
                 this.AddDefinition("auto_close", () => this.session.Draft.AutoClosePopup,
                     value => this.SetProfileOption(() => this.session.Draft.AutoClosePopup = value));
-                this.AddDefinition("auto_treasure", () => this.session.Draft.AutoLootTreasure,
-                    value => this.SetProfileOption(() => this.session.Draft.AutoLootTreasure = value));
+                this.AddSeparator("automation.timing");
                 this.AddEnumDefinition("automation_timing", () => this.session.Draft.AutomationTiming,
                     value => AutomationTimingPresets.Apply(this.session.Draft, value));
                 this.AddTimingSliderDefinition("cast_delay", () => this.session.Draft.AutoCastDelaySeconds,
@@ -678,21 +724,29 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.TreasureLootDelaySeconds = (float)value, 0, 10, 0.25,
                     getState: () => ConfigControlAvailability.Requires(this.session.Draft.AutoLootTreasure,
                         "config.unavailable.auto_treasure"));
+                this.AddTimingSliderDefinition("food_delay",
+                    () => this.session.Draft.FoodConsumptionDelaySeconds,
+                    value => this.session.Draft.FoodConsumptionDelaySeconds = (float)value,
+                    0,
+                    10,
+                    0.25,
+                    getState: () => ConfigControlAvailability.Requires(this.session.Draft.AutoEatFood,
+                        "config.unavailable.auto_eat"));
+                this.AddSeparator("automation.safety");
                 this.AddEnumDefinition("auto_pause", () => this.session.Draft.AutoPauseFishing,
                     value => this.session.Draft.AutoPauseFishing = value);
                 this.AddSliderDefinition("pause_time", () => this.session.Draft.TimeToPause,
                     value => this.session.Draft.TimeToPause = Convert.ToInt32(value), 6, 25, 1,
-                    value => Game1.getTimeOfDayString(Convert.ToInt32(value) * 100));
+                    value => Game1.getTimeOfDayString(Convert.ToInt32(value) * 100)
+                        .Replace(":00", string.Empty, StringComparison.Ordinal),
+                    knobMinimumWidth: 112);
                 this.AddSliderDefinition("warning_count", () => this.session.Draft.WarnCount,
                     value => this.session.Draft.WarnCount = Convert.ToInt32(value), 1, 5, 1);
                 this.AddDefinition("open_inventory_on_stop", () => this.session.Draft.OpenInventoryOnStop,
                     value => this.session.Draft.OpenInventoryOnStop = value);
                 break;
             case ConfigCategory.Inventory:
-                this.AddEnumDefinition("inventory_full_action", () => this.session.Draft.ActionIfInventoryFull,
-                    value => this.session.Draft.ActionIfInventoryFull = value,
-                    () => ConfigControlAvailability.Requires(this.session.Draft.AutoLootTreasure,
-                        "config.unavailable.auto_treasure"));
+                this.AddSeparator("inventory.junk");
                 this.AddEnumDefinition("junk_disposal",
                     () => this.session.Draft.JunkDisposalMode,
                     value => this.session.Draft.JunkDisposalMode = value);
@@ -702,22 +756,53 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     () => this.SetChildMenu(new JunkListMenu(
                         this.session.Draft.JunkList,
                         this.itemSource,
-                        this.translate)));
-                this.AddDefinition("trash_fish", () => this.session.Draft.AllowTrashFish,
-                    value => this.session.Draft.AllowTrashFish = value);
+                        this.translate,
+                        this.session.Draft.PreferredFoods)));
+                this.AddSeparator("inventory.food");
                 this.AddDefinition("auto_eat", () => this.session.Draft.AutoEatFood,
                     value => this.session.Draft.AutoEatFood = value);
+                this.AddEnumDefinition("auto_eat_trigger", () => this.session.Draft.AutoEatTrigger,
+                    value => this.session.Draft.AutoEatTrigger = value,
+                    () => ConfigControlAvailability.Requires(this.session.Draft.AutoEatFood,
+                        "config.unavailable.auto_eat"));
                 this.AddSliderDefinition("eat_energy", () => this.session.Draft.EnergyPercentToEat,
                     value => this.session.Draft.EnergyPercentToEat = Convert.ToInt32(value), 5, 95, 5,
                     value => $"{value:0}%",
                     () => ConfigControlAvailability.Requires(this.session.Draft.AutoEatFood,
                         "config.unavailable.auto_eat"));
-                this.AddDefinition("eat_fish", () => this.session.Draft.AllowEatingFish,
-                    value => this.session.Draft.AllowEatingFish = value,
+                this.AddOrderedItemDefinition("preferred_food", ConfigItemKind.Food,
+                    this.session.Draft.PreferredFoods,
+                    () => ConfigControlAvailability.Requires(this.session.Draft.AutoEatFood,
+                        "config.unavailable.auto_eat"),
+                    "config.value.use_fallback",
+                    itemId => this.session.Draft.JunkList.Contains(itemId,
+                        StringComparer.OrdinalIgnoreCase)
+                        ?
+                        [new ItemPickerStatus(
+                            this.translate("config.item_status.junk"),
+                            this.translate("config.item_status.junk_food.tooltip"),
+                            ItemPickerStatusTone.Warning)]
+                        : []);
+                this.AddEnumDefinition("food_fallback", () => this.session.Draft.FoodFallback,
+                    value => this.session.Draft.FoodFallback = value,
                     () => ConfigControlAvailability.Requires(this.session.Draft.AutoEatFood,
                         "config.unavailable.auto_eat"));
+                this.AddDefinition("eat_fish", () => this.session.Draft.AllowEatingFish,
+                    value => this.session.Draft.AllowEatingFish = value,
+                    () => ConfigControlAvailability.Requires(
+                        this.session.Draft.AutoEatFood
+                        && this.session.Draft.FoodFallback != FoodFallbackBehavior.DoNotEat,
+                        this.session.Draft.AutoEatFood
+                            ? "config.unavailable.food_fallback"
+                            : "config.unavailable.auto_eat"));
                 break;
             case ConfigCategory.Equipment:
+                this.AddSeparator("equipment.rod");
+                this.AddItemDefinition("starter_rod", ConfigItemKind.FishingRod, "None",
+                    () => this.session.Draft.StartWithFishingRod,
+                    value => this.session.Draft.StartWithFishingRod = value,
+                    "config.value.no_starter_rod");
+                this.AddSeparator("equipment.bait");
                 this.AddDefinition("attach_bait", () => this.session.Draft.AutoAttachBait,
                     value => this.session.Draft.AutoAttachBait = value);
                 this.AddOrderedItemDefinition("preferred_bait", ConfigItemKind.Bait,
@@ -735,6 +820,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                         this.session.Draft.AutoAttachBait
                             ? "config.unavailable.spawn_bait"
                             : "config.unavailable.attach_bait"));
+                this.AddSeparator("equipment.tackle");
                 this.AddDefinition("attach_tackle", () => this.session.Draft.AutoAttachTackles,
                     value => this.session.Draft.AutoAttachTackles = value);
                 this.AddOrderedItemDefinition("preferred_tackle", ConfigItemKind.Tackle,
@@ -749,16 +835,14 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.SpawnTackleIfDontHave = value,
                     () => ConfigControlAvailability.Requires(this.session.Draft.AutoAttachTackles,
                         "config.unavailable.attach_tackle"));
+                this.AddSeparator("equipment.durability");
                 this.AddDefinition("infinite_bait", () => this.session.Draft.InfiniteBait,
                     value => this.session.Draft.InfiniteBait = value);
                 this.AddDefinition("infinite_tackle", () => this.session.Draft.InfiniteTackle,
                     value => this.session.Draft.InfiniteTackle = value);
                 break;
             case ConfigCategory.Fishing:
-                this.AddItemDefinition("starter_rod", ConfigItemKind.FishingRod, "None",
-                    () => this.session.Draft.StartWithFishingRod,
-                    value => this.session.Draft.StartWithFishingRod = value,
-                    "config.value.no_starter_rod");
+                this.AddSeparator("fishing.casting");
                 this.AddSliderDefinition("cast_power", () => this.session.Draft.DefaultCastPower,
                     value => this.session.Draft.DefaultCastPower = Convert.ToInt32(value), 0, 100, 5,
                     value => $"{value:0}%");
@@ -770,9 +854,16 @@ internal sealed class ConfigurationMenu : IClickableMenu
                         >= ManualCastPowerPolicy.NeverUnlockSeconds => this.translate("config.value.never_unlock"),
                         _ => string.Format(this.translate("config.value.seconds"), value)
                     });
-                this.AddDefinition("instant_bite", () => this.session.Draft.InstantFishBite,
-                    value => this.session.Draft.InstantFishBite = value);
+                this.AddSliderDefinition("bite_waiting_time", () => this.session.Draft.BiteWaitingTimePercent,
+                    value => this.session.Draft.BiteWaitingTimePercent = Convert.ToInt32(value), 0, 100, 1,
+                    value => Convert.ToInt32(value) switch
+                    {
+                        0 => this.translate("config.value.instant"),
+                        100 => this.translate("config.value.vanilla"),
+                        _ => $"{value:0}%"
+                    });
 
+                this.AddSeparator("fishing.bubbles");
                 this.AddDefinition("bubble_steering", () => this.session.Draft.AutomaticBubbleSteering,
                     value => this.SetProfileOption(() => this.session.Draft.AutomaticBubbleSteering = value));
                 this.AddEnumDefinition("automatic_cast_power_adjustment",
@@ -785,28 +876,57 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.AddDefinition("bubble_marker", () => this.session.Draft.ShowFishingBubbleMarker,
                     value => this.session.Draft.ShowFishingBubbleMarker = value);
 
+                this.AddSeparator("fishing.catch_results");
+                this.AddEnumDefinition("fish_amount_behavior", () => this.session.Draft.FishAmountBehavior,
+                    value => this.session.Draft.FishAmountBehavior = value);
                 this.AddSliderDefinition("fish_amount", () => this.session.Draft.PreferFishAmount,
-                    value => this.session.Draft.PreferFishAmount = Convert.ToInt32(value), 1, 3, 1);
+                    value => this.session.Draft.PreferFishAmount = Convert.ToInt32(value), 1, 3, 1,
+                    getState: () => ConfigControlAvailability.Requires(
+                        this.session.Draft.FishAmountBehavior != FishAmountBehavior.Vanilla,
+                        "config.unavailable.fish_amount_behavior"));
+                this.AddEnumDefinition("fish_quality_behavior", () => this.session.Draft.FishQualityBehavior,
+                    value => this.session.Draft.FishQualityBehavior = value);
                 this.AddEnumDefinition("fish_quality", () => this.session.Draft.PreferFishQuality,
-                    value => this.session.Draft.PreferFishQuality = value);
+                    value => this.session.Draft.PreferFishQuality = value,
+                    () => ConfigControlAvailability.Requires(
+                        this.session.Draft.FishQualityBehavior != FishQualityBehavior.Vanilla,
+                        "config.unavailable.fish_quality_behavior"),
+                    [FishQualityPreference.Silver, FishQualityPreference.Gold,
+                        FishQualityPreference.Iridium]);
                 this.AddDefinition("always_perfect", () => this.session.Draft.AlwaysPerfect,
                     value => this.session.Draft.AlwaysPerfect = value);
                 this.AddDefinition("max_fish_size", () => this.session.Draft.AlwaysMaxFishSize,
                     value => this.session.Draft.AlwaysMaxFishSize = value);
-
+                break;
+            case ConfigCategory.Treasure:
+                this.AddSeparator("treasure.chances");
+                this.AddSliderDefinition("treasure_chance", () => this.session.Draft.TreasureChancePercent,
+                    value => this.session.Draft.TreasureChancePercent = Convert.ToInt32(value), 0, 100, 1,
+                    value => this.FormatChancePercent(value, 15));
+                this.AddSliderDefinition("golden_treasure_chance",
+                    () => this.session.Draft.GoldenTreasureChancePercent,
+                    value => this.session.Draft.GoldenTreasureChancePercent = Convert.ToInt32(value), 0, 100, 1,
+                    value => this.FormatChancePercent(value, 25));
+                this.AddSeparator("treasure.catching");
                 this.AddDefinition("treasure_targeting", () => this.session.Draft.TreasureTargeting,
                     value => this.session.Draft.TreasureTargeting = value);
                 this.AddDefinition("instant_treasure", () => this.session.Draft.InstantCatchTreasure,
                     value => this.session.Draft.InstantCatchTreasure = value);
+                this.AddDefinition("auto_treasure", () => this.session.Draft.AutoLootTreasure,
+                    value => this.SetProfileOption(() => this.session.Draft.AutoLootTreasure = value));
+                this.AddSeparator("treasure.loot");
                 this.AddActionDefinition("treasure_ignore_list",
                     () => string.Format(this.translate("config.treasure_ignore_picker.selected"),
-                        this.session.Draft.TreasureChestIgnoreList.Count),
+                        this.GetTreasureIgnoreCounts().Total),
                     () => this.SetChildMenu(JunkListMenu.CreateTreasureIgnoreMenu(
                         this.session.Draft.TreasureChestIgnoreList,
+                        this.session.Draft.JunkList,
+                        () => this.session.Draft.IgnoreJunkListItemsInTreasureChests,
                         this.itemSource,
-                        this.translate)),
+                    this.translate)),
                     () => ConfigControlAvailability.Requires(this.session.Draft.AutoLootTreasure,
-                        "config.unavailable.auto_treasure"));
+                        "config.unavailable.auto_treasure"),
+                    this.GetTreasureIgnoreDescription);
                 this.AddDefinition("ignore_junk_in_treasure",
                     () => this.session.Draft.IgnoreJunkListItemsInTreasureChests,
                     value => this.session.Draft.IgnoreJunkListItemsInTreasureChests = value,
@@ -822,12 +942,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
                         this.session.Draft.AutoLootTreasure
                             ? "config.unavailable.treasure_ignore_items"
                             : "config.unavailable.auto_treasure"));
-                this.AddEnumDefinition("treasure_chance", () => this.session.Draft.TreasureChance,
-                    value => this.session.Draft.TreasureChance = value);
-                this.AddEnumDefinition("golden_treasure_chance", () => this.session.Draft.GoldenTreasureChance,
-                    value => this.session.Draft.GoldenTreasureChance = value);
+                this.AddEnumDefinition("inventory_full_action", () => this.session.Draft.ActionIfInventoryFull,
+                    value => this.session.Draft.ActionIfInventoryFull = value,
+                    () => ConfigControlAvailability.Requires(this.session.Draft.AutoLootTreasure,
+                        "config.unavailable.auto_treasure"));
                 break;
             case ConfigCategory.Minigame:
+                this.AddSeparator("minigame.skipping");
                 this.AddEnumDefinition("skip_minigame", () => this.session.Draft.SkipFishingMiniGame,
                     value => this.session.Draft.SkipFishingMiniGame = value,
                     values:
@@ -848,6 +969,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                             SkipMinigameBehavior.AfterEnoughCatches or
                             SkipMinigameBehavior.AfterEnoughPerfectCatches,
                         "config.unavailable.skip_catches_required"));
+                this.AddSeparator("minigame.assistance");
                 this.AddEnumDefinition("minigame_assistance",
                     () => this.session.Draft.MinigameAssistance,
                     value => MinigameAssistancePresets.Apply(this.session.Draft, value),
@@ -895,11 +1017,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
                         this.session.Draft.SkipFishingMiniGame == SkipMinigameBehavior.Off,
                         "config.unavailable.minigame_skipped"));
                 break;
-            case ConfigCategory.Display:
+            case ConfigCategory.Interface:
+                this.AddSeparator("interface.hud");
                 this.AddEnumDefinition("hud_visibility", () => this.session.Draft.HudVisibility,
                     value => this.session.Draft.HudVisibility = value);
                 this.AddEnumDefinition("hud_position", () => this.session.Draft.ModStatusPosition,
                     value => this.session.Draft.ModStatusPosition = value);
+                this.AddSeparator("interface.preview");
                 this.AddDefinition("fish_preview", () => this.session.Draft.DisplayFishPreview,
                     value => this.SetProfileOption(() => this.session.Draft.DisplayFishPreview = value));
                 this.AddEnumDefinition("fish_preview_style", () => this.session.Draft.FishPreviewStyle,
@@ -923,22 +1047,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     () => ConfigControlAvailability.LegendaryFish(
                         this.session.Draft.DisplayFishPreview,
                         this.session.Draft.ShowUncaughtFish));
-                break;
-            case ConfigCategory.Enchantments:
-                Func<ConfigControlState> enchantmentState = () =>
-                    ConfigControlAvailability.TemporaryEnchantments(Context.HasRemotePlayers);
-                this.AddDefinition("enchant_auto_hook", () => this.session.Draft.AddAutoHookEnchantment,
-                    value => this.session.Draft.AddAutoHookEnchantment = value, enchantmentState);
-                this.AddDefinition("enchant_efficient", () => this.session.Draft.AddEfficientEnchantment,
-                    value => this.session.Draft.AddEfficientEnchantment = value, enchantmentState);
-                this.AddDefinition("enchant_master", () => this.session.Draft.AddMasterEnchantment,
-                    value => this.session.Draft.AddMasterEnchantment = value, enchantmentState);
-                this.AddDefinition("enchant_preserving", () => this.session.Draft.AddPreservingEnchantment,
-                    value => this.session.Draft.AddPreservingEnchantment = value, enchantmentState);
-                this.AddDefinition("remove_enchantments", () => this.session.Draft.RemoveWhenUnequipped,
-                    value => this.session.Draft.RemoveWhenUnequipped = value, enchantmentState);
-                break;
-            case ConfigCategory.Controls:
+                this.AddSeparator("interface.controls");
                 this.AddKeybindDefinition("toggle_automation", () => this.session.Draft.EnableAutomationButton,
                     value => this.session.Draft.EnableAutomationButton = value,
                     () => this.session.Draft.EnableAutomationOptionalButton,
@@ -953,20 +1062,39 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     () => this.session.Draft.OpenConfigMenuOptionalButton,
                     value => this.session.Draft.OpenConfigMenuOptionalButton = value);
                 break;
+            case ConfigCategory.Enchantments:
+                Func<ConfigControlState> enchantmentState = () =>
+                    ConfigControlAvailability.TemporaryEnchantments(Context.HasRemotePlayers);
+                this.AddSeparator("enchantments.effects");
+                this.AddDefinition("enchant_auto_hook", () => this.session.Draft.AddAutoHookEnchantment,
+                    value => this.session.Draft.AddAutoHookEnchantment = value, enchantmentState);
+                this.AddDefinition("enchant_efficient", () => this.session.Draft.AddEfficientEnchantment,
+                    value => this.session.Draft.AddEfficientEnchantment = value, enchantmentState);
+                this.AddDefinition("enchant_master", () => this.session.Draft.AddMasterEnchantment,
+                    value => this.session.Draft.AddMasterEnchantment = value, enchantmentState);
+                this.AddDefinition("enchant_preserving", () => this.session.Draft.AddPreservingEnchantment,
+                    value => this.session.Draft.AddPreservingEnchantment = value, enchantmentState);
+                this.AddSeparator("enchantments.removal");
+                this.AddDefinition("remove_enchantments", () => this.session.Draft.RemoveWhenUnequipped,
+                    value => this.session.Draft.RemoveWhenUnequipped = value, enchantmentState);
+                break;
 #if FISHING_ASSISTANT_TEST_BUILD
             case ConfigCategory.Debug:
+                this.AddSeparator("debug.player");
                 this.AddActionDefinition("energy_low",
                     () => this.translate("config.action.set"),
                     this.debugActions.SetLowEnergy);
                 this.AddActionDefinition("energy_full",
                     () => this.translate("config.action.restore"),
                     this.debugActions.RestoreEnergy);
+                this.AddSeparator("debug.fishing");
                 this.AddActionDefinition("warp_beach",
                     () => this.translate("config.action.warp"),
                     this.debugActions.WarpToBeachFishingSpot);
                 this.AddActionDefinition("create_bubble",
                     () => this.translate("config.action.create"),
                     () => this.debugActions.CreateFishingBubble(this.session.Draft.DefaultCastPower));
+                this.AddSeparator("debug.festivals");
                 this.AddActionDefinition("ice_festival",
                     () => this.translate("config.action.prepare"),
                     this.debugActions.PrepareIceFishingFestival);
@@ -978,13 +1106,30 @@ internal sealed class ConfigurationMenu : IClickableMenu
         }
     }
 
+    private void AddSeparator(string groupKey)
+    {
+        this.nextDefinitionStartsGroup = true;
+        this.nextGroupLabelKey = $"config.group.{groupKey}";
+    }
+
+    private void AddControlDefinition(ControlDefinition definition)
+    {
+        this.definitions.Add(definition with
+        {
+            StartsGroup = this.nextDefinitionStartsGroup,
+            GroupLabelKey = this.nextGroupLabelKey
+        });
+        this.nextDefinitionStartsGroup = false;
+        this.nextGroupLabelKey = null;
+    }
+
     private void AddDefinition(
         string key,
         Func<bool> getValue,
         Action<bool> setValue,
         Func<ConfigControlState>? getState = null)
     {
-        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigCheckbox(
+        this.AddControlDefinition(new ControlDefinition(key, (id, bounds) => new ConfigCheckbox(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -1009,7 +1154,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         where TEnum : struct, Enum
     {
         IReadOnlyList<TEnum> availableValues = values ?? Enum.GetValues<TEnum>();
-        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigValueSelector<TEnum>(
+        this.AddControlDefinition(new ControlDefinition(key, (id, bounds) => new ConfigValueSelector<TEnum>(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -1031,7 +1176,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<double, string>? format = null,
         Func<ConfigControlState>? getState = null)
     {
-        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigValueSelector<double>(
+        this.AddControlDefinition(new ControlDefinition(key, (id, bounds) => new ConfigValueSelector<double>(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -1074,9 +1219,10 @@ internal sealed class ConfigurationMenu : IClickableMenu
         double maximum,
         double increment,
         Func<double, string>? format = null,
-        Func<ConfigControlState>? getState = null)
+        Func<ConfigControlState>? getState = null,
+        int knobMinimumWidth = 72)
     {
-        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigSlider(
+        this.AddControlDefinition(new ControlDefinition(key, (id, bounds) => new ConfigSlider(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -1086,7 +1232,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
             minimum,
             maximum,
             increment,
-            format ?? (value => value.ToString("0.##"))
+            format ?? (value => value.ToString("0.##")),
+            knobMinimumWidth
         ), getState ?? (() => ConfigControlState.Enabled)));
     }
 
@@ -1113,6 +1260,18 @@ internal sealed class ConfigurationMenu : IClickableMenu
             getState);
     }
 
+    private string FormatChancePercent(double value, int vanillaPercent)
+    {
+        int percent = Convert.ToInt32(value);
+        return percent switch
+        {
+            0 => this.translate("config.value.never"),
+            100 => this.translate("config.value.always"),
+            _ when percent == vanillaPercent => this.translate("config.value.vanilla"),
+            _ => $"{percent}%"
+        };
+    }
+
     private void AddTimingSliderDefinition(
         string key,
         Func<double> getValue,
@@ -1120,7 +1279,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
         double minimum,
         double maximum,
         double increment,
-        Func<ConfigControlState>? getState = null)
+        Func<ConfigControlState>? getState = null,
+        Func<double, string>? format = null)
     {
         this.AddSliderDefinition(
             key,
@@ -1133,7 +1293,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
             minimum,
             maximum,
             increment,
-            value => string.Format(this.translate("config.value.seconds"), value),
+            format ?? (value => value <= 0
+                ? this.translate("config.value.instant")
+                : string.Format(this.translate("config.value.seconds"), value)),
             getState);
     }
 
@@ -1155,7 +1317,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
             sentinelLabelKey ?? $"config.value.{sentinel.ToLowerInvariant()}"
         );
 
-        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigItemPicker(
+        this.AddControlDefinition(new ControlDefinition(key, (id, bounds) => new ConfigItemPicker(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -1177,7 +1339,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
         string key,
         ConfigItemKind kind,
         List<string> preferences,
-        Func<ConfigControlState>? getState = null)
+        Func<ConfigControlState>? getState = null,
+        string? emptyLabelKey = null,
+        Func<string, IReadOnlyList<ItemPickerStatus>>? getStatuses = null)
     {
         ConfigItem[] items = this.itemSource.GetAll(kind).ToArray();
         Dictionary<string, string> labels = items.ToDictionary(
@@ -1188,13 +1352,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
         string GetSummary(string value)
         {
             if (preferences.Count == 0)
-                return this.translate("config.value.any");
+                return this.translate(emptyLabelKey ?? "config.value.any");
             if (preferences.Count == 1)
                 return labels.GetValueOrDefault(value, value);
             return string.Format(this.translate("config.item_picker.selected_count"), preferences.Count);
         }
 
-        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigItemPicker(
+        this.AddControlDefinition(new ControlDefinition(key, (id, bounds) => new ConfigItemPicker(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -1205,7 +1369,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
                 this.translate($"config.option.{key}"),
                 items,
                 preferences,
-                this.translate))
+                this.translate,
+                getStatuses))
         ), getState ?? (() => ConfigControlState.Enabled)));
     }
 
@@ -1216,7 +1381,7 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<KeybindList>? getOptionalValue = null,
         Action<KeybindList>? setOptionalValue = null)
     {
-        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigKeybind(
+        this.AddControlDefinition(new ControlDefinition(key, (id, bounds) => new ConfigKeybind(
             id,
             bounds,
             this.translate($"config.option.{key}"),
@@ -1233,16 +1398,37 @@ internal sealed class ConfigurationMenu : IClickableMenu
         string key,
         Func<string> getButtonLabel,
         Action activate,
-        Func<ConfigControlState>? getState = null)
+        Func<ConfigControlState>? getState = null,
+        Func<string>? getDescription = null)
     {
-        this.definitions.Add(new ControlDefinition(key, (id, bounds) => new ConfigActionButton(
+        this.AddControlDefinition(new ControlDefinition(key, (id, bounds) => new ConfigActionButton(
             id,
             bounds,
             this.translate($"config.option.{key}"),
-            this.translate($"config.option.{key}.description"),
+            getDescription ?? (() => this.translate($"config.option.{key}.description")),
             getButtonLabel,
             activate
         ), getState ?? (() => ConfigControlState.Enabled)));
+    }
+
+    private (int Selected, int Junk, int Total) GetTreasureIgnoreCounts()
+    {
+        HashSet<string> selected = new(this.session.Draft.TreasureChestIgnoreList,
+            StringComparer.OrdinalIgnoreCase);
+        if (!this.session.Draft.IgnoreJunkListItemsInTreasureChests)
+            return (selected.Count, 0, selected.Count);
+
+        HashSet<string> junk = new(this.session.Draft.JunkList,
+            StringComparer.OrdinalIgnoreCase);
+        junk.ExceptWith(selected);
+        return (selected.Count, junk.Count, selected.Count + junk.Count);
+    }
+
+    private string GetTreasureIgnoreDescription()
+    {
+        (int selected, int junk, _) = this.GetTreasureIgnoreCounts();
+        return $"{this.translate("config.option.treasure_ignore_list.description")} "
+            + string.Format(this.translate("config.treasure_ignore_picker.breakdown"), selected, junk);
     }
 
     private void BuildCategoryButtons()
@@ -1337,6 +1523,36 @@ internal sealed class ConfigurationMenu : IClickableMenu
             button.bounds.Center.Y - size.Y / 2
         );
         Utility.drawTextWithShadow(batch, label, Game1.smallFont, position, Game1.textColor);
+    }
+
+    private void DrawGroupSeparator(SpriteBatch batch, GroupSeparator separator)
+    {
+        const int textGap = 12;
+        float scale = MenuVisualMetrics.ConfigGroupHeaderTextScale;
+        Rectangle bounds = separator.Bounds;
+        string label = MenuText.Fit(
+            separator.Label,
+            Game1.smallFont,
+            Math.Max(1, bounds.Width * 0.45f) / scale);
+        Vector2 textSize = Game1.smallFont.MeasureString(label) * scale;
+        Vector2 textPosition = new(
+            bounds.X + MenuVisualMetrics.ConfigGroupSeparatorHorizontalInset,
+            bounds.Center.Y - textSize.Y / 2f);
+        Utility.drawTextWithShadow(batch, label, Game1.smallFont, textPosition, Game1.textColor,
+            scale: scale);
+
+        int lineX = (int)Math.Ceiling(textPosition.X + textSize.X) + textGap;
+        int lineRight = bounds.Right - MenuVisualMetrics.ConfigGroupSeparatorHorizontalInset;
+        int lineWidth = Math.Max(1, lineRight - lineX);
+        int lineY = bounds.Center.Y - MenuVisualMetrics.ConfigGroupSeparatorThickness / 2;
+        Rectangle line = new(lineX, lineY, lineWidth, MenuVisualMetrics.ConfigGroupSeparatorThickness);
+        batch.Draw(Game1.staminaRect,
+            new Rectangle(line.X, line.Y + 2, line.Width, line.Height),
+            Color.Black * 0.18f);
+        batch.Draw(Game1.staminaRect, line, MenuVisualMetrics.ItemGroupSeparatorColor);
+        batch.Draw(Game1.staminaRect,
+            new Rectangle(line.X, line.Y, line.Width, 1),
+            MenuVisualMetrics.ConfigGroupSeparatorHighlight);
     }
 
     private void DrawOption(
@@ -1534,5 +1750,9 @@ internal sealed class ConfigurationMenu : IClickableMenu
         string Key,
         Func<int, Rectangle, IConfigControl> Create,
         Func<ConfigControlState> GetState,
-        Func<bool>? IsVisible = null);
+        Func<bool>? IsVisible = null,
+        bool StartsGroup = false,
+        string? GroupLabelKey = null);
+
+    private sealed record GroupSeparator(Rectangle Bounds, string Label);
 }

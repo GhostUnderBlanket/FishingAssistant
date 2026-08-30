@@ -7,6 +7,7 @@ namespace FishingAssistant.UI.Controls;
 
 internal sealed class ConfigActionButton : IConfigControl
 {
+    private readonly Func<string> getDescription;
     private readonly Func<string> getButtonLabel;
     private readonly Action activate;
 
@@ -14,19 +15,19 @@ internal sealed class ConfigActionButton : IConfigControl
         int id,
         Rectangle bounds,
         string label,
-        string description,
+        Func<string> getDescription,
         Func<string> getButtonLabel,
         Action activate)
     {
         this.Component = new ClickableComponent(bounds, label) { myID = id };
-        this.Description = description;
+        this.getDescription = getDescription;
         this.getButtonLabel = getButtonLabel;
         this.activate = activate;
     }
 
     public ClickableComponent Component { get; }
 
-    public string Description { get; }
+    public string Description => this.getDescription();
 
     public int InlineMessageRight
     {

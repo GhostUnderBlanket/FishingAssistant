@@ -1,4 +1,5 @@
 using FishingAssistant.Configuration;
+using FishingAssistant.UI;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -44,8 +45,6 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
                 true,
                 item.QualifiedItemId,
                 item.canBeTrashed(),
-                IsFish(item),
-                config.AllowTrashFish,
                 acquiredQuantity,
                 item.Stack,
                 config.JunkList));
@@ -60,10 +59,10 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
                 item.Stack -= decision.Quantity;
 
             Utility.trashItem(discarded);
-            Game1.addHUDMessage(new HUDMessage(string.Format(
+            HudNotification.ShowItem(string.Format(
                 translate("hud.auto_trash.discarded"),
                 discarded.DisplayName,
-                decision.Quantity)));
+                decision.Quantity), discarded);
             monitor.Log(
                 $"Automatically trashed {decision.Quantity} {discarded.DisplayName} " +
                 $"for local screen {Context.ScreenId}; only the newly acquired quantity was removed.",
@@ -111,7 +110,6 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
                 index,
                 item.QualifiedItemId,
                 item.canBeTrashed(),
-                IsFish(item),
                 item.Stack));
         }
 
@@ -120,7 +118,6 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
             hasFishingRod,
             config.JunkDisposalMode,
             true,
-            config.AllowTrashFish,
             config.JunkList,
             candidates));
         if (selected.Count == 0)
@@ -151,10 +148,10 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
 
         player.Money += reclaimedMoney;
         Game1.playSound("trashcan");
-        Game1.addHUDMessage(new HUDMessage(string.Format(
+        HudNotification.ShowItem(string.Format(
             translate("hud.junk_disposal.batch"),
             totalQuantity,
-            discarded.Count)));
+            discarded.Count), discarded[0]);
         monitor.Log(
             $"Automatically trashed {totalQuantity} item(s) across {discarded.Count} Junk List " +
             $"stack(s) after the inventory became full on local screen {Context.ScreenId}.",
@@ -173,8 +170,4 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
         return true;
     }
 
-    private static bool IsFish(Item item)
-    {
-        return item.Category == SObject.FishCategory || item.HasContextTag("category_fish");
-    }
 }

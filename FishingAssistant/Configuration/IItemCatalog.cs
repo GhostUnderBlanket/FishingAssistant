@@ -3,6 +3,7 @@ namespace FishingAssistant.Configuration;
 internal enum ConfigItemKind
 {
     Other,
+    Food,
     Bait,
     Tackle,
     FishingRod

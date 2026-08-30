@@ -16,6 +16,14 @@ internal static class MenuVisualMetrics
 
     public const int CategoryTopSpacing = 8;
 
+    public const int ConfigGroupSeparatorThickness = 3;
+
+    public const int ConfigGroupSeparatorHorizontalInset = 8;
+
+    public const int ConfigGroupHeaderHeight = 30;
+
+    public const float ConfigGroupHeaderTextScale = 0.72f;
+
     public const int ItemGroupSeparatorThickness = 4;
 
     public const int ItemGroupSeparatorVerticalPadding = 12;
@@ -39,6 +47,8 @@ internal static class MenuVisualMetrics
     public static Color DisabledMessageText { get; } = new(48, 55, 58);
 
     public static Color ItemGroupSeparatorColor { get; } = new(166, 91, 45);
+
+    public static Color ConfigGroupSeparatorHighlight { get; } = new(255, 220, 153);
 
     public static Color ItemStateText { get; } = new(74, 34, 20);
 

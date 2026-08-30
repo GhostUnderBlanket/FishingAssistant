@@ -26,6 +26,9 @@ internal static class ConfigValidator
         MigrateOpenInventoryOnStop(config, originalVersion, report);
         MigrateAutomationTiming(config, originalVersion, report);
         MigrateSkipMinigameConditions(config, originalVersion, report);
+        MigrateFlexibleFishingSettings(config, originalVersion, report);
+        MigrateAutoEatTrigger(config, originalVersion, report);
+        MigrateFoodConsumptionTiming(config, originalVersion, report);
         if (originalVersion < 12)
         {
             config.FishPreviewStyle = FishPreviewStyle.Classic;
@@ -99,8 +102,28 @@ internal static class ConfigValidator
             () => config.AutoPauseFishing, value => config.AutoPauseFishing = value, PauseFishingBehavior.WarnAndPause);
         NormalizeEnum(report, nameof(config.SkipFishingMiniGame),
             () => config.SkipFishingMiniGame, value => config.SkipFishingMiniGame = value, SkipMinigameBehavior.Off);
+        NormalizeEnum(report, nameof(config.FoodFallback),
+            () => config.FoodFallback, value => config.FoodFallback = value, FoodFallbackBehavior.BestValue);
+        NormalizeEnum(report, nameof(config.AutoEatTrigger),
+            () => config.AutoEatTrigger, value => config.AutoEatTrigger = value,
+            AutoEatTriggerBehavior.BeforeNextCast);
+        NormalizeEnum(report, nameof(config.FishAmountBehavior),
+            () => config.FishAmountBehavior, value => config.FishAmountBehavior = value, FishAmountBehavior.Vanilla);
+        NormalizeEnum(report, nameof(config.FishQualityBehavior),
+            () => config.FishQualityBehavior, value => config.FishQualityBehavior = value,
+            FishQualityBehavior.Vanilla);
         NormalizeEnum(report, nameof(config.PreferFishQuality),
             () => config.PreferFishQuality, value => config.PreferFishQuality = value, FishQualityPreference.Any);
+        if (config.FishQualityBehavior != FishQualityBehavior.Vanilla
+            && config.PreferFishQuality is FishQualityPreference.Any or FishQualityPreference.None)
+        {
+            FishQualityBehavior originalBehavior = config.FishQualityBehavior;
+            config.FishQualityBehavior = FishQualityBehavior.Vanilla;
+            config.PreferFishQuality = FishQualityPreference.Any;
+            report.Add(nameof(config.FishQualityBehavior), originalBehavior,
+                FishQualityBehavior.Vanilla,
+                "Normal quality is represented by vanilla quality behavior.");
+        }
         NormalizeEnum(report, nameof(config.TreasureChance),
             () => config.TreasureChance, value => config.TreasureChance = value, TreasureChanceBehavior.Default);
         NormalizeEnum(report, nameof(config.GoldenTreasureChance),
@@ -112,10 +135,19 @@ internal static class ConfigValidator
             () => config.WarnCount, value => config.WarnCount = value, 1, 5);
         NormalizeRange(report, nameof(config.EnergyPercentToEat),
             () => config.EnergyPercentToEat, value => config.EnergyPercentToEat = value, 5, 95);
+        NormalizeFloatRange(report, nameof(config.FoodConsumptionDelaySeconds),
+            () => config.FoodConsumptionDelaySeconds,
+            value => config.FoodConsumptionDelaySeconds = value, 0f, 10f);
         NormalizeRange(report, nameof(config.BaitAmountToSpawn),
             () => config.BaitAmountToSpawn, value => config.BaitAmountToSpawn = value, 1, 999);
         NormalizeRange(report, nameof(config.PreferFishAmount),
             () => config.PreferFishAmount, value => config.PreferFishAmount = value, 1, 3);
+        NormalizeRange(report, nameof(config.BiteWaitingTimePercent),
+            () => config.BiteWaitingTimePercent, value => config.BiteWaitingTimePercent = value, 0, 100);
+        NormalizeRange(report, nameof(config.TreasureChancePercent),
+            () => config.TreasureChancePercent, value => config.TreasureChancePercent = value, 0, 100);
+        NormalizeRange(report, nameof(config.GoldenTreasureChancePercent),
+            () => config.GoldenTreasureChancePercent, value => config.GoldenTreasureChancePercent = value, 0, 100);
         NormalizeRange(report, nameof(config.SkipMinigameCatchesRequired),
             () => config.SkipMinigameCatchesRequired,
             value => config.SkipMinigameCatchesRequired = value, 1, 20);
@@ -154,6 +186,8 @@ internal static class ConfigValidator
             () => config.TreasureChestIgnoreList, value => config.TreasureChestIgnoreList = value);
         NormalizeItemList(report, nameof(config.PreferredBaits),
             () => config.PreferredBaits, value => config.PreferredBaits = value);
+        NormalizeItemList(report, nameof(config.PreferredFoods),
+            () => config.PreferredFoods, value => config.PreferredFoods = value);
         NormalizeItemList(report, nameof(config.PreferredTackles),
             () => config.PreferredTackles, value => config.PreferredTackles = value);
         NormalizeItemList(report, nameof(config.PreferredSecondTackles),
@@ -252,6 +286,71 @@ internal static class ConfigValidator
         config.SkipMinigameCatchesRequired = 1;
         report.Add(nameof(config.SkipMinigameCatchesRequired), null, 1,
             "Existing skip behavior was preserved with one required catch.");
+    }
+
+    private static void MigrateFlexibleFishingSettings(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 25 || originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        config.BiteWaitingTimePercent = config.InstantFishBite ? 0 : 100;
+        config.TreasureChancePercent = config.TreasureChance switch
+        {
+            TreasureChanceBehavior.Always => 100,
+            TreasureChanceBehavior.Never => 0,
+            _ => 15
+        };
+        config.GoldenTreasureChancePercent = config.GoldenTreasureChance switch
+        {
+            TreasureChanceBehavior.Always => 100,
+            TreasureChanceBehavior.Never => 0,
+            _ => 25
+        };
+        config.FishAmountBehavior = config.PreferFishAmount > 1
+            ? FishAmountBehavior.Fixed
+            : FishAmountBehavior.Vanilla;
+        config.FishQualityBehavior = config.PreferFishQuality is
+            FishQualityPreference.Any or FishQualityPreference.None
+            ? FishQualityBehavior.Vanilla
+            : FishQualityBehavior.Fixed;
+
+        report.Add("Fishing options", $"schema {originalVersion}", "schema 25",
+            "Legacy bite, treasure, fish amount, and fish quality settings were preserved using the new controls.");
+    }
+
+    private static void MigrateAutoEatTrigger(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 26 || originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        config.AutoEatTrigger = AutoEatTriggerBehavior.AtEnergyTarget;
+        report.Add(nameof(config.AutoEatTrigger), null, config.AutoEatTrigger,
+            "The existing eat-at-threshold behavior was preserved during migration.");
+    }
+
+    private static void MigrateFoodConsumptionTiming(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 28 || originalVersion > ModConfig.CurrentVersion)
+            return;
+
+        float migrated = config.AutomationTiming switch
+        {
+            AutomationTimingPreset.Slow => 2f,
+            AutomationTimingPreset.Fast => 0.5f,
+            _ => 1f
+        };
+        config.FoodConsumptionDelaySeconds = migrated;
+        report.Add(nameof(config.FoodConsumptionDelaySeconds), null, migrated,
+            "Food consumption delay was added to the selected automation timing preset.");
     }
 
     private static void NormalizeEnum<TEnum>(
@@ -527,6 +626,8 @@ internal static class ConfigValidator
         ConfigValidationReport report = new();
         NormalizeItemIds(report, nameof(config.PreferredBaits),
             () => config.PreferredBaits, value => config.PreferredBaits = value, catalog, ConfigItemKind.Bait);
+        NormalizeItemIds(report, nameof(config.PreferredFoods),
+            () => config.PreferredFoods, value => config.PreferredFoods = value, catalog, ConfigItemKind.Food);
         NormalizeItemIds(report, nameof(config.PreferredTackles),
             () => config.PreferredTackles, value => config.PreferredTackles = value, catalog, ConfigItemKind.Tackle);
         NormalizeItemIds(report, nameof(config.PreferredSecondTackles),

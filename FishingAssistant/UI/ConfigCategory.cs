@@ -5,11 +5,11 @@ internal enum ConfigCategory
     Automation,
     Fishing,
     Minigame,
-    Display,
+    Treasure,
     Inventory,
     Equipment,
+    Interface,
     Enchantments,
-    Controls,
 #if FISHING_ASSISTANT_TEST_BUILD
     Debug
 #endif

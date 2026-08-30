@@ -72,13 +72,6 @@ internal static class InlineConfigValidation
                 "config.info.junk_disposal_full"));
         }
 
-        if (config.AllowTrashFish)
-        {
-            messages.Add(new InlineConfigMessage(
-                "trash_fish",
-                "config.warning.trash_fish"));
-        }
-
         if (config.AutoEatFood)
         {
             messages.Add(new InlineConfigMessage(

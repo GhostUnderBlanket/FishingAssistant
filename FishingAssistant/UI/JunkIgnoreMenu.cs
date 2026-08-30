@@ -20,6 +20,9 @@ internal sealed class JunkListMenu : IClickableMenu
     private readonly List<string> selectedIds;
     private readonly Func<string, string> translate;
     private readonly bool treasureIgnoreOnly;
+    private readonly IReadOnlyList<string> preferredFoodIds;
+    private readonly IReadOnlyList<string> linkedJunkIds;
+    private readonly Func<bool> includeLinkedJunk;
     private readonly List<ItemCard> visibleCards = [];
     private readonly List<int> visibleSeparatorYs = [];
     private readonly List<ClickableComponent> buttons = [];
@@ -36,8 +39,10 @@ internal sealed class JunkListMenu : IClickableMenu
     public JunkListMenu(
         List<string> junkIds,
         IConfigItemSource itemSource,
-        Func<string, string> translate)
-        : this(junkIds, itemSource, translate, treasureIgnoreOnly: false)
+        Func<string, string> translate,
+        IReadOnlyList<string>? preferredFoodIds = null)
+        : this(junkIds, itemSource, translate, treasureIgnoreOnly: false,
+            preferredFoodIds ?? [], [], () => false)
     {
     }
 
@@ -45,11 +50,17 @@ internal sealed class JunkListMenu : IClickableMenu
         List<string> selectedIds,
         IConfigItemSource itemSource,
         Func<string, string> translate,
-        bool treasureIgnoreOnly)
+        bool treasureIgnoreOnly,
+        IReadOnlyList<string> preferredFoodIds,
+        IReadOnlyList<string> linkedJunkIds,
+        Func<bool> includeLinkedJunk)
     {
         this.selectedIds = selectedIds;
         this.translate = translate;
         this.treasureIgnoreOnly = treasureIgnoreOnly;
+        this.preferredFoodIds = preferredFoodIds;
+        this.linkedJunkIds = linkedJunkIds;
+        this.includeLinkedJunk = includeLinkedJunk;
         this.allItems = itemSource.GetAllObjects();
         this.filteredItems = this.allItems;
         this.RebuildComponents();
@@ -58,10 +69,13 @@ internal sealed class JunkListMenu : IClickableMenu
 
     public static JunkListMenu CreateTreasureIgnoreMenu(
         List<string> treasureIgnoreIds,
+        IReadOnlyList<string> junkIds,
+        Func<bool> includeJunk,
         IConfigItemSource itemSource,
         Func<string, string> translate)
     {
-        return new JunkListMenu(treasureIgnoreIds, itemSource, translate, treasureIgnoreOnly: true);
+        return new JunkListMenu(treasureIgnoreIds, itemSource, translate, treasureIgnoreOnly: true,
+            [], junkIds, includeJunk);
     }
 
     private int MaximumTopRow => Math.Max(0, this.itemRows.Count - this.layout.Rows);
@@ -205,9 +219,26 @@ internal sealed class JunkListMenu : IClickableMenu
 
     public override void performHoverAction(int x, int y)
     {
-        this.hoverText = this.visibleCards
-            .FirstOrDefault(card => card.Component.containsPoint(x, y))?
-            .Item.DisplayName ?? "";
+        ItemCard? card = this.visibleCards.FirstOrDefault(item => item.Component.containsPoint(x, y));
+        if (card is null)
+        {
+            this.hoverText = "";
+            return;
+        }
+
+        List<string> details = [];
+        int preferredOrder = this.GetPreferredFoodOrder(card.Item.QualifiedItemId);
+        if (preferredOrder >= 0)
+        {
+            details.Add(string.Format(this.translate("config.item_status.preferred_food.tooltip"),
+                preferredOrder + 1));
+        }
+        if (this.IsLinkedJunk(card.Item.QualifiedItemId))
+            details.Add(this.translate("config.item_status.ignored_via_junk.tooltip"));
+
+        this.hoverText = details.Count == 0
+            ? card.Item.DisplayName
+            : $"{card.Item.DisplayName}\n{string.Join("\n", details)}";
     }
 
     public override void update(GameTime time)
@@ -366,7 +397,12 @@ internal sealed class JunkListMenu : IClickableMenu
 
     private void RebuildItemRows()
     {
-        JunkListGroups groups = JunkListSelection.Group(this.filteredItems, this.selectedIds);
+        IReadOnlyCollection<string> groupedIds = this.treasureIgnoreOnly && this.includeLinkedJunk()
+            ? this.selectedIds.Concat(this.linkedJunkIds)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray()
+            : this.selectedIds;
+        JunkListGroups groups = JunkListSelection.Group(this.filteredItems, groupedIds);
         List<ItemRow> rows = [];
         this.AddRows(rows, groups.Selected, startsNormalGroup: false);
         this.AddRows(rows, groups.Normal, startsNormalGroup: groups.Selected.Count > 0);
@@ -442,7 +478,8 @@ internal sealed class JunkListMenu : IClickableMenu
     private void DrawHeader(SpriteBatch batch)
     {
         string count = this.treasureIgnoreOnly
-            ? string.Format(this.translate("config.treasure_ignore_picker.selected"), this.selectedIds.Count)
+            ? string.Format(this.translate("config.treasure_ignore_picker.selected"),
+                this.GetEffectiveSelectedCount())
             : string.Format(this.translate("config.junk_picker.selected"), this.selectedIds.Count);
         Vector2 countSize = Game1.smallFont.MeasureString(count);
         Vector2 countPosition = new(
@@ -462,6 +499,14 @@ internal sealed class JunkListMenu : IClickableMenu
         Utility.drawTextWithShadow(batch, title, Game1.dialogueFont, titlePosition, Game1.textColor);
     }
 
+    private int GetEffectiveSelectedCount()
+    {
+        HashSet<string> effective = new(this.selectedIds, StringComparer.OrdinalIgnoreCase);
+        if (this.treasureIgnoreOnly && this.includeLinkedJunk())
+            effective.UnionWith(this.linkedJunkIds);
+        return effective.Count;
+    }
+
     private void DrawHeaderPanel(SpriteBatch batch, Vector2 position, Vector2 textSize, int lineSpacing)
     {
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
@@ -478,11 +523,14 @@ internal sealed class JunkListMenu : IClickableMenu
             this.selectedIds,
             card.Item.QualifiedItemId,
             this.SelectedState);
+        bool linkedJunk = this.IsLinkedJunk(card.Item.QualifiedItemId);
+        int preferredOrder = this.GetPreferredFoodOrder(card.Item.QualifiedItemId);
+        bool hasState = state != JunkItemState.Normal || linkedJunk || preferredOrder >= 0;
         Rectangle bounds = card.Component.bounds;
         drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
             bounds.X, bounds.Y, bounds.Width, bounds.Height,
             highlighted ? Color.Wheat : Color.White);
-        if (state != JunkItemState.Normal)
+        if (state != JunkItemState.Normal || linkedJunk)
             batch.Draw(Game1.staminaRect, new Rectangle(bounds.X + 5, bounds.Y + 5, bounds.Width - 10, bounds.Height - 10),
                 (state == JunkItemState.Junk ? Color.IndianRed : Color.ForestGreen) * 0.24f);
 
@@ -501,26 +549,59 @@ internal sealed class JunkListMenu : IClickableMenu
         int reserved = state == JunkItemState.Normal ? 10 : 30;
         string name = MenuText.Fit(card.Item.DisplayName, Game1.smallFont, bounds.Right - textLeft - reserved);
         Vector2 size = Game1.smallFont.MeasureString(name);
-        float nameY = state == JunkItemState.Normal
+        float nameY = !hasState
             ? bounds.Center.Y - size.Y / 2f
             : bounds.Center.Y - size.Y / 2f - 7f;
         Utility.drawTextWithShadow(batch, name, Game1.smallFont,
             new Vector2(textLeft, nameY), Game1.textColor);
 
-        if (state != JunkItemState.Normal)
+        if (hasState)
         {
-            string stateLabel = this.translate(state == JunkItemState.Junk
-                ? "config.junk_picker.state_junk"
-                : "config.junk_picker.state_ignore");
+            List<string> labels = [];
+            if (state == JunkItemState.Junk)
+                labels.Add(this.translate("config.junk_picker.state_junk"));
+            else if (state == JunkItemState.Ignore)
+                labels.Add(this.translate("config.item_status.explicitly_ignored"));
+            if (linkedJunk)
+                labels.Add(this.translate("config.item_status.ignored_via_junk"));
+            if (preferredOrder >= 0)
+            {
+                labels.Add(string.Format(this.translate("config.item_status.preferred_food"),
+                    preferredOrder + 1));
+            }
+            string stateLabel = string.Join(" / ", labels);
             float availableWidth = Math.Max(1f, bounds.Right - textLeft - 8);
             stateLabel = MenuText.Fit(stateLabel, Game1.smallFont, availableWidth / CardStateScale);
             this.DrawScaledStateText(batch, stateLabel,
                 new Vector2(textLeft, bounds.Center.Y + 1),
                 CardStateScale);
-            batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
-                OptionsCheckbox.sourceRectChecked, Color.White, 0f, Vector2.Zero, 2f,
-                SpriteEffects.None, 0.95f);
+            if (state != JunkItemState.Normal)
+            {
+                batch.Draw(Game1.mouseCursors, new Vector2(bounds.Right - 24, bounds.Y + 10),
+                    OptionsCheckbox.sourceRectChecked, Color.White, 0f, Vector2.Zero, 2f,
+                    SpriteEffects.None, 0.95f);
+            }
         }
+    }
+
+    private int GetPreferredFoodOrder(string itemId)
+    {
+        if (this.treasureIgnoreOnly)
+            return -1;
+        for (int index = 0; index < this.preferredFoodIds.Count; index++)
+        {
+            if (string.Equals(this.preferredFoodIds[index], itemId, StringComparison.OrdinalIgnoreCase))
+                return index;
+        }
+
+        return -1;
+    }
+
+    private bool IsLinkedJunk(string itemId)
+    {
+        return this.treasureIgnoreOnly
+            && this.includeLinkedJunk()
+            && this.linkedJunkIds.Contains(itemId, StringComparer.OrdinalIgnoreCase);
     }
 
     private void DrawScaledStateText(

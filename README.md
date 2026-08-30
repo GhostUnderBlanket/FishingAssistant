@@ -16,7 +16,7 @@ The mod includes its own in-game configuration menu.
 - Use Relaxed, Training, Manual+, or Custom automation profiles as a starting point.
 - Toggle every automation stage independently.
 - Use Slow, Normal, Fast, or Custom timing for automatic recasting, catch popups, and
-  treasure looting.
+  treasure looting and food consumption.
 - Apply late-night warnings, low-energy protection, automatic eating, and optional
   inventory opening after a safety stop without forcing a shared multiplayer pause.
 
@@ -24,6 +24,8 @@ The mod includes its own in-game configuration menu.
 
 - Adjust fish speed, catch progress gain and loss, treasure progress, and fishing-bar
   size independently.
+- Skip every fishing minigame, or skip a species only after the configured number of
+  normal or perfect catches.
 - Preview the hooked fish with Classic or vanilla-inspired Sonar presentation.
 - Control the visibility of uncaught and legendary fish, and show treasure status.
 - Steer manual or automatic casts toward reachable fishing bubbles without moving the
@@ -33,9 +35,12 @@ The mod includes its own in-game configuration menu.
 
 ### Catch and treasure control
 
-- Configure perfect catches, fish size, quality, and supported multi-catch results.
+- Keep vanilla fish quality and amount, enforce a minimum, or set a fixed result for
+  supported catches. Perfect-catch and maximum-size controls remain independent.
 - Target fishing treasure and optionally toggle targeting with a keybind and visual HUD
   indicator.
+- Scale normal bite waiting time and fishing or golden treasure chances while retaining
+  the applicable vanilla bonuses.
 - Collect fully available treasure during the minigame.
 - Maintain a visual Treasure Chest Ignore List and choose what happens when only ignored
   rewards remain.
@@ -45,7 +50,9 @@ The mod includes its own in-game configuration menu.
 
 - Maintain visual Junk and Treasure Ignore lists using item pickers instead of item IDs.
 - Dispose of junk immediately, only when the inventory is full, or not at all.
-- Automatically eat suitable food when energy is low.
+- Automatically eat ordered preferred food at an energy target or only when another cast
+  is unaffordable. Choose whether fallback selection uses the best value, most energy,
+  or no food, with a configurable delay that allows cancellation.
 - Attach bait and tackle from ordered preference lists, including both slots on the
   Advanced Iridium Rod.
 - Refill missing attachments, preserve infinite bait or tackle, and optionally provide a
@@ -90,7 +97,9 @@ Open the menu with `F6`, change the draft settings, then select **Apply**. **Can
 discards the draft, while **Defaults** restores default values within the draft until it
 is applied. The menu warns before discarding unapplied changes and supports sliders,
 direct numeric entry, keyboard, mouse, and controller input. Configuration is stored per
-player so local co-op players can use different profiles and assistance settings.
+player so local co-op players can use different profiles and assistance settings. Pages
+follow the fishing workflow and use named group dividers; their height and visible rows
+are recalculated when the game window or UI scale changes.
 
 ## Building from source
 
