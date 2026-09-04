@@ -8,6 +8,7 @@ internal enum ConfigCategory
     Treasure,
     Inventory,
     Equipment,
+    QuickControls,
     Interface,
     Enchantments,
 #if FISHING_ASSISTANT_TEST_BUILD

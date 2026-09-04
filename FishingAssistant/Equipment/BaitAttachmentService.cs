@@ -1,5 +1,6 @@
 using FishingAssistant.Configuration;
 using FishingAssistant.UI;
+using FishingAssistant.HUD;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Tools;
@@ -7,7 +8,10 @@ using SObject = StardewValley.Object;
 
 namespace FishingAssistant.Equipment;
 
-internal sealed class BaitAttachmentService(IMonitor monitor, Func<string, string> translate)
+internal sealed class BaitAttachmentService(
+    IMonitor monitor,
+    Func<string, string> translate,
+    ActivityLogService? activityLog = null)
 {
     public void UpdateCurrent(ModConfig config)
     {
@@ -109,7 +113,7 @@ internal sealed class BaitAttachmentService(IMonitor monitor, Func<string, strin
         }
 
         HudNotification.ShowItem(
-            string.Format(translate("hud.bait.spawned"), bait.DisplayName, bait.Stack), bait);
+            string.Format(translate("hud.bait.spawned"), bait.DisplayName, bait.Stack), bait, activityLog);
         monitor.Log(
             $"Spawned and attached {amount} {bait.DisplayName} for local screen {Context.ScreenId}.",
             LogLevel.Warn);

@@ -1,5 +1,6 @@
 using FishingAssistant.Configuration;
 using FishingAssistant.UI;
+using FishingAssistant.HUD;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -7,7 +8,10 @@ using SObject = StardewValley.Object;
 
 namespace FishingAssistant.Inventory;
 
-internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> translate)
+internal sealed class AutoTrashService(
+    IMonitor monitor,
+    Func<string, string> translate,
+    ActivityLogService? activityLog = null)
 {
     public void OnInventoryChanged(
         InventoryChangedEventArgs eventArgs,
@@ -62,7 +66,7 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
             HudNotification.ShowItem(string.Format(
                 translate("hud.auto_trash.discarded"),
                 discarded.DisplayName,
-                decision.Quantity), discarded);
+                decision.Quantity), discarded, activityLog);
             monitor.Log(
                 $"Automatically trashed {decision.Quantity} {discarded.DisplayName} " +
                 $"for local screen {Context.ScreenId}; only the newly acquired quantity was removed.",
@@ -151,7 +155,7 @@ internal sealed class AutoTrashService(IMonitor monitor, Func<string, string> tr
         HudNotification.ShowItem(string.Format(
             translate("hud.junk_disposal.batch"),
             totalQuantity,
-            discarded.Count), discarded[0]);
+            discarded.Count), discarded[0], activityLog);
         monitor.Log(
             $"Automatically trashed {totalQuantity} item(s) across {discarded.Count} Junk List " +
             $"stack(s) after the inventory became full on local screen {Context.ScreenId}.",

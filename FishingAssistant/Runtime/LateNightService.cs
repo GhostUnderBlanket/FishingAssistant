@@ -1,4 +1,5 @@
 using FishingAssistant.Configuration;
+using FishingAssistant.HUD;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -6,7 +7,10 @@ using StardewValley.Tools;
 
 namespace FishingAssistant.Runtime;
 
-internal sealed class LateNightService(IMonitor monitor, Func<string, string> translate)
+internal sealed class LateNightService(
+    IMonitor monitor,
+    Func<string, string> translate,
+    ActivityLogService? activityLog = null)
 {
     private readonly PerScreen<ScreenState> screens = new(() => new ScreenState());
 
@@ -32,11 +36,13 @@ internal sealed class LateNightService(IMonitor monitor, Func<string, string> tr
             screen.PausePending = true;
 
         string configuredTime = Game1.getTimeOfDayString(config.TimeToPause * 100);
-        Game1.addHUDMessage(new HUDMessage(string.Format(
+        string message = string.Format(
             translate("hud.late_night.warning"),
             configuredTime,
             screen.WarningsIssued,
-            Math.Max(1, config.WarnCount)), HUDMessage.error_type));
+            Math.Max(1, config.WarnCount));
+        Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
+        activityLog?.Add(message, severity: ActivityLogSeverity.Warning);
         monitor.Log(
             $"Issued late-night fishing warning {screen.WarningsIssued}/{Math.Max(1, config.WarnCount)} " +
             $"for local screen {Context.ScreenId} at {newTime}.",
@@ -69,7 +75,9 @@ internal sealed class LateNightService(IMonitor monitor, Func<string, string> tr
             return null;
 
         screen.PausePending = false;
-        Game1.addHUDMessage(new HUDMessage(translate("hud.late_night.paused"), HUDMessage.error_type));
+        string message = translate("hud.late_night.paused");
+        Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
+        activityLog?.Add(message, severity: ActivityLogSeverity.Error);
         monitor.Log(
             $"Paused fishing automation safely after late-night warnings for local screen {Context.ScreenId}.",
             LogLevel.Info);

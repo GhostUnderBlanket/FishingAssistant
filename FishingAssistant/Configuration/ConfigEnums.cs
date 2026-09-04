@@ -17,6 +17,19 @@ internal enum HudVisibilityMode
     Hidden
 }
 
+[JsonConverter(typeof(SafeStringEnumConverter<QuickControlAction>))]
+internal enum QuickControlAction
+{
+    None,
+    ToggleAutomation,
+    ToggleTreasureTargeting,
+    ToggleAutoLootTreasure,
+    ToggleAutoEatFood,
+    ToggleJunkDisposal,
+    ToggleFishPreview,
+    ToggleSkipMinigame
+}
+
 [JsonConverter(typeof(SafeStringEnumConverter<FishPreviewStyle>))]
 internal enum FishPreviewStyle
 {

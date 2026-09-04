@@ -25,6 +25,7 @@ internal sealed class ModEntry : Mod
     private GameItemCatalog? itemCatalog;
     private AutomationRuntime? automationRuntime;
     private AutomationHudRenderer? automationHud;
+    private ActivityLogService? activityLog;
     private FishingBubbleMarkerRenderer? fishingBubbleMarker;
     private FishPreviewRenderer? fishPreview;
     private StarterFishingRodService? starterFishingRod;
@@ -41,6 +42,11 @@ internal sealed class ModEntry : Mod
     private DebugFestivalService? debugFestival;
 #endif
     private readonly PerScreen<bool> pendingConfigMenuOpen = new(() => false);
+    private readonly PerScreen<ConfigCategory?> pendingConfigCategory = new(() => null);
+    private readonly PerScreen<JunkDisposalMode> lastJunkDisposalMode =
+        new(() => JunkDisposalMode.WhenInventoryFull);
+    private readonly PerScreen<SkipMinigameBehavior> lastSkipMinigameMode =
+        new(() => SkipMinigameBehavior.SkipAll);
 
     public override void Entry(IModHelper helper)
     {
@@ -51,21 +57,29 @@ internal sealed class ModEntry : Mod
                 ? $"player-{Game1.player.UniqueMultiplayerID}"
                 : null);
         PerfectCatchProgressService perfectCatchProgress = new();
+        this.activityLog = new ActivityLogService();
         this.automationRuntime = new AutomationRuntime(
             this.Monitor,
             () => this.configManager.Active,
             key => helper.Translation.Get(key),
-            perfectCatchProgress);
-        this.automationHud = new AutomationHudRenderer();
+            perfectCatchProgress,
+            this.activityLog);
+        this.automationHud = new AutomationHudRenderer(
+            key => helper.Translation.Get(key),
+            this.activityLog);
         this.fishingBubbleMarker = new FishingBubbleMarkerRenderer(
             () => this.automationRuntime.GetBubbleMarkerPlanCurrent());
         this.fishPreview = new FishPreviewRenderer(this.Monitor);
         this.starterFishingRod = new StarterFishingRodService(this.Monitor);
-        this.baitAttachment = new BaitAttachmentService(this.Monitor, key => helper.Translation.Get(key));
-        this.tackleAttachment = new TackleAttachmentService(this.Monitor, key => helper.Translation.Get(key));
+        this.baitAttachment = new BaitAttachmentService(
+            this.Monitor, key => helper.Translation.Get(key), this.activityLog);
+        this.tackleAttachment = new TackleAttachmentService(
+            this.Monitor, key => helper.Translation.Get(key), this.activityLog);
         this.infiniteAttachment = new InfiniteAttachmentService(this.Monitor);
-        this.rodEnchantments = new RodEnchantmentService(this.Monitor, key => helper.Translation.Get(key));
-        this.autoTrash = new AutoTrashService(this.Monitor, key => helper.Translation.Get(key));
+        this.rodEnchantments = new RodEnchantmentService(
+            this.Monitor, key => helper.Translation.Get(key), this.activityLog);
+        this.autoTrash = new AutoTrashService(
+            this.Monitor, key => helper.Translation.Get(key), this.activityLog);
 #if FISHING_ASSISTANT_TEST_BUILD
         this.debugEnergy = new DebugEnergyService(this.Monitor, key => helper.Translation.Get(key));
         this.debugWarp = new DebugWarpService(this.Monitor, key => helper.Translation.Get(key));
@@ -77,7 +91,7 @@ internal sealed class ModEntry : Mod
             helper,
             this.ModManifest,
             this.Monitor,
-            this.TryOpenConfigMenu,
+            () => this.TryOpenConfigMenu(),
             () => helper.Translation.Get("integration.gmcm.load_save"));
         ConfigValidationReport report = this.configManager.Load();
         Harmony harmony = new(this.ModManifest.UniqueID);
@@ -160,6 +174,20 @@ internal sealed class ModEntry : Mod
         if (Game1.activeClickableMenu is ConfigurationMenu)
             return;
 
+        SButton? quickControlActivation = e.Pressed.Contains(SButton.MouseLeft)
+            ? SButton.MouseLeft
+            : e.Pressed.Contains(SButton.ControllerA)
+                ? SButton.ControllerA
+                : null;
+        if (Context.IsWorldReady
+            && Game1.activeClickableMenu is null
+            && quickControlActivation is not null
+            && this.TryHandleQuickControlClick())
+        {
+            this.Helper.Input.Suppress(quickControlActivation.Value);
+            return;
+        }
+
         KeybindList automationKeybind = this.configManager!.Active.EnableAutomationButton;
         KeybindList automationOptionalKeybind = this.configManager.Active.EnableAutomationOptionalButton;
         bool automationKeybindPressed = automationKeybind.JustPressed();
@@ -177,6 +205,9 @@ internal sealed class ModEntry : Mod
                     this.configManager.Active,
                     automationEnabled: true,
                     hasFishingRod: Game1.player.CurrentTool is FishingRod);
+            this.LogQuickControlChange(
+                QuickControlAction.ToggleAutomation,
+                this.automationRuntime.Current.IsEnabled);
             return;
         }
 
@@ -195,6 +226,7 @@ internal sealed class ModEntry : Mod
             {
                 bool enabled = this.configManager.ToggleTreasureTargeting();
                 Game1.playSound(enabled ? "coin" : "bigDeSelect");
+                this.LogQuickControlChange(QuickControlAction.ToggleTreasureTargeting, enabled);
             }
             catch (InvalidOperationException exception)
             {
@@ -252,6 +284,11 @@ internal sealed class ModEntry : Mod
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
     {
         this.pendingConfigMenuOpen.ResetAllScreens();
+        this.pendingConfigCategory.ResetAllScreens();
+        this.lastJunkDisposalMode.ResetAllScreens();
+        this.lastSkipMinigameMode.ResetAllScreens();
+        this.activityLog!.ResetAll();
+        this.automationHud!.ResetAll();
         this.genericModConfigMenu!.Reset();
         this.rodEnchantments!.RemoveAllAndReset();
         this.infiniteAttachment!.RestoreAll();
@@ -264,6 +301,9 @@ internal sealed class ModEntry : Mod
         if (e.IsLocalPlayer)
         {
             this.pendingConfigMenuOpen.Value = false;
+            this.pendingConfigCategory.Value = null;
+            this.activityLog!.ResetCurrent();
+            this.automationHud!.ResetCurrent();
             this.infiniteAttachment!.RestoreCurrent();
             this.automationRuntime!.ResetCurrent(AutomationTransitionReason.Warped);
         }
@@ -347,7 +387,7 @@ internal sealed class ModEntry : Mod
         this.TryOpenConfigMenu();
     }
 
-    private bool TryOpenConfigMenu()
+    private bool TryOpenConfigMenu(ConfigCategory initialCategory = ConfigCategory.Automation)
     {
         if (Game1.activeClickableMenu is ConfigurationMenu menu)
         {
@@ -361,9 +401,10 @@ internal sealed class ModEntry : Mod
             if (!this.pendingConfigMenuOpen.Value)
             {
                 this.pendingConfigMenuOpen.Value = true;
-                Game1.addHUDMessage(new HUDMessage(
-                    this.Helper.Translation.Get("hud.config_wait_for_cast"),
-                    HUDMessage.newQuest_type));
+                this.pendingConfigCategory.Value = initialCategory;
+                string message = this.Helper.Translation.Get("hud.config_wait_for_cast");
+                Game1.addHUDMessage(new HUDMessage(message, HUDMessage.newQuest_type));
+                this.activityLog!.Add(message, severity: ActivityLogSeverity.Information);
             }
             return true;
         }
@@ -390,6 +431,7 @@ internal sealed class ModEntry : Mod
                 this.debugFestival!.PrepareIceFishingFestival,
                 this.debugFestival!.PrepareStardewValleyFair)
 #endif
+            , initialCategory
         );
         return true;
     }
@@ -403,7 +445,128 @@ internal sealed class ModEntry : Mod
             return;
 
         this.pendingConfigMenuOpen.Value = false;
-        this.TryOpenConfigMenu();
+        ConfigCategory category = this.pendingConfigCategory.Value ?? ConfigCategory.Automation;
+        this.pendingConfigCategory.Value = null;
+        this.TryOpenConfigMenu(category);
+    }
+
+    private bool TryHandleQuickControlClick()
+    {
+        QuickControlHudCommand command = this.automationHud!.HitTest(
+            Game1.getMouseX(), Game1.getMouseY());
+        switch (command.Type)
+        {
+            case QuickControlHudCommandType.Action:
+                this.ExecuteQuickControl(command.Action);
+                return true;
+            case QuickControlHudCommandType.ToggleLog:
+                this.automationHud.ToggleLogCurrent();
+                Game1.playSound("shwip");
+                return true;
+            case QuickControlHudCommandType.ClearLog:
+                this.activityLog!.ClearCurrent();
+                Game1.playSound("trashcan");
+                return true;
+            case QuickControlHudCommandType.OpenSettings:
+                Game1.playSound("bigSelect");
+                this.TryOpenConfigMenu(ConfigCategory.QuickControls);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private void ExecuteQuickControl(QuickControlAction action)
+    {
+        if (action == QuickControlAction.ToggleAutomation)
+        {
+            this.automationRuntime!.ToggleCurrent();
+            bool automationEnabled = this.automationRuntime.Current.IsEnabled;
+            if (automationEnabled)
+            {
+                this.autoTrash!.TryDiscardBatchIfFull(
+                    Game1.player,
+                    this.configManager!.Active,
+                    automationEnabled: true,
+                    hasFishingRod: Game1.player.CurrentTool is FishingRod);
+            }
+            this.LogQuickControlChange(action, automationEnabled);
+            Game1.playSound(automationEnabled ? "coin" : "bigDeSelect");
+            return;
+        }
+
+        ConfigEditSession session = this.configManager!.CreateEditSession();
+        ModConfig draft = session.Draft;
+        bool enabled;
+        switch (action)
+        {
+            case QuickControlAction.ToggleTreasureTargeting:
+                draft.TreasureTargeting = !draft.TreasureTargeting;
+                enabled = draft.TreasureTargeting;
+                break;
+            case QuickControlAction.ToggleAutoLootTreasure:
+                draft.AutoLootTreasure = !draft.AutoLootTreasure;
+                enabled = draft.AutoLootTreasure;
+                break;
+            case QuickControlAction.ToggleAutoEatFood:
+                draft.AutoEatFood = !draft.AutoEatFood;
+                enabled = draft.AutoEatFood;
+                break;
+            case QuickControlAction.ToggleJunkDisposal:
+                if (draft.JunkDisposalMode == JunkDisposalMode.Off)
+                {
+                    draft.JunkDisposalMode = this.lastJunkDisposalMode.Value;
+                    enabled = true;
+                }
+                else
+                {
+                    this.lastJunkDisposalMode.Value = draft.JunkDisposalMode;
+                    draft.JunkDisposalMode = JunkDisposalMode.Off;
+                    enabled = false;
+                }
+                break;
+            case QuickControlAction.ToggleFishPreview:
+                draft.DisplayFishPreview = !draft.DisplayFishPreview;
+                enabled = draft.DisplayFishPreview;
+                break;
+            case QuickControlAction.ToggleSkipMinigame:
+                if (draft.SkipFishingMiniGame == SkipMinigameBehavior.Off)
+                {
+                    draft.SkipFishingMiniGame = this.lastSkipMinigameMode.Value;
+                    enabled = true;
+                }
+                else
+                {
+                    this.lastSkipMinigameMode.Value = draft.SkipFishingMiniGame;
+                    draft.SkipFishingMiniGame = SkipMinigameBehavior.Off;
+                    enabled = false;
+                }
+                break;
+            default:
+                return;
+        }
+
+        try
+        {
+            this.ApplyConfig(session);
+            this.LogQuickControlChange(action, enabled);
+            Game1.playSound(enabled ? "coin" : "bigDeSelect");
+        }
+        catch (Exception exception)
+        {
+            this.Monitor.Log($"Quick Control '{action}' couldn't be applied.\n{exception}", LogLevel.Error);
+            Game1.playSound("cancel");
+        }
+    }
+
+    private void LogQuickControlChange(QuickControlAction action, bool enabled)
+    {
+        string label = this.Helper.Translation.Get(
+            $"config.value.{action.ToString().ToLowerInvariant()}");
+        string state = this.Helper.Translation.Get(enabled ? "hud.on" : "hud.off");
+        this.activityLog!.Add(string.Format(
+            this.Helper.Translation.Get("hud.quick_controls.changed"), label, state),
+            severity: enabled ? ActivityLogSeverity.Success : ActivityLogSeverity.Information);
     }
 
     private ConfigValidationReport ApplyConfig(ConfigEditSession session)

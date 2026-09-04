@@ -1,5 +1,6 @@
 using FishingAssistant.Configuration;
 using StardewModdingAPI;
+using FishingAssistant.HUD;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Enchantments;
@@ -7,7 +8,10 @@ using StardewValley.Tools;
 
 namespace FishingAssistant.Equipment;
 
-internal sealed class RodEnchantmentService(IMonitor monitor, Func<string, string> translate)
+internal sealed class RodEnchantmentService(
+    IMonitor monitor,
+    Func<string, string> translate,
+    ActivityLogService? activityLog = null)
 {
     private readonly PerScreen<ScreenState> screens = new(() => new ScreenState());
 
@@ -32,8 +36,9 @@ internal sealed class RodEnchantmentService(IMonitor monitor, Func<string, strin
             if (requested.Count > 0 && !screen.MultiplayerWarningShown)
             {
                 screen.MultiplayerWarningShown = true;
-                Game1.addHUDMessage(new HUDMessage(
-                    translate("hud.enchantment.remote_unsupported"), HUDMessage.error_type));
+                string message = translate("hud.enchantment.remote_unsupported");
+                Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
+                activityLog?.Add(message, severity: ActivityLogSeverity.Warning);
                 monitor.Log(
                     $"Temporary rod enchantments are disabled for local screen {screen.ScreenId} " +
                     "while remote players are connected, to prevent save synchronization leaks.",

@@ -29,6 +29,7 @@ internal static class ConfigValidator
         MigrateFlexibleFishingSettings(config, originalVersion, report);
         MigrateAutoEatTrigger(config, originalVersion, report);
         MigrateFoodConsumptionTiming(config, originalVersion, report);
+        NormalizeQuickControls(config, report);
         if (originalVersion < 12)
         {
             config.FishPreviewStyle = FishPreviewStyle.Classic;
@@ -200,6 +201,26 @@ internal static class ConfigValidator
             report.Append(NormalizeItems(config, itemCatalog));
 
         return report;
+    }
+
+    private static void NormalizeQuickControls(ModConfig config, ConfigValidationReport report)
+    {
+        List<QuickControlAction>? original = config.QuickControlActions;
+        List<QuickControlAction> corrected = (original ?? [])
+            .Where(action => Enum.IsDefined(action) && action != QuickControlAction.None)
+            .Distinct()
+            .Take(ModConfig.MaximumQuickControlSlots)
+            .ToList();
+
+        if (original is not null && original.SequenceEqual(corrected))
+            return;
+
+        config.QuickControlActions = corrected;
+        report.Add(
+            nameof(config.QuickControlActions),
+            original is null ? null : string.Join(", ", original),
+            string.Join(", ", corrected),
+            "Unsupported, empty, duplicate, and excess Quick Control actions were removed.");
     }
 
     private static void NormalizeVersion(ModConfig config, ConfigValidationReport report)
