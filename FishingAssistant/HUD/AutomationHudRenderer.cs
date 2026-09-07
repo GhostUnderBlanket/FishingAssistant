@@ -2,6 +2,7 @@ using FishingAssistant.Configuration;
 using FishingAssistant.Fishing;
 using FishingAssistant.Runtime;
 using FishingAssistant.UI;
+using FishingAssistant.UI.Controls;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI.Utilities;
@@ -71,15 +72,19 @@ internal sealed class AutomationHudRenderer(
         this.DrawCompactStatus(batch, session, config, toolbar, opacity, toolbarAtTop,
             isFishingMinigame);
 
-        if (isFishingMinigame || Game1.isFestival())
+        if (!config.ShowAssistantBar || isFishingMinigame || Game1.isFestival())
         {
             this.screens.Value.ClearHitBounds();
             return;
         }
 
         HudScreenState screen = this.screens.Value;
-        Rectangle barBounds = this.PlaceBar(toolbar, toolbarAtTop, config.QuickControlActions.Count);
-        Point mouse = new(Game1.getMouseX(), Game1.getMouseY());
+        int visibleActionCount = config.QuickControlActions.Count;
+        Rectangle barBounds = this.PlaceBar(toolbar, toolbarAtTop, visibleActionCount);
+        bool pointerEnabled = Game1.activeClickableMenu is null;
+        Point mouse = pointerEnabled
+            ? new Point(Game1.getMouseX(), Game1.getMouseY())
+            : new Point(-1, -1);
         if (barBounds.Contains(mouse) || screen.ExpandedBounds.Contains(mouse))
             opacity = 1f;
 
@@ -107,7 +112,21 @@ internal sealed class AutomationHudRenderer(
 
     public void ToggleLogCurrent()
     {
-        this.screens.Value.IsExpanded = !this.screens.Value.IsExpanded;
+        HudScreenState screen = this.screens.Value;
+        screen.IsExpanded = !screen.IsExpanded;
+        if (screen.IsExpanded)
+            screen.ScrollOffset = 0;
+    }
+
+    public bool TryScrollLogCurrent(int x, int y, int direction)
+    {
+        HudScreenState screen = this.screens.Value;
+        if (!screen.IsExpanded || !screen.ExpandedBounds.Contains(x, y) || direction == 0)
+            return false;
+
+        int maximumOffset = Math.Max(0, activityLog.Current.Count - screen.VisibleRowCount);
+        screen.ScrollOffset = Math.Clamp(screen.ScrollOffset + direction * 3, 0, maximumOffset);
+        return true;
     }
 
     public void ResetCurrent() => this.screens.Value.Reset();
@@ -135,11 +154,13 @@ internal sealed class AutomationHudRenderer(
         int x = barBounds.X;
 
         screen.ActionBounds.Clear();
-        foreach (QuickControlAction action in config.QuickControlActions)
+        for (int index = 0; index < actionCount; index++)
         {
+            QuickControlAction action = config.QuickControlActions[index];
             Rectangle bounds = new(x, barBounds.Y + PanelPadding, actionSize, islandHeight);
             screen.ActionBounds.Add((action, bounds));
-            this.DrawActionButton(batch, bounds, action, session, config, bounds.Contains(mouse), opacity);
+            this.DrawActionButton(batch, bounds, action, session, config, bounds.Contains(mouse), opacity,
+                index + 1);
             x += actionSize + ButtonGap;
         }
 
@@ -169,7 +190,7 @@ internal sealed class AutomationHudRenderer(
 
         this.DrawSettingsButton(batch, screen.SettingsBounds, screen.SettingsBounds.Contains(mouse), opacity);
 
-        this.DrawHoverText(batch, screen, mouse);
+        this.DrawHoverText(batch, screen, mouse, config);
     }
 
     private void DrawActionButton(
@@ -179,7 +200,8 @@ internal sealed class AutomationHudRenderer(
         AutomationSession session,
         ModConfig config,
         bool highlighted,
-        float opacity)
+        float opacity,
+        int shortcutSlot)
     {
         bool active = IsActionActive(action, session, config);
         Color tint = highlighted ? Color.Wheat : Color.White;
@@ -188,10 +210,17 @@ internal sealed class AutomationHudRenderer(
 
         Rectangle iconBounds = new(bounds.Center.X - 16, bounds.Center.Y - 16, 32, 32);
         Color iconTint = (active ? Color.White : Color.Gray * 0.65f) * opacity;
-        this.DrawActionIcon(batch, iconBounds, action, iconTint);
+        DrawActionIcon(batch, iconBounds, action, iconTint);
+        string slotLabel = shortcutSlot.ToString();
+        const float labelScale = 0.55f;
+        Vector2 labelSize = Game1.smallFont.MeasureString(slotLabel) * labelScale;
+        batch.DrawString(Game1.smallFont, slotLabel,
+            new Vector2(bounds.Right - labelSize.X - 6, bounds.Bottom - labelSize.Y - 3),
+            Game1.textColor * opacity, 0f, Vector2.Zero, labelScale,
+            SpriteEffects.None, 0.97f);
     }
 
-    private void DrawActionIcon(SpriteBatch batch, Rectangle bounds, QuickControlAction action, Color color)
+    internal static void DrawActionIcon(SpriteBatch batch, Rectangle bounds, QuickControlAction action, Color color)
     {
         if (action == QuickControlAction.ToggleAutomation)
         {
@@ -257,16 +286,24 @@ internal sealed class AutomationHudRenderer(
         bool toolbarAtTop,
         Point mouse)
     {
-        ActivityLogEntry[] availableEntries = activityLog.Current.TakeLast(ExpandedRows).ToArray();
+        IReadOnlyList<ActivityLogEntry> allEntries = activityLog.Current;
         int fixedHeight = ExpandedTopPadding + ExpandedHeaderHeight
             + ExpandedRowsTopPadding + ExpandedBottomPadding;
         int availableHeight = toolbarAtTop
             ? Game1.uiViewport.Height - activityBounds.Top - 8
             : activityBounds.Bottom - 8;
         int maximumRows = Math.Max(1, (availableHeight - fixedHeight) / ExpandedRowHeight);
-        int rowCount = Math.Min(Math.Max(1, availableEntries.Length),
+        int rowCount = Math.Min(Math.Max(1, allEntries.Count),
             Math.Min(ExpandedRows, maximumRows));
-        ActivityLogEntry[] entries = availableEntries.TakeLast(rowCount).ToArray();
+        screen.VisibleRowCount = rowCount;
+        if (allEntries.Count > screen.LastEntryCount && screen.ScrollOffset > 0)
+            screen.ScrollOffset += allEntries.Count - screen.LastEntryCount;
+        screen.LastEntryCount = allEntries.Count;
+        int maximumOffset = Math.Max(0, allEntries.Count - rowCount);
+        screen.ScrollOffset = Math.Clamp(screen.ScrollOffset, 0, maximumOffset);
+        int endIndex = allEntries.Count - screen.ScrollOffset;
+        int startIndex = Math.Max(0, endIndex - rowCount);
+        ActivityLogEntry[] entries = allEntries.Skip(startIndex).Take(endIndex - startIndex).ToArray();
         int height = fixedHeight + rowCount * ExpandedRowHeight;
         int y = toolbarAtTop ? activityBounds.Top : activityBounds.Bottom - height;
         Rectangle panel = new(activityBounds.X, y, activityBounds.Width, height);
@@ -275,20 +312,22 @@ internal sealed class AutomationHudRenderer(
         IClickableMenu.drawTextureBox(batch, Game1.menuTexture, new Rectangle(0, 256, 60, 60),
             panel.X, panel.Y, panel.Width, panel.Height, Color.White);
         int headerY = panel.Y + ExpandedTopPadding;
-        screen.ExpandBounds = new Rectangle(
-            panel.Right - ActivityHorizontalPadding - 40,
-            headerY,
-            40,
-            ExpandedHeaderHeight);
+        int headerRight = panel.Right - ActivityHorizontalPadding;
+        Rectangle headerBand = new(panel.X, headerY, panel.Width, ExpandedHeaderHeight);
+        if (headerBand.Intersects(screen.ExpandBounds))
+            headerRight = screen.ExpandBounds.Left - ButtonGap;
         screen.ClearBounds = new Rectangle(
-            screen.ExpandBounds.Left - ButtonGap - 80,
+            headerRight - 80,
             headerY + 1,
             80,
             ExpandedHeaderHeight - 2);
 
         int titleRight = screen.ClearBounds.Left - ButtonGap;
+        string range = entries.Length == 0
+            ? "0/0"
+            : $"{startIndex + 1}-{endIndex}/{allEntries.Count}";
         string title = MenuText.Fit(
-            translate("hud.quick_controls.activity_log"),
+            $"{translate("hud.quick_controls.activity_log")}  {range}",
             Game1.smallFont,
             Math.Max(1, titleRight - panel.X - ActivityHorizontalPadding) / 0.8f);
         Vector2 titleSize = Game1.smallFont.MeasureString(title) * 0.8f;
@@ -306,7 +345,6 @@ internal sealed class AutomationHudRenderer(
             new Vector2(screen.ClearBounds.Center.X - clearSize.X / 2,
                 screen.ClearBounds.Center.Y - clearSize.Y / 2),
             Game1.textColor, 0f, Vector2.Zero, 0.65f, SpriteEffects.None, 0.95f);
-        this.DrawExpandButton(batch, screen.ExpandBounds, expanded: true, opacity: 1f);
 
         int rowY = headerY + ExpandedHeaderHeight + ExpandedRowsTopPadding;
         if (entries.Length == 0)
@@ -316,6 +354,7 @@ internal sealed class AutomationHudRenderer(
                 new Vector2(panel.X + ActivityHorizontalPadding, rowY + 7),
                 Game1.textColor,
                 scale: 0.72f);
+            this.DrawExpandButton(batch, screen.ExpandBounds, expanded: true, opacity: 1f);
             return;
         }
 
@@ -333,13 +372,19 @@ internal sealed class AutomationHudRenderer(
             string time = entry.TimeOfDay > 0 ? Game1.getTimeOfDayString(entry.TimeOfDay) : "--";
             string message = $"{time}  {FormatEntry(entry)}";
             int textX = panel.X + ActivityHorizontalPadding + 38;
+            int textRight = new Rectangle(panel.X, rowY, panel.Width, ExpandedRowHeight)
+                .Intersects(screen.ExpandBounds)
+                    ? screen.ExpandBounds.Left - ButtonGap
+                    : panel.Right - ActivityHorizontalPadding;
             string fitted = MenuText.Fit(message, Game1.smallFont,
-                Math.Max(1, panel.Right - textX - ActivityHorizontalPadding) / 0.7f);
+                Math.Max(1, textRight - textX) / 0.7f);
             batch.DrawString(Game1.smallFont, fitted, new Vector2(textX, rowY + 7),
                 GetSeverityColor(entry.Severity), 0f, Vector2.Zero, 0.7f,
                 SpriteEffects.None, 0.95f);
             rowY += ExpandedRowHeight;
         }
+
+        this.DrawExpandButton(batch, screen.ExpandBounds, expanded: true, opacity: 1f);
     }
 
     private void DrawExpandButton(SpriteBatch batch, Rectangle bounds, bool expanded, float opacity)
@@ -361,14 +406,19 @@ internal sealed class AutomationHudRenderer(
             SpriteEffects.None, 0.95f);
     }
 
-    private void DrawHoverText(SpriteBatch batch, HudScreenState screen, Point mouse)
+    private void DrawHoverText(SpriteBatch batch, HudScreenState screen, Point mouse, ModConfig config)
     {
         string? text = null;
-        foreach ((QuickControlAction action, Rectangle bounds) in screen.ActionBounds)
+        for (int index = 0; index < screen.ActionBounds.Count; index++)
         {
+            (QuickControlAction action, Rectangle bounds) = screen.ActionBounds[index];
             if (bounds.Contains(mouse))
             {
-                text = translate($"config.value.{action.ToString().ToLowerInvariant()}");
+                text = $"{translate($"config.value.{action.ToString().ToLowerInvariant()}")}\n"
+                    + string.Format(translate("hud.quick_controls.shortcut"),
+                        ConfigKeybind.FormatBindings(
+                            config.GetQuickControlKeybind(index),
+                            config.GetQuickControlOptionalKeybind(index)));
                 break;
             }
         }
@@ -553,6 +603,9 @@ internal sealed class AutomationHudRenderer(
     private sealed class HudScreenState
     {
         public bool IsExpanded { get; set; }
+        public int ScrollOffset { get; set; }
+        public int VisibleRowCount { get; set; } = 1;
+        public int LastEntryCount { get; set; }
         public Rectangle BarBounds { get; set; } = Rectangle.Empty;
         public Rectangle SettingsBounds { get; set; } = Rectangle.Empty;
         public Rectangle ExpandBounds { get; set; } = Rectangle.Empty;
@@ -573,6 +626,9 @@ internal sealed class AutomationHudRenderer(
         public void Reset()
         {
             this.IsExpanded = false;
+            this.ScrollOffset = 0;
+            this.VisibleRowCount = 1;
+            this.LastEntryCount = 0;
             this.ClearHitBounds();
         }
     }

@@ -9,6 +9,7 @@ using FishingAssistant.Integrations.GenericModConfigMenu;
 using FishingAssistant.Inventory;
 using FishingAssistant.Runtime;
 using FishingAssistant.UI;
+using FishingAssistant.UI.Controls;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -140,6 +141,7 @@ internal sealed class ModEntry : Mod
         helper.Events.Display.RenderedActiveMenu += this.OnRenderedActiveMenu;
         helper.Events.Display.MenuChanged += this.OnMenuChanged;
         helper.Events.Input.ButtonsChanged += this.OnButtonsChanged;
+        helper.Events.Input.MouseWheelScrolled += this.OnMouseWheelScrolled;
         helper.ConsoleCommands.Add("fa_config", "Open the Fishing Assistant configuration menu.",
             this.OnConfigCommand);
     }
@@ -188,6 +190,9 @@ internal sealed class ModEntry : Mod
             return;
         }
 
+        if (this.TryHandleQuickControlShortcut(e.Pressed))
+            return;
+
         KeybindList automationKeybind = this.configManager!.Active.EnableAutomationButton;
         KeybindList automationOptionalKeybind = this.configManager.Active.EnableAutomationOptionalButton;
         bool automationKeybindPressed = automationKeybind.JustPressed();
@@ -195,9 +200,9 @@ internal sealed class ModEntry : Mod
         if (Context.IsWorldReady && (automationKeybindPressed || automationOptionalKeybindPressed))
         {
             if (automationKeybindPressed)
-                this.Helper.Input.SuppressActiveKeybinds(automationKeybind);
+                this.SuppressTriggeredKeybindButtons(automationKeybind, e.Pressed);
             if (automationOptionalKeybindPressed)
-                this.Helper.Input.SuppressActiveKeybinds(automationOptionalKeybind);
+                this.SuppressTriggeredKeybindButtons(automationOptionalKeybind, e.Pressed);
             this.automationRuntime!.ToggleCurrent();
             if (this.automationRuntime.Current.IsEnabled)
                 this.autoTrash!.TryDiscardBatchIfFull(
@@ -219,9 +224,9 @@ internal sealed class ModEntry : Mod
         if (Context.IsWorldReady && (treasureKeybindPressed || treasureOptionalKeybindPressed))
         {
             if (treasureKeybindPressed)
-                this.Helper.Input.SuppressActiveKeybinds(treasureKeybind);
+                this.SuppressTriggeredKeybindButtons(treasureKeybind, e.Pressed);
             if (treasureOptionalKeybindPressed)
-                this.Helper.Input.SuppressActiveKeybinds(treasureOptionalKeybind);
+                this.SuppressTriggeredKeybindButtons(treasureOptionalKeybind, e.Pressed);
             try
             {
                 bool enabled = this.configManager.ToggleTreasureTargeting();
@@ -245,13 +250,24 @@ internal sealed class ModEntry : Mod
         if (!configuredKeybindPressed && !configuredOptionalKeybindPressed)
             return;
 
-        if (!this.TryOpenConfigMenu())
+        if (configuredKeybindPressed)
+            this.SuppressTriggeredKeybindButtons(openConfigKeybind, e.Pressed);
+        if (configuredOptionalKeybindPressed)
+            this.SuppressTriggeredKeybindButtons(openConfigOptionalKeybind, e.Pressed);
+
+        this.TryOpenConfigMenu();
+    }
+
+    private void OnMouseWheelScrolled(object? sender, MouseWheelScrolledEventArgs e)
+    {
+        if (!Context.IsWorldReady || Game1.activeClickableMenu is not null)
             return;
 
-        if (configuredKeybindPressed)
-            this.Helper.Input.SuppressActiveKeybinds(openConfigKeybind);
-        if (configuredOptionalKeybindPressed)
-            this.Helper.Input.SuppressActiveKeybinds(openConfigOptionalKeybind);
+        if (this.automationHud!.TryScrollLogCurrent(
+                Game1.getMouseX(), Game1.getMouseY(), Math.Sign(e.Delta)))
+        {
+            this.Helper.Input.SuppressScrollWheel();
+        }
     }
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
@@ -469,10 +485,59 @@ internal sealed class ModEntry : Mod
                 return true;
             case QuickControlHudCommandType.OpenSettings:
                 Game1.playSound("bigSelect");
-                this.TryOpenConfigMenu(ConfigCategory.QuickControls);
+                this.TryOpenConfigMenu(ConfigCategory.Interface);
                 return true;
             default:
                 return false;
+        }
+    }
+
+    private bool TryHandleQuickControlShortcut(IEnumerable<SButton> pressedButtons)
+    {
+        if (!Context.IsWorldReady
+            || Game1.activeClickableMenu is not (null or BobberBar)
+            || Game1.currentMinigame is not null)
+        {
+            return false;
+        }
+
+        ModConfig config = this.configManager!.Active;
+        for (int slot = 0; slot < config.QuickControlActions.Count; slot++)
+        {
+            KeybindList primary = config.GetQuickControlKeybind(slot);
+            KeybindList optional = config.GetQuickControlOptionalKeybind(slot);
+            bool primaryPressed = IsQuickControlKeybindAvailable(primary) && primary.JustPressed();
+            bool optionalPressed = IsQuickControlKeybindAvailable(optional) && optional.JustPressed();
+            if (!primaryPressed && !optionalPressed)
+                continue;
+
+            if (primaryPressed)
+                this.SuppressTriggeredKeybindButtons(primary, pressedButtons);
+            if (optionalPressed)
+                this.SuppressTriggeredKeybindButtons(optional, pressedButtons);
+            this.ExecuteQuickControl(config.QuickControlActions[slot]);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsQuickControlKeybindAvailable(KeybindList keybind)
+        => Game1.activeClickableMenu is not BobberBar
+            || !keybind.Keybinds.Any(binding => binding.Buttons.Any(ConfigKeybind.IsMouseButton));
+
+    private void SuppressTriggeredKeybindButtons(
+        KeybindList keybind,
+        IEnumerable<SButton> pressedButtons)
+    {
+        HashSet<SButton> keybindButtons = keybind.Keybinds
+            .SelectMany(binding => binding.Buttons)
+            .ToHashSet();
+        foreach (SButton button in pressedButtons
+                     .Where(keybindButtons.Contains)
+                     .Where(button => !ConfigKeybind.IsModifierButton(button)))
+        {
+            this.Helper.Input.Suppress(button);
         }
     }
 

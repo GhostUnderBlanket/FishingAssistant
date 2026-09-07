@@ -6,7 +6,7 @@ namespace FishingAssistant.HUD;
 
 internal sealed class ActivityLogService
 {
-    private const int MaximumEntries = 50;
+    private const int MaximumEntries = 200;
     private readonly PerScreen<ScreenState> screens = new(() => new ScreenState());
 
     public IReadOnlyList<ActivityLogEntry> Current => this.screens.Value.Entries;

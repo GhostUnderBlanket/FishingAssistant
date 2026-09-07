@@ -7,6 +7,28 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Quick Controls now uses the same visual ordered-picker layout as item preferences,
+  with search, selected actions first, direct add/remove controls, and arrows for
+  reordering up to five HUD slots. Edits stay in the local player's configuration draft
+  until Apply is selected.
+- Each Quick Control slot has a configurable shortcut, defaulting to Shift + 1–5,
+  including while the fishing minigame is open. The shortcut is consumed so it doesn't
+  also trigger its normal game action. Quick Control settings now live under HUD & Controls,
+  where the full Assistant Bar can be hidden without disabling its shortcuts. Each slot
+  supports primary and optional bindings. Modifier keys wait for a second key instead of
+  being saved alone, making combinations such as Shift + 1 easy to capture. Action icons
+  accept mouse clicks outside the fishing minigame; while the minigame is open, they become
+  keyboard-only to avoid conflicting with mouse control of the fishing bar.
+- Activity Log history now retains up to 200 entries and can be scrolled with the mouse
+  wheel while expanded. Its collapse button stays in the same position as the expand
+  button, so the panel can be toggled repeatedly without moving the pointer. Scrolling
+  over the expanded log no longer changes the selected toolbar slot.
+- All configurable shortcuts now keep held modifier keys active while suppressing only
+  the shortcut's newly pressed trigger key. Holding Shift and pressing a number repeatedly
+  activates the assigned command each time without changing toolbar slots.
+
 ## [3.4.0] - 2026-08-30
 
 ### Added

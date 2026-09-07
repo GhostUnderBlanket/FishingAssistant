@@ -17,6 +17,7 @@ internal static class ConfigValidator
 
         int originalVersion = config.ConfigVersion;
         NormalizeVersion(config, report);
+        MigrateAssistantBarVisibility(config, originalVersion, report);
         MigrateHudVisibility(config, originalVersion, report);
         RetireJunkIgnoreList(config, originalVersion, report);
         MigrateJunkDisposalMode(config, originalVersion, report);
@@ -69,6 +70,18 @@ internal static class ConfigValidator
             () => config.ToggleTreasureTargetingOptionalButton,
             value => config.ToggleTreasureTargetingOptionalButton = value,
             SButton.None);
+        for (int index = 0; index < ModConfig.MaximumQuickControlSlots; index++)
+        {
+            int slot = index;
+            NormalizeKeybind(report, $"QuickControlSlot{slot + 1}Button",
+                () => config.GetQuickControlKeybind(slot),
+                value => config.SetQuickControlKeybind(slot, value),
+                () => ModConfig.CreateDefaultQuickControlKeybind(slot));
+            NormalizeKeybind(report, $"QuickControlSlot{slot + 1}OptionalButton",
+                () => config.GetQuickControlOptionalKeybind(slot),
+                value => config.SetQuickControlOptionalKeybind(slot, value),
+                SButton.None);
+        }
 
         NormalizeEnum(report, nameof(config.ModStatusPosition),
             () => config.ModStatusPosition, value => config.ModStatusPosition = value, HudPosition.Left);
@@ -223,6 +236,25 @@ internal static class ConfigValidator
             "Unsupported, empty, duplicate, and excess Quick Control actions were removed.");
     }
 
+    private static void MigrateAssistantBarVisibility(
+        ModConfig config,
+        int originalVersion,
+        ConfigValidationReport report)
+    {
+        if (originalVersion >= 31)
+            return;
+
+        if (config.ShowQuickControls.HasValue)
+        {
+            config.ShowAssistantBar = config.ShowQuickControls.Value;
+            report.Add(nameof(config.ShowAssistantBar), config.ShowQuickControls,
+                config.ShowAssistantBar,
+                "The Quick Controls visibility setting now controls the full Assistant Bar.");
+        }
+
+        config.ShowQuickControls = null;
+    }
+
     private static void NormalizeVersion(ModConfig config, ConfigValidationReport report)
     {
         if (config.ConfigVersion == ModConfig.CurrentVersion)
@@ -248,11 +280,21 @@ internal static class ConfigValidator
         Action<KeybindList> setValue,
         SButton fallback)
     {
+        NormalizeKeybind(report, property, getValue, setValue, () => new KeybindList(fallback));
+    }
+
+    private static void NormalizeKeybind(
+        ConfigValidationReport report,
+        string property,
+        Func<KeybindList?> getValue,
+        Action<KeybindList> setValue,
+        Func<KeybindList> createFallback)
+    {
         KeybindList? value = getValue();
         if (value is not null)
             return;
 
-        KeybindList corrected = new(fallback);
+        KeybindList corrected = createFallback();
         setValue(corrected);
         report.Add(property, null, corrected, "The keybind was missing or invalid.");
     }

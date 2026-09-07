@@ -1025,6 +1025,13 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.HudVisibility = value);
                 this.AddEnumDefinition("hud_position", () => this.session.Draft.ModStatusPosition,
                     value => this.session.Draft.ModStatusPosition = value);
+                this.AddSeparator("quick_controls.slots");
+                this.AddDefinition("show_assistant_bar", () => this.session.Draft.ShowAssistantBar,
+                    value => this.session.Draft.ShowAssistantBar = value);
+                this.AddActionDefinition("quick_control_picker",
+                    () => $"{this.session.Draft.QuickControlActions.Count} / {ModConfig.MaximumQuickControlSlots}",
+                    () => this.SetChildMenu(new QuickControlPickerMenu(
+                        this.session.Draft, this.translate)));
                 this.AddSeparator("interface.preview");
                 this.AddDefinition("fish_preview", () => this.session.Draft.DisplayFishPreview,
                     value => this.SetProfileOption(() => this.session.Draft.DisplayFishPreview = value));
@@ -1063,16 +1070,15 @@ internal sealed class ConfigurationMenu : IClickableMenu
                     value => this.session.Draft.OpenConfigMenuButton = value,
                     () => this.session.Draft.OpenConfigMenuOptionalButton,
                     value => this.session.Draft.OpenConfigMenuOptionalButton = value);
-                break;
-            case ConfigCategory.QuickControls:
-                this.AddSeparator("quick_controls.slots");
                 for (int slotIndex = 0; slotIndex < ModConfig.MaximumQuickControlSlots; slotIndex++)
                 {
                     int capturedIndex = slotIndex;
-                    this.AddEnumDefinition(
-                        $"quick_control_slot_{slotIndex + 1}",
-                        () => this.GetQuickControlSlot(capturedIndex),
-                        value => this.SetQuickControlSlot(capturedIndex, value));
+                    this.AddKeybindDefinition($"quick_control_keybind_{slotIndex + 1}",
+                        () => this.session.Draft.GetQuickControlKeybind(capturedIndex),
+                        value => this.session.Draft.SetQuickControlKeybind(capturedIndex, value),
+                        () => this.session.Draft.GetQuickControlOptionalKeybind(capturedIndex),
+                        value => this.session.Draft.SetQuickControlOptionalKeybind(capturedIndex, value),
+                        allowMouseButtons: false);
                 }
                 break;
             case ConfigCategory.Enchantments:
@@ -1123,53 +1129,6 @@ internal sealed class ConfigurationMenu : IClickableMenu
     {
         this.nextDefinitionStartsGroup = true;
         this.nextGroupLabelKey = $"config.group.{groupKey}";
-    }
-
-    private QuickControlAction GetQuickControlSlot(int index)
-    {
-        return index >= 0 && index < this.session.Draft.QuickControlActions.Count
-            ? this.session.Draft.QuickControlActions[index]
-            : QuickControlAction.None;
-    }
-
-    private void SetQuickControlSlot(int index, QuickControlAction action)
-    {
-        List<QuickControlAction> actions = this.session.Draft.QuickControlActions;
-        if (index < 0 || index >= ModConfig.MaximumQuickControlSlots)
-            return;
-
-        if (action == QuickControlAction.None)
-        {
-            if (index < actions.Count)
-                actions.RemoveAt(index);
-            this.RebuildOptions();
-            return;
-        }
-
-        int existingIndex = actions.IndexOf(action);
-        if (existingIndex >= 0)
-        {
-            if (existingIndex == index)
-                return;
-
-            if (index < actions.Count)
-                (actions[existingIndex], actions[index]) = (actions[index], actions[existingIndex]);
-            else
-            {
-                actions.RemoveAt(existingIndex);
-                actions.Add(action);
-            }
-        }
-        else if (index < actions.Count)
-        {
-            actions[index] = action;
-        }
-        else
-        {
-            actions.Add(action);
-        }
-
-        this.RebuildOptions();
     }
 
     private void AddControlDefinition(ControlDefinition definition)
@@ -1439,7 +1398,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
         Func<KeybindList> getValue,
         Action<KeybindList> setValue,
         Func<KeybindList>? getOptionalValue = null,
-        Action<KeybindList>? setOptionalValue = null)
+        Action<KeybindList>? setOptionalValue = null,
+        bool allowMouseButtons = true)
     {
         this.AddControlDefinition(new ControlDefinition(key, (id, bounds) => new ConfigKeybind(
             id,
@@ -1450,7 +1410,8 @@ internal sealed class ConfigurationMenu : IClickableMenu
             getValue,
             setValue,
             getOptionalValue,
-            setOptionalValue
+            setOptionalValue,
+            allowMouseButtons
         ), () => ConfigControlState.Enabled));
     }
 

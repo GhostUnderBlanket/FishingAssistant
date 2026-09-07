@@ -14,6 +14,8 @@ internal sealed class ConfigKeybind : IConfigControl
     private readonly Func<KeybindList>? getOptionalValue;
     private readonly Action<KeybindList>? setOptionalValue;
     private readonly string listeningText;
+    private readonly bool allowMouseButtons;
+    private readonly HashSet<SButton> pendingModifiers = [];
     private KeybindCaptureGate? captureGate;
     private bool isListeningForOptional;
 
@@ -26,7 +28,8 @@ internal sealed class ConfigKeybind : IConfigControl
         Func<KeybindList> getValue,
         Action<KeybindList> setValue,
         Func<KeybindList>? getOptionalValue = null,
-        Action<KeybindList>? setOptionalValue = null)
+        Action<KeybindList>? setOptionalValue = null,
+        bool allowMouseButtons = true)
     {
         this.Component = new ClickableComponent(bounds, label) { myID = id };
         this.Description = description;
@@ -35,6 +38,7 @@ internal sealed class ConfigKeybind : IConfigControl
         this.setValue = setValue;
         this.getOptionalValue = getOptionalValue;
         this.setOptionalValue = setOptionalValue;
+        this.allowMouseButtons = allowMouseButtons;
     }
 
     public ClickableComponent Component { get; }
@@ -77,7 +81,11 @@ internal sealed class ConfigKeybind : IConfigControl
 
         IReadOnlyList<SButton> buttons = this.captureGate.Observe(pressed, held);
         if (buttons.Count == 0)
+        {
+            if (pressed.Count == 0 && !this.pendingModifiers.Any(held.Contains))
+                this.pendingModifiers.Clear();
             return [];
+        }
 
         KeybindCaptureResult result = KeybindCapture.Resolve(buttons);
         if (result.Action == KeybindCaptureAction.Cancel)
@@ -91,9 +99,24 @@ internal sealed class ConfigKeybind : IConfigControl
         {
             this.SetListeningValue(new KeybindList(SButton.None));
         }
+        else if (result.Buttons.All(IsModifierButton))
+        {
+            this.pendingModifiers.Clear();
+            this.pendingModifiers.UnionWith(result.Buttons);
+            return [];
+        }
+        else if (!this.allowMouseButtons && result.Buttons.Any(IsMouseButton))
+        {
+            Game1.playSound("cancel");
+            return buttons;
+        }
         else
         {
-            KeybindList binding = KeybindList.ForSingle([.. result.Buttons]);
+            SButton[] capturedButtons = this.pendingModifiers
+                .Concat(result.Buttons)
+                .Distinct()
+                .ToArray();
+            KeybindList binding = KeybindList.ForSingle(capturedButtons);
             this.SetListeningValue(binding);
         }
 
@@ -150,6 +173,7 @@ internal sealed class ConfigKeybind : IConfigControl
         this.IsListening = false;
         this.isListeningForOptional = false;
         this.captureGate = null;
+        this.pendingModifiers.Clear();
         GameMenu.forcePreventClose = false;
     }
 
@@ -193,18 +217,52 @@ internal sealed class ConfigKeybind : IConfigControl
             Game1.textColor);
     }
 
-    private static string FormatBinding(KeybindList keybinds)
+    internal static string FormatBinding(KeybindList keybinds)
     {
         if (!keybinds.IsBound)
             return SButton.None.ToString();
 
-        return string.Join(", ", keybinds.Keybinds.Select(keybind =>
-            string.Join(" + ", keybind.Buttons.Select(button =>
-            {
-                string label = button.ToString();
-                return button.TryGetController(out _)
-                    ? label["Controller".Length..]
-                    : label;
-            }))));
+        return string.Join(", ", keybinds.Keybinds
+            .Select(keybind => string.Join(" + ", keybind.Buttons.Select(FormatButton)))
+            .Distinct(StringComparer.OrdinalIgnoreCase));
     }
+
+    internal static string FormatBindings(KeybindList primary, KeybindList optional)
+    {
+        string[] bindings = new[] { primary, optional }
+            .Where(binding => binding.IsBound)
+            .Select(FormatBinding)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        return bindings.Length == 0
+            ? SButton.None.ToString()
+            : string.Join(" / ", bindings);
+    }
+
+    private static string FormatButton(SButton button)
+    {
+        string label = button.ToString();
+        if (button is >= SButton.D0 and <= SButton.D9)
+            return label[1..];
+
+        return button switch
+        {
+            SButton.LeftShift or SButton.RightShift => "Shift",
+            SButton.LeftControl or SButton.RightControl => "Ctrl",
+            SButton.LeftAlt or SButton.RightAlt => "Alt",
+            _ when button.TryGetController(out _) => label["Controller".Length..],
+            _ => label
+        };
+    }
+
+    internal static bool IsMouseButton(SButton button)
+        => button.ToString().StartsWith("Mouse", StringComparison.OrdinalIgnoreCase);
+
+    internal static bool IsModifierButton(SButton button)
+        => button is SButton.LeftShift
+            or SButton.RightShift
+            or SButton.LeftControl
+            or SButton.RightControl
+            or SButton.LeftAlt
+            or SButton.RightAlt;
 }

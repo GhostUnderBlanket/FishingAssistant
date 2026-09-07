@@ -5,7 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 29;
+    internal const int CurrentVersion = 31;
     internal const int MaximumQuickControlSlots = 5;
     internal const string DefaultStarterRod = "None";
 
@@ -36,12 +36,38 @@ internal sealed class ModConfig
 
     public HudVisibilityMode HudVisibility { get; set; } = HudVisibilityMode.WhileFishing;
 
+    public bool ShowAssistantBar { get; set; } = true;
+
+    public bool? ShowQuickControls { get; set; }
+
+    public bool ShouldSerializeShowQuickControls() => false;
+
     public List<QuickControlAction> QuickControlActions { get; set; } =
     [
         QuickControlAction.ToggleAutomation,
         QuickControlAction.ToggleTreasureTargeting,
         QuickControlAction.ToggleAutoEatFood
     ];
+
+    public KeybindList QuickControlSlot1Button { get; set; } = CreateDefaultQuickControlKeybind(0);
+
+    public KeybindList QuickControlSlot1OptionalButton { get; set; } = new(SButton.None);
+
+    public KeybindList QuickControlSlot2Button { get; set; } = CreateDefaultQuickControlKeybind(1);
+
+    public KeybindList QuickControlSlot2OptionalButton { get; set; } = new(SButton.None);
+
+    public KeybindList QuickControlSlot3Button { get; set; } = CreateDefaultQuickControlKeybind(2);
+
+    public KeybindList QuickControlSlot3OptionalButton { get; set; } = new(SButton.None);
+
+    public KeybindList QuickControlSlot4Button { get; set; } = CreateDefaultQuickControlKeybind(3);
+
+    public KeybindList QuickControlSlot4OptionalButton { get; set; } = new(SButton.None);
+
+    public KeybindList QuickControlSlot5Button { get; set; } = CreateDefaultQuickControlKeybind(4);
+
+    public KeybindList QuickControlSlot5OptionalButton { get; set; } = new(SButton.None);
 
     public AutomationProfile AutomationProfile { get; set; } = AutomationProfile.Relaxed;
 
@@ -247,6 +273,16 @@ internal sealed class ModConfig
         draft.ToggleTreasureTargetingButton = KeybindList.Parse(this.ToggleTreasureTargetingButton.ToString());
         draft.ToggleTreasureTargetingOptionalButton =
             KeybindList.Parse(this.ToggleTreasureTargetingOptionalButton.ToString());
+        draft.QuickControlSlot1Button = KeybindList.Parse(this.QuickControlSlot1Button.ToString());
+        draft.QuickControlSlot1OptionalButton = KeybindList.Parse(this.QuickControlSlot1OptionalButton.ToString());
+        draft.QuickControlSlot2Button = KeybindList.Parse(this.QuickControlSlot2Button.ToString());
+        draft.QuickControlSlot2OptionalButton = KeybindList.Parse(this.QuickControlSlot2OptionalButton.ToString());
+        draft.QuickControlSlot3Button = KeybindList.Parse(this.QuickControlSlot3Button.ToString());
+        draft.QuickControlSlot3OptionalButton = KeybindList.Parse(this.QuickControlSlot3OptionalButton.ToString());
+        draft.QuickControlSlot4Button = KeybindList.Parse(this.QuickControlSlot4Button.ToString());
+        draft.QuickControlSlot4OptionalButton = KeybindList.Parse(this.QuickControlSlot4OptionalButton.ToString());
+        draft.QuickControlSlot5Button = KeybindList.Parse(this.QuickControlSlot5Button.ToString());
+        draft.QuickControlSlot5OptionalButton = KeybindList.Parse(this.QuickControlSlot5OptionalButton.ToString());
         draft.JunkList = [.. this.JunkList];
         draft.JunkIgnoreList = [.. this.JunkIgnoreList];
         draft.TreasureChestIgnoreList = [.. this.TreasureChestIgnoreList];
@@ -256,5 +292,67 @@ internal sealed class ModConfig
         draft.PreferredSecondTackles = [.. this.PreferredSecondTackles];
         draft.QuickControlActions = [.. this.QuickControlActions];
         return draft;
+    }
+
+    internal KeybindList GetQuickControlKeybind(int index) => index switch
+    {
+        0 => this.QuickControlSlot1Button,
+        1 => this.QuickControlSlot2Button,
+        2 => this.QuickControlSlot3Button,
+        3 => this.QuickControlSlot4Button,
+        4 => this.QuickControlSlot5Button,
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
+    };
+
+    internal void SetQuickControlKeybind(int index, KeybindList value)
+    {
+        switch (index)
+        {
+            case 0: this.QuickControlSlot1Button = value; break;
+            case 1: this.QuickControlSlot2Button = value; break;
+            case 2: this.QuickControlSlot3Button = value; break;
+            case 3: this.QuickControlSlot4Button = value; break;
+            case 4: this.QuickControlSlot5Button = value; break;
+            default: throw new ArgumentOutOfRangeException(nameof(index));
+        }
+    }
+
+    internal KeybindList GetQuickControlOptionalKeybind(int index) => index switch
+    {
+        0 => this.QuickControlSlot1OptionalButton,
+        1 => this.QuickControlSlot2OptionalButton,
+        2 => this.QuickControlSlot3OptionalButton,
+        3 => this.QuickControlSlot4OptionalButton,
+        4 => this.QuickControlSlot5OptionalButton,
+        _ => throw new ArgumentOutOfRangeException(nameof(index))
+    };
+
+    internal void SetQuickControlOptionalKeybind(int index, KeybindList value)
+    {
+        switch (index)
+        {
+            case 0: this.QuickControlSlot1OptionalButton = value; break;
+            case 1: this.QuickControlSlot2OptionalButton = value; break;
+            case 2: this.QuickControlSlot3OptionalButton = value; break;
+            case 3: this.QuickControlSlot4OptionalButton = value; break;
+            case 4: this.QuickControlSlot5OptionalButton = value; break;
+            default: throw new ArgumentOutOfRangeException(nameof(index));
+        }
+    }
+
+    internal static KeybindList CreateDefaultQuickControlKeybind(int index)
+    {
+        SButton number = index switch
+        {
+            0 => SButton.D1,
+            1 => SButton.D2,
+            2 => SButton.D3,
+            3 => SButton.D4,
+            4 => SButton.D5,
+            _ => throw new ArgumentOutOfRangeException(nameof(index))
+        };
+        return new KeybindList(
+            new Keybind(SButton.LeftShift, number),
+            new Keybind(SButton.RightShift, number));
     }
 }
