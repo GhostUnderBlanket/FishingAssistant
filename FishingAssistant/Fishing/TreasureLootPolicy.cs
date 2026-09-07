@@ -9,6 +9,7 @@ internal enum TreasureLootDecision
     Collect,
     Close,
     Stop,
+    StopForProtectedItem,
     DropBlocked,
     DiscardBlocked,
     KeepIgnoredOpen,
@@ -24,8 +25,9 @@ internal sealed record TreasureLootConditions(
     bool CollectionStopped,
     bool HasRemainingItems,
     bool HasCollectibleItem,
-    bool HasBlockedNonIgnoredItem,
-    bool HasIgnoredItem,
+    bool HasBlockedRewardItem,
+    bool HasBlockedProtectedItem,
+    bool HasIgnoredRewardItem,
     InventoryFullAction InventoryFullAction,
     IgnoredTreasureAction IgnoredTreasureAction)
 {
@@ -57,21 +59,29 @@ internal static class TreasureLootPolicy
         if (conditions.HasCollectibleItem)
             return TreasureLootDecision.Collect;
 
-        if (!conditions.HasBlockedNonIgnoredItem && conditions.HasIgnoredItem)
+        if (conditions.HasBlockedRewardItem)
         {
-            return conditions.IgnoredTreasureAction switch
+            return conditions.InventoryFullAction switch
             {
-                IgnoredTreasureAction.Drop => TreasureLootDecision.DropIgnored,
-                IgnoredTreasureAction.Discard => TreasureLootDecision.DiscardIgnored,
-                _ => TreasureLootDecision.KeepIgnoredOpen
+                InventoryFullAction.Drop => TreasureLootDecision.DropBlocked,
+                InventoryFullAction.Discard => TreasureLootDecision.DiscardBlocked,
+                _ => TreasureLootDecision.Stop
             };
         }
 
-        return conditions.InventoryFullAction switch
+        if (conditions.HasIgnoredRewardItem)
         {
-            InventoryFullAction.Drop => TreasureLootDecision.DropBlocked,
-            InventoryFullAction.Discard => TreasureLootDecision.DiscardBlocked,
-            _ => TreasureLootDecision.Stop
-        };
+            if (conditions.IgnoredTreasureAction == IgnoredTreasureAction.Drop)
+                return TreasureLootDecision.DropIgnored;
+            if (conditions.IgnoredTreasureAction == IgnoredTreasureAction.Discard)
+                return TreasureLootDecision.DiscardIgnored;
+        }
+
+        if (conditions.HasBlockedProtectedItem)
+            return TreasureLootDecision.StopForProtectedItem;
+
+        return conditions.HasIgnoredRewardItem
+            ? TreasureLootDecision.KeepIgnoredOpen
+            : TreasureLootDecision.Stop;
     }
 }

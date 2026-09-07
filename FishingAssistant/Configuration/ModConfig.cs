@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 
@@ -5,7 +7,10 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 28;
+    // Schema versions are monotonic across feature branches. Versions 29-31
+    // were used by the isolated Assistant Bar work; this branch preserves those
+    // unknown settings through JsonExtensionData without enabling the feature.
+    internal const int CurrentVersion = 31;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -18,6 +23,9 @@ internal sealed class ModConfig
     ];
 
     public int ConfigVersion { get; set; } = CurrentVersion;
+
+    [JsonExtensionData]
+    private IDictionary<string, JToken>? preservedProperties;
 
     public KeybindList EnableAutomationButton { get; set; } = new(SButton.F5);
 
@@ -230,6 +238,10 @@ internal sealed class ModConfig
     internal ModConfig CreateDraft()
     {
         ModConfig draft = (ModConfig)this.MemberwiseClone();
+        draft.preservedProperties = this.preservedProperties?.ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value.DeepClone(),
+            StringComparer.OrdinalIgnoreCase);
         draft.EnableAutomationButton = KeybindList.Parse(this.EnableAutomationButton.ToString());
         draft.EnableAutomationOptionalButton =
             KeybindList.Parse(this.EnableAutomationOptionalButton.ToString());

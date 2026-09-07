@@ -29,6 +29,8 @@ internal sealed class AutomationScreenState
 
     public HashSet<Item> BlockedTreasureItems { get; } = new(ReferenceEqualityComparer.Instance);
 
+    public HashSet<Item> ProtectedFishingItems { get; } = new(ReferenceEqualityComparer.Instance);
+
     public IReadOnlySet<string> GetTreasureChestIgnoreIds(ModConfig config)
     {
         ArgumentNullException.ThrowIfNull(config);
@@ -93,5 +95,6 @@ internal sealed class AutomationScreenState
         this.TreasureLootRequiredTicks = TreasureLootPolicy.InitialDelayTicks;
         this.TreasureCollectionStopped = false;
         this.BlockedTreasureItems.Clear();
+        this.ProtectedFishingItems.Clear();
     }
 }

@@ -87,6 +87,7 @@ internal sealed class ModEntry : Mod
             perfectCatchProgress,
             () => this.automationRuntime.IsCurrentMinigameSkipResult(),
             this.Monitor);
+        FishingTreasureProtectionPatch.Apply(harmony, this.Monitor);
         SonarPreviewPatch.Apply(
             harmony,
             () => this.configManager.Active,

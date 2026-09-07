@@ -1,6 +1,7 @@
 using FishingAssistant.Configuration;
 using FishingAssistant.Fishing;
 using FishingAssistant.Inventory;
+using FishingAssistant.UI;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -688,6 +689,7 @@ internal sealed class AutomationRuntime(
             screen.TreasureMenuIdentity = menu.Identity;
             screen.TreasureLootRequiredTicks = SecondsToTicks(config.TreasureLootDelaySeconds);
         }
+        menu.CopyProtectedItemsTo(screen.ProtectedFishingItems);
 
         IReadOnlySet<string> ignoredItemIds = screen.GetTreasureChestIgnoreIds(config);
         TreasureLootConditions conditions = new(
@@ -697,9 +699,18 @@ internal sealed class AutomationRuntime(
             menu.IsPlayerHoldingItem,
             screen.TreasureCollectionStopped,
             menu.HasRemainingItems,
-            menu.HasCollectibleItem(screen.BlockedTreasureItems, ignoredItemIds),
-            menu.HasBlockedNonIgnoredItem(screen.BlockedTreasureItems, ignoredItemIds),
-            menu.HasIgnoredItem(ignoredItemIds),
+            menu.HasCollectibleItem(
+                screen.BlockedTreasureItems,
+                screen.ProtectedFishingItems,
+                ignoredItemIds),
+            menu.HasBlockedRewardItem(
+                screen.BlockedTreasureItems,
+                screen.ProtectedFishingItems,
+                ignoredItemIds),
+            menu.HasBlockedProtectedItem(
+                screen.BlockedTreasureItems,
+                screen.ProtectedFishingItems),
+            menu.HasIgnoredRewardItem(screen.ProtectedFishingItems, ignoredItemIds),
             config.ActionIfInventoryFull,
             config.ActionIfOnlyIgnoredTreasureRemains
         );
@@ -727,15 +738,40 @@ internal sealed class AutomationRuntime(
             case TreasureLootDecision.Stop:
                 this.StopForFullInventory(screen, "hud.treasure_full.stop");
                 break;
+            case TreasureLootDecision.StopForProtectedItem:
+                this.StopForProtectedFishingItem(screen, menu);
+                break;
             case TreasureLootDecision.DropBlocked:
-                menu.DropBlockedItems(screen.BlockedTreasureItems, ignoredItemIds);
-                this.ResolveIgnoredTreasureRemainder(menu, config.ActionIfOnlyIgnoredTreasureRemains);
-                this.ContinueAfterFullInventoryResolution(screen, "hud.treasure_full.drop", "dropped");
+                menu.DropBlockedRewardItems(
+                    screen.BlockedTreasureItems,
+                    screen.ProtectedFishingItems,
+                    ignoredItemIds);
+                this.ResolveIgnoredTreasureRemainder(
+                    menu,
+                    screen.ProtectedFishingItems,
+                    ignoredItemIds,
+                    config.ActionIfOnlyIgnoredTreasureRemains);
+                this.CompleteFullInventoryResolutionIfEmpty(
+                    screen,
+                    menu,
+                    "hud.treasure_full.drop",
+                    "dropped");
                 break;
             case TreasureLootDecision.DiscardBlocked:
-                menu.DiscardBlockedItems(screen.BlockedTreasureItems, ignoredItemIds);
-                this.ResolveIgnoredTreasureRemainder(menu, config.ActionIfOnlyIgnoredTreasureRemains);
-                this.ContinueAfterFullInventoryResolution(screen, "hud.treasure_full.discard", "discarded");
+                menu.DiscardBlockedRewardItems(
+                    screen.BlockedTreasureItems,
+                    screen.ProtectedFishingItems,
+                    ignoredItemIds);
+                this.ResolveIgnoredTreasureRemainder(
+                    menu,
+                    screen.ProtectedFishingItems,
+                    ignoredItemIds,
+                    config.ActionIfOnlyIgnoredTreasureRemains);
+                this.CompleteFullInventoryResolutionIfEmpty(
+                    screen,
+                    menu,
+                    "hud.treasure_full.discard",
+                    "discarded");
                 break;
             case TreasureLootDecision.KeepIgnoredOpen:
                 screen.TreasureCollectionStopped = true;
@@ -743,35 +779,43 @@ internal sealed class AutomationRuntime(
                     LogLevel.Trace);
                 break;
             case TreasureLootDecision.DropIgnored:
-                menu.DropRemainingItems();
-                this.ResetTreasureLoot(screen);
+                menu.DropIgnoredRewardItems(screen.ProtectedFishingItems, ignoredItemIds);
+                this.CloseTreasureMenuIfEmpty(screen, menu);
                 break;
             case TreasureLootDecision.DiscardIgnored:
-                menu.DiscardRemainingItems();
-                this.ResetTreasureLoot(screen);
+                menu.DiscardIgnoredRewardItems(screen.ProtectedFishingItems, ignoredItemIds);
+                this.CloseTreasureMenuIfEmpty(screen, menu);
                 break;
         }
     }
 
     private void ResolveIgnoredTreasureRemainder(
         FishingTreasureMenuAdapter menu,
+        ISet<Item> protectedItems,
+        IReadOnlySet<string> ignoredItemIds,
         IgnoredTreasureAction action)
     {
         if (!menu.HasRemainingItems)
-        {
-            menu.Close();
             return;
-        }
 
         switch (action)
         {
             case IgnoredTreasureAction.Drop:
-                menu.DropRemainingItems();
+                menu.DropIgnoredRewardItems(protectedItems, ignoredItemIds);
                 break;
             case IgnoredTreasureAction.Discard:
-                menu.DiscardRemainingItems();
+                menu.DiscardIgnoredRewardItems(protectedItems, ignoredItemIds);
                 break;
         }
+    }
+
+    private void CloseTreasureMenuIfEmpty(AutomationScreenState screen, FishingTreasureMenuAdapter menu)
+    {
+        if (menu.HasRemainingItems)
+            return;
+
+        menu.Close();
+        this.ResetTreasureLoot(screen);
     }
 
     private void CollectNextTreasureItem(
@@ -779,7 +823,10 @@ internal sealed class AutomationRuntime(
         FishingTreasureMenuAdapter menu,
         IReadOnlySet<string> ignoredItemIds)
     {
-        TreasureCollectResult result = menu.TryCollectNext(screen.BlockedTreasureItems, ignoredItemIds);
+        TreasureCollectResult result = menu.TryCollectNext(
+            screen.BlockedTreasureItems,
+            screen.ProtectedFishingItems,
+            ignoredItemIds);
         screen.TreasureLootElapsedTicks = 0;
         screen.TreasureLootRequiredTicks = TreasureLootPolicy.ItemDelayTicks;
         if (result is TreasureCollectResult.Collected or TreasureCollectResult.PartiallyCollected)
@@ -801,6 +848,52 @@ internal sealed class AutomationRuntime(
 
         monitor.Log($"Stopped fishing automation for local screen {Context.ScreenId} because the inventory " +
                     "couldn't accept the remaining treasure.", LogLevel.Warn);
+    }
+
+    private void StopForProtectedFishingItem(
+        AutomationScreenState screen,
+        FishingTreasureMenuAdapter menu)
+    {
+        Item? item = menu.GetFirstBlockedProtectedItem(
+            screen.BlockedTreasureItems,
+            screen.ProtectedFishingItems);
+        if (item is null)
+        {
+            this.StopForFullInventory(screen, "hud.treasure_full.stop");
+            return;
+        }
+
+        screen.TreasureCollectionStopped = true;
+        HudNotification.ShowItem(
+            string.Format(translate("hud.treasure_full.protected"), item.DisplayName),
+            item);
+        if (screen.Session.IsEnabled)
+        {
+            AutomationTransition transition = screen.Session.Toggle();
+            this.Log(transition);
+        }
+
+        monitor.Log(
+            $"Stopped fishing automation for local screen {Context.ScreenId} because protected fishing item "
+            + $"{item.QualifiedItemId} ({item.DisplayName}) could not fit in the inventory.",
+            LogLevel.Warn);
+    }
+
+    private void CompleteFullInventoryResolutionIfEmpty(
+        AutomationScreenState screen,
+        FishingTreasureMenuAdapter menu,
+        string messageKey,
+        string action)
+    {
+        if (menu.HasRemainingItems)
+        {
+            screen.TreasureLootElapsedTicks = 0;
+            screen.TreasureLootRequiredTicks = 0;
+            return;
+        }
+
+        menu.Close();
+        this.ContinueAfterFullInventoryResolution(screen, messageKey, action);
     }
 
     private void ContinueAfterFullInventoryResolution(

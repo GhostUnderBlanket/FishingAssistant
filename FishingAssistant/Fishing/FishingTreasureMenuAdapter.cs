@@ -33,29 +33,57 @@ internal sealed class FishingTreasureMenuAdapter(Farmer player, ItemGrabMenu men
 
     public bool HasRemainingItems => menu.ItemsToGrabMenu.actualInventory.Any(item => item is not null);
 
-    public bool HasCollectibleItem(ISet<Item> blockedItems, IReadOnlySet<string> ignoredItemIds)
+    public void CopyProtectedItemsTo(ISet<Item> protectedItems)
+    {
+        FishingTreasureProtectionPatch.CopyProtectedItems(menu, protectedItems);
+    }
+
+    public bool HasCollectibleItem(
+        ISet<Item> blockedItems,
+        ISet<Item> protectedItems,
+        IReadOnlySet<string> ignoredItemIds)
     {
         return menu.ItemsToGrabMenu.actualInventory.Any(item => item is not null
             && !blockedItems.Contains(item)
-            && !ignoredItemIds.Contains(item.QualifiedItemId));
+            && (protectedItems.Contains(item) || !ignoredItemIds.Contains(item.QualifiedItemId)));
     }
 
-    public bool HasBlockedNonIgnoredItem(ISet<Item> blockedItems, IReadOnlySet<string> ignoredItemIds) =>
+    public bool HasBlockedRewardItem(
+        ISet<Item> blockedItems,
+        ISet<Item> protectedItems,
+        IReadOnlySet<string> ignoredItemIds) =>
         menu.ItemsToGrabMenu.actualInventory.Any(item => item is not null
             && blockedItems.Contains(item)
+            && !protectedItems.Contains(item)
             && !ignoredItemIds.Contains(item.QualifiedItemId));
 
-    public bool HasIgnoredItem(IReadOnlySet<string> ignoredItemIds) =>
+    public bool HasBlockedProtectedItem(ISet<Item> blockedItems, ISet<Item> protectedItems) =>
         menu.ItemsToGrabMenu.actualInventory.Any(item => item is not null
+            && blockedItems.Contains(item)
+            && protectedItems.Contains(item));
+
+    public bool HasIgnoredRewardItem(ISet<Item> protectedItems, IReadOnlySet<string> ignoredItemIds) =>
+        menu.ItemsToGrabMenu.actualInventory.Any(item => item is not null
+            && !protectedItems.Contains(item)
             && ignoredItemIds.Contains(item.QualifiedItemId));
 
-    public TreasureCollectResult TryCollectNext(ISet<Item> blockedItems, IReadOnlySet<string> ignoredItemIds)
+    public Item? GetFirstBlockedProtectedItem(ISet<Item> blockedItems, ISet<Item> protectedItems) =>
+        menu.ItemsToGrabMenu.actualInventory.FirstOrDefault(item => item is not null
+            && blockedItems.Contains(item)
+            && protectedItems.Contains(item));
+
+    public TreasureCollectResult TryCollectNext(
+        ISet<Item> blockedItems,
+        ISet<Item> protectedItems,
+        IReadOnlySet<string> ignoredItemIds)
     {
         IList<Item> items = menu.ItemsToGrabMenu.actualInventory;
         for (int index = 0; index < items.Count; index++)
         {
             Item? item = items[index];
-            if (item is null || blockedItems.Contains(item) || ignoredItemIds.Contains(item.QualifiedItemId))
+            if (item is null
+                || blockedItems.Contains(item)
+                || (!protectedItems.Contains(item) && ignoredItemIds.Contains(item.QualifiedItemId)))
                 continue;
 
             int originalStack = item.Stack;
@@ -86,19 +114,19 @@ internal sealed class FishingTreasureMenuAdapter(Farmer player, ItemGrabMenu men
         menu.exitThisMenu();
     }
 
-    public void DropRemainingItems()
-    {
-        menu.DropRemainingItems();
-        menu.exitThisMenu();
-    }
-
-    public void DropBlockedItems(ISet<Item> blockedItems, IReadOnlySet<string> ignoredItemIds)
+    public void DropBlockedRewardItems(
+        ISet<Item> blockedItems,
+        ISet<Item> protectedItems,
+        IReadOnlySet<string> ignoredItemIds)
     {
         IList<Item> items = menu.ItemsToGrabMenu.actualInventory;
         for (int index = 0; index < items.Count; index++)
         {
             Item? item = items[index];
-            if (item is null || !blockedItems.Contains(item) || ignoredItemIds.Contains(item.QualifiedItemId))
+            if (item is null
+                || !blockedItems.Contains(item)
+                || protectedItems.Contains(item)
+                || ignoredItemIds.Contains(item.QualifiedItemId))
                 continue;
 
             items[index] = null!;
@@ -106,20 +134,54 @@ internal sealed class FishingTreasureMenuAdapter(Farmer player, ItemGrabMenu men
         }
     }
 
-    public void DiscardBlockedItems(ISet<Item> blockedItems, IReadOnlySet<string> ignoredItemIds)
+    public void DiscardBlockedRewardItems(
+        ISet<Item> blockedItems,
+        ISet<Item> protectedItems,
+        IReadOnlySet<string> ignoredItemIds)
     {
         IList<Item> items = menu.ItemsToGrabMenu.actualInventory;
         for (int index = 0; index < items.Count; index++)
         {
             Item? item = items[index];
-            if (item is not null && blockedItems.Contains(item) && !ignoredItemIds.Contains(item.QualifiedItemId))
+            if (item is not null
+                && blockedItems.Contains(item)
+                && !protectedItems.Contains(item)
+                && !ignoredItemIds.Contains(item.QualifiedItemId))
                 items[index] = null!;
         }
     }
 
-    public void DiscardRemainingItems()
+    public void DropIgnoredRewardItems(ISet<Item> protectedItems, IReadOnlySet<string> ignoredItemIds)
     {
-        menu.ItemsToGrabMenu.actualInventory.Clear();
-        menu.exitThisMenu();
+        IList<Item> items = menu.ItemsToGrabMenu.actualInventory;
+        for (int index = 0; index < items.Count; index++)
+        {
+            Item? item = items[index];
+            if (item is null
+                || protectedItems.Contains(item)
+                || !ignoredItemIds.Contains(item.QualifiedItemId))
+            {
+                continue;
+            }
+
+            items[index] = null!;
+            Game1.createItemDebris(item, player.getStandingPosition(), player.FacingDirection);
+        }
     }
+
+    public void DiscardIgnoredRewardItems(ISet<Item> protectedItems, IReadOnlySet<string> ignoredItemIds)
+    {
+        IList<Item> items = menu.ItemsToGrabMenu.actualInventory;
+        for (int index = 0; index < items.Count; index++)
+        {
+            Item? item = items[index];
+            if (item is not null
+                && !protectedItems.Contains(item)
+                && ignoredItemIds.Contains(item.QualifiedItemId))
+            {
+                items[index] = null!;
+            }
+        }
+    }
+
 }

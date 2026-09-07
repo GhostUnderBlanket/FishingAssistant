@@ -360,6 +360,7 @@
   "hud.treasure_full.stop": "Treasure collection stopped because the inventory is full.",
   "hud.treasure_full.drop": "Treasure that could not fit was dropped. Fishing continues.",
   "hud.treasure_full.discard": "Treasure that could not fit was discarded. Fishing continues.",
+  "hud.treasure_full.protected": "Automatic fishing stopped because {0} could not fit in your inventory.",
   "hud.bait.spawned": "Spawned and attached {1} {0}. This is a cheat option.",
   "hud.tackle.spawned": "Spawned and attached {0} to tackle slot {1}. This is a cheat option.",
   "hud.food.ate": "Ate {0} automatically and recovered up to {1} energy.",
