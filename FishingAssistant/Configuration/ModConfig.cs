@@ -5,8 +5,7 @@ namespace FishingAssistant.Configuration;
 
 internal sealed class ModConfig
 {
-    internal const int CurrentVersion = 29;
-    internal const int MaximumQuickControlSlots = 5;
+    internal const int CurrentVersion = 28;
     internal const string DefaultStarterRod = "None";
 
     internal static readonly IReadOnlyList<string> DefaultJunkList =
@@ -35,13 +34,6 @@ internal sealed class ModConfig
     public HudPosition ModStatusPosition { get; set; } = HudPosition.Left;
 
     public HudVisibilityMode HudVisibility { get; set; } = HudVisibilityMode.WhileFishing;
-
-    public List<QuickControlAction> QuickControlActions { get; set; } =
-    [
-        QuickControlAction.ToggleAutomation,
-        QuickControlAction.ToggleTreasureTargeting,
-        QuickControlAction.ToggleAutoEatFood
-    ];
 
     public AutomationProfile AutomationProfile { get; set; } = AutomationProfile.Relaxed;
 
@@ -254,7 +246,6 @@ internal sealed class ModConfig
         draft.PreferredBaits = [.. this.PreferredBaits];
         draft.PreferredTackles = [.. this.PreferredTackles];
         draft.PreferredSecondTackles = [.. this.PreferredSecondTackles];
-        draft.QuickControlActions = [.. this.QuickControlActions];
         return draft;
     }
 }

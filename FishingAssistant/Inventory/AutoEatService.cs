@@ -2,7 +2,6 @@ using FishingAssistant.Configuration;
 using FishingAssistant.UI;
 using FishingAssistant.Fishing;
 using FishingAssistant.Runtime;
-using FishingAssistant.HUD;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -11,10 +10,7 @@ using SObject = StardewValley.Object;
 
 namespace FishingAssistant.Inventory;
 
-internal sealed class AutoEatService(
-    IMonitor monitor,
-    Func<string, string> translate,
-    ActivityLogService? activityLog = null)
+internal sealed class AutoEatService(IMonitor monitor, Func<string, string> translate)
 {
     private const int RetryDelayTicks = 60;
     private readonly PerScreen<ScreenState> screens = new(() => new ScreenState());
@@ -251,8 +247,7 @@ internal sealed class AutoEatService(
             player.removeItemFromInventory(food);
 
         HudNotification.ShowItem(string.Format(
-            translate("hud.food.ate"), food.DisplayName, food.staminaRecoveredOnConsumption()), food,
-            activityLog);
+            translate("hud.food.ate"), food.DisplayName, food.staminaRecoveredOnConsumption()), food);
         monitor.Log(
             $"Automatically ate {food.DisplayName} from local screen {Context.ScreenId} " +
             $"(stack {originalStack} -> {Math.Max(0, food.Stack)}).",

@@ -1,5 +1,4 @@
 using FishingAssistant.Configuration;
-using FishingAssistant.HUD;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -7,10 +6,7 @@ using StardewValley.Tools;
 
 namespace FishingAssistant.Runtime;
 
-internal sealed class LateNightService(
-    IMonitor monitor,
-    Func<string, string> translate,
-    ActivityLogService? activityLog = null)
+internal sealed class LateNightService(IMonitor monitor, Func<string, string> translate)
 {
     private readonly PerScreen<ScreenState> screens = new(() => new ScreenState());
 
@@ -36,13 +32,11 @@ internal sealed class LateNightService(
             screen.PausePending = true;
 
         string configuredTime = Game1.getTimeOfDayString(config.TimeToPause * 100);
-        string message = string.Format(
+        Game1.addHUDMessage(new HUDMessage(string.Format(
             translate("hud.late_night.warning"),
             configuredTime,
             screen.WarningsIssued,
-            Math.Max(1, config.WarnCount));
-        Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
-        activityLog?.Add(message, severity: ActivityLogSeverity.Warning);
+            Math.Max(1, config.WarnCount)), HUDMessage.error_type));
         monitor.Log(
             $"Issued late-night fishing warning {screen.WarningsIssued}/{Math.Max(1, config.WarnCount)} " +
             $"for local screen {Context.ScreenId} at {newTime}.",
@@ -75,9 +69,7 @@ internal sealed class LateNightService(
             return null;
 
         screen.PausePending = false;
-        string message = translate("hud.late_night.paused");
-        Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
-        activityLog?.Add(message, severity: ActivityLogSeverity.Error);
+        Game1.addHUDMessage(new HUDMessage(translate("hud.late_night.paused"), HUDMessage.error_type));
         monitor.Log(
             $"Paused fishing automation safely after late-night warnings for local screen {Context.ScreenId}.",
             LogLevel.Info);

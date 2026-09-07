@@ -1,7 +1,6 @@
 using FishingAssistant.Configuration;
 using FishingAssistant.Fishing;
 using FishingAssistant.Inventory;
-using FishingAssistant.HUD;
 using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
@@ -14,12 +13,11 @@ internal sealed class AutomationRuntime(
     IMonitor monitor,
     Func<ModConfig> getConfig,
     Func<string, string> translate,
-    PerfectCatchProgressService perfectCatchProgress,
-    ActivityLogService? activityLog = null)
+    PerfectCatchProgressService perfectCatchProgress)
 {
     private readonly PerScreen<AutomationScreenState> screens = new(() => new AutomationScreenState());
-    private readonly AutoEatService autoEat = new(monitor, translate, activityLog);
-    private readonly LateNightService lateNight = new(monitor, translate, activityLog);
+    private readonly AutoEatService autoEat = new(monitor, translate);
+    private readonly LateNightService lateNight = new(monitor, translate);
 
     public AutomationSession Current => this.screens.Value.Session;
 
@@ -465,9 +463,7 @@ internal sealed class AutomationRuntime(
         string messageKey = decision == LowEnergyStopDecision.StopAtEatingThreshold
             ? "hud.energy.no_food"
             : "hud.energy.exhaustion";
-        string message = translate(messageKey);
-        Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
-        activityLog?.Add(message, severity: ActivityLogSeverity.Error);
+        Game1.addHUDMessage(new HUDMessage(translate(messageKey), HUDMessage.error_type));
         monitor.Log(
             $"Paused fishing automation for low energy on local screen {Context.ScreenId} ({decision}).",
             LogLevel.Info);
@@ -796,9 +792,7 @@ internal sealed class AutomationRuntime(
     private void StopForFullInventory(AutomationScreenState screen, string messageKey)
     {
         screen.TreasureCollectionStopped = true;
-        string message = translate(messageKey);
-        Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
-        activityLog?.Add(message, severity: ActivityLogSeverity.Error);
+        Game1.addHUDMessage(new HUDMessage(translate(messageKey), HUDMessage.error_type));
         if (screen.Session.IsEnabled)
         {
             AutomationTransition transition = screen.Session.Toggle();
@@ -814,9 +808,7 @@ internal sealed class AutomationRuntime(
         string messageKey,
         string action)
     {
-        string message = translate(messageKey);
-        Game1.addHUDMessage(new HUDMessage(message, HUDMessage.error_type));
-        activityLog?.Add(message, severity: ActivityLogSeverity.Warning);
+        Game1.addHUDMessage(new HUDMessage(translate(messageKey), HUDMessage.error_type));
         this.ResetTreasureLoot(screen);
         monitor.Log(
             $"Fishing automation continued after treasure that could not fit was {action} for local screen "
