@@ -8,7 +8,10 @@ internal enum BaitAttachmentAction
     Spawn
 }
 
-internal sealed record BaitInventoryCandidate(int InventoryIndex, string QualifiedItemId);
+internal sealed record BaitInventoryCandidate(
+    int InventoryIndex,
+    string QualifiedItemId,
+    bool CanRefillAttachedBait);
 
 internal sealed record BaitAttachmentConditions(
     bool AutoAttachEnabled,
@@ -43,7 +46,8 @@ internal static class BaitAttachmentPolicy
 
             BaitInventoryCandidate? refill = conditions.Candidates.FirstOrDefault(candidate =>
                 string.Equals(candidate.QualifiedItemId, conditions.AttachedBaitId,
-                    StringComparison.OrdinalIgnoreCase));
+                    StringComparison.OrdinalIgnoreCase)
+                && candidate.CanRefillAttachedBait);
             return refill is null
                 ? new BaitAttachmentDecision(BaitAttachmentAction.None)
                 : new BaitAttachmentDecision(BaitAttachmentAction.RefillFromInventory, refill.InventoryIndex);

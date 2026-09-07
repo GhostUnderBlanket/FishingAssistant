@@ -29,7 +29,10 @@ internal sealed class BaitAttachmentService(IMonitor monitor, Func<string, strin
         List<BaitInventoryCandidate> candidates = Game1.player.Items
             .Select((item, index) => (item, index))
             .Where(entry => entry.item is SObject { Category: SObject.baitCategory })
-            .Select(entry => new BaitInventoryCandidate(entry.index, entry.item!.QualifiedItemId))
+            .Select(entry => new BaitInventoryCandidate(
+                entry.index,
+                entry.item!.QualifiedItemId,
+                attached is not null && attached.canStackWith(entry.item)))
             .ToList();
         BaitAttachmentConditions conditions = new(
             config.AutoAttachBait,
@@ -69,6 +72,24 @@ internal sealed class BaitAttachmentService(IMonitor monitor, Func<string, strin
         if (inventoryIndex < 0 || inventoryIndex >= Game1.player.Items.Count
             || Game1.player.Items[inventoryIndex] is not SObject { Category: SObject.baitCategory } bait)
         {
+            return;
+        }
+
+        SObject? attached = rod.GetBait();
+        bool isStillValid = action switch
+        {
+            BaitAttachmentAction.AttachFromInventory => attached is null,
+            BaitAttachmentAction.RefillFromInventory => attached is not null
+                && attached.getRemainingStackSpace() > 0
+                && attached.canStackWith(bait),
+            _ => false
+        };
+        if (!isStillValid)
+        {
+            monitor.Log(
+                $"Skipped a stale automatic bait {action} decision for local screen {Context.ScreenId}; "
+                + "the rod attachment or inventory candidate was no longer compatible.",
+                LogLevel.Trace);
             return;
         }
 
