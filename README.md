@@ -7,6 +7,8 @@ tools.
 
 The mod includes its own in-game configuration menu.
 
+Current release: **3.4.1**. See [the changelog](CHANGELOG.md) for the latest fixes.
+
 ## Features
 
 ### Flexible fishing automation
@@ -45,6 +47,8 @@ The mod includes its own in-game configuration menu.
 - Maintain a visual Treasure Chest Ignore List and choose what happens when only ignored
   rewards remain.
 - Treat items from the Junk List as ignored treasure without duplicating the list.
+- Treasure Drop/Discard actions preserve the caught fish and protected fishing rewards.
+  If a protected catch cannot fit, automation stops with the menu open for manual collection.
 
 ### Inventory, bait, and tackle tools
 
@@ -57,6 +61,7 @@ The mod includes its own in-game configuration menu.
   Advanced Iridium Rod.
 - Refill missing attachments, preserve infinite bait or tackle, and optionally provide a
   selected starter rod.
+- Refill attached bait only with stack-compatible items, preserving Targeted Bait species.
 - Apply optional session-only fishing-rod enchantments without permanently modifying the
   player's equipment.
 
@@ -72,6 +77,9 @@ writing temporary state into the shared save.
 
 - Stardew Valley 1.6.15 or a compatible later 1.6 release.
 - SMAPI 4.5.2 or later.
+
+Android support is not included in this release. The experimental Assistant Bar is
+also not part of 3.4.1.
 
 ## Installation
 

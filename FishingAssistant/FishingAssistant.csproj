@@ -3,7 +3,7 @@
     <AssemblyName>FishingAssistant</AssemblyName>
     <RootNamespace>FishingAssistant</RootNamespace>
     <Description>A configurable fishing assistant for Stardew Valley.</Description>
-    <VersionPrefix>3.4.0</VersionPrefix>
+    <VersionPrefix>3.4.1</VersionPrefix>
 
     <EnableModDeploy>false</EnableModDeploy>
     <EnableModZip>false</EnableModZip>

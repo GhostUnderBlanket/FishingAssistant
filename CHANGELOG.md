@@ -7,6 +7,25 @@ project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.4.1] - 2026-09-08
+
+### Fixed
+
+- Protect the caught fish and other protected fishing rewards from automatic treasure
+  Drop/Discard actions, including ignored-treasure handling. If a protected catch cannot
+  fit, automation stops and leaves it in the menu for the player to collect safely.
+- Automatic bait refills now require stack-compatible bait, preventing Targeted Bait
+  for one fish species from being replaced with a different species during refill.
+- Added defensive cleanup for lingering fishing reel audio when a minigame finishes
+  or its session resets, while accounting for other active local fishing screens.
+- Preserve configuration schema versions and unknown settings from Assistant Bar test
+  builds without enabling that experimental feature in this release.
+
+### Compatibility
+
+- Requires SMAPI 4.5.2 or later. Android support is still under investigation and is
+  not included in this release. Assistant Bar remains separate experimental work.
+
 ## [3.4.0] - 2026-08-30
 
 ### Added
