@@ -24,6 +24,7 @@ internal sealed class ModEntry : Mod
     private ConfigManager? configManager;
     private GameItemCatalog? itemCatalog;
     private AutomationRuntime? automationRuntime;
+    private BobberBarAudioService? bobberBarAudio;
     private AutomationHudRenderer? automationHud;
     private FishingBubbleMarkerRenderer? fishingBubbleMarker;
     private FishPreviewRenderer? fishPreview;
@@ -51,11 +52,13 @@ internal sealed class ModEntry : Mod
                 ? $"player-{Game1.player.UniqueMultiplayerID}"
                 : null);
         PerfectCatchProgressService perfectCatchProgress = new();
+        this.bobberBarAudio = new BobberBarAudioService(this.Monitor);
         this.automationRuntime = new AutomationRuntime(
             this.Monitor,
             () => this.configManager.Active,
             key => helper.Translation.Get(key),
-            perfectCatchProgress);
+            perfectCatchProgress,
+            this.bobberBarAudio);
         this.automationHud = new AutomationHudRenderer();
         this.fishingBubbleMarker = new FishingBubbleMarkerRenderer(
             () => this.automationRuntime.GetBubbleMarkerPlanCurrent());
@@ -236,6 +239,7 @@ internal sealed class ModEntry : Mod
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
+        this.bobberBarAudio!.ResetCurrent(AutomationTransitionReason.SaveLoaded);
         this.rodEnchantments!.RemoveAllAndReset();
         this.infiniteAttachment!.RestoreAll();
         this.infiniteAttachment!.ResetAll();
@@ -245,6 +249,7 @@ internal sealed class ModEntry : Mod
 
     private void OnDayStarted(object? sender, DayStartedEventArgs e)
     {
+        this.bobberBarAudio!.ResetCurrent(AutomationTransitionReason.DayStarted);
         this.infiniteAttachment!.RestoreCurrent();
         this.automationRuntime!.ResetCurrent(AutomationTransitionReason.DayStarted);
         this.EnsureConfiguredStarterRod();
@@ -252,6 +257,7 @@ internal sealed class ModEntry : Mod
 
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
     {
+        this.bobberBarAudio!.ResetAll(AutomationTransitionReason.ReturnedToTitle);
         this.pendingConfigMenuOpen.ResetAllScreens();
         this.genericModConfigMenu!.Reset();
         this.rodEnchantments!.RemoveAllAndReset();
@@ -264,6 +270,7 @@ internal sealed class ModEntry : Mod
     {
         if (e.IsLocalPlayer)
         {
+            this.bobberBarAudio!.ResetCurrent(AutomationTransitionReason.Warped);
             this.pendingConfigMenuOpen.Value = false;
             this.infiniteAttachment!.RestoreCurrent();
             this.automationRuntime!.ResetCurrent(AutomationTransitionReason.Warped);
@@ -281,6 +288,7 @@ internal sealed class ModEntry : Mod
 
     private void OnSaving(object? sender, SavingEventArgs e)
     {
+        this.bobberBarAudio!.ResetCurrent(AutomationTransitionReason.Saving);
         this.automationRuntime!.ResetCurrent(AutomationTransitionReason.Saving);
         this.infiniteAttachment!.RestoreAll();
         this.rodEnchantments!.SuspendAllForSave();
@@ -332,6 +340,7 @@ internal sealed class ModEntry : Mod
 
     private void OnMenuChanged(object? sender, MenuChangedEventArgs e)
     {
+        this.bobberBarAudio!.OnMenuChanged(e.OldMenu, e.NewMenu);
         if (!Context.IsWorldReady || e.NewMenu is not BobberBar bobberBar)
             return;
 

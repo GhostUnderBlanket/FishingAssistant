@@ -14,7 +14,8 @@ internal sealed class AutomationRuntime(
     IMonitor monitor,
     Func<ModConfig> getConfig,
     Func<string, string> translate,
-    PerfectCatchProgressService perfectCatchProgress)
+    PerfectCatchProgressService perfectCatchProgress,
+    BobberBarAudioService bobberBarAudio)
 {
     private readonly PerScreen<AutomationScreenState> screens = new(() => new AutomationScreenState());
     private readonly AutoEatService autoEat = new(monitor, translate);
@@ -58,6 +59,7 @@ internal sealed class AutomationRuntime(
             screen.Pending.IsPursuingTreasure = false;
             bar.PrepareInvisibleCompletion(
                 config.TreasureTargeting || config.InstantCatchTreasure);
+            bobberBarAudio.OnMinigameCompleted(bar.Identity);
             monitor.Log(
                 $"Prepared an invisible fishing-minigame skip for local screen {Context.ScreenId}.",
                 LogLevel.Trace);
@@ -665,6 +667,7 @@ internal sealed class AutomationRuntime(
         screen.Pending.SkippedBobberBar = bar.Identity;
         bar.CompleteMinigame(
             config.TreasureTargeting || config.InstantCatchTreasure);
+        bobberBarAudio.OnMinigameCompleted(bar.Identity);
         screen.Pending.IsPursuingTreasure = false;
         monitor.Log(
             $"Skipped the fishing minigame for local screen {Context.ScreenId}; treasure targeting was " +
